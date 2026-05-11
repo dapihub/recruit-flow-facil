@@ -1,48 +1,52 @@
+import logoColor from "@/assets/dapi-logo-color.png";
+import logoWhite from "@/assets/dapi-logo-white.png";
+
 /**
- * Símbolo DAPI HUB — interpretação do "D + hub": ponto central com 5 conexões irradiando.
- * Cor única (terracota / branco / preto) seguindo o manual de marca.
+ * Logotipo oficial DAPI HUB.
+ * Use variant="white" sobre fundos escuros e variant="color" sobre fundos claros.
  */
-export function DapiSymbol({ className = "w-8 h-8", color = "currentColor" }: { className?: string; color?: string }) {
+export function DapiLogo({
+  variant = "color",
+  className = "h-9 w-auto",
+}: {
+  variant?: "color" | "white";
+  className?: string;
+}) {
+  const src = variant === "white" ? logoWhite : logoColor;
   return (
-    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="DAPI HUB">
-      {/* arco do D */}
-      <path
-        d="M14 8 H30 A22 22 0 0 1 30 52 H14 Z"
-        stroke={color}
-        strokeWidth="6"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      {/* ponto central */}
-      <circle cx="32" cy="30" r="4.5" fill={color} />
-      {/* 5 conexões irradiando */}
-      <line x1="32" y1="30" x2="50" y2="14" stroke={color} strokeWidth="3" strokeLinecap="round" />
-      <line x1="32" y1="30" x2="56" y2="30" stroke={color} strokeWidth="3" strokeLinecap="round" />
-      <line x1="32" y1="30" x2="50" y2="46" stroke={color} strokeWidth="3" strokeLinecap="round" />
-      <line x1="32" y1="30" x2="40" y2="56" stroke={color} strokeWidth="3" strokeLinecap="round" />
-      <line x1="32" y1="30" x2="40" y2="6" stroke={color} strokeWidth="3" strokeLinecap="round" />
-      {/* nós das pontas */}
-      <circle cx="50" cy="14" r="2.5" fill={color} />
-      <circle cx="56" cy="30" r="2.5" fill={color} />
-      <circle cx="50" cy="46" r="2.5" fill={color} />
-      <circle cx="40" cy="56" r="2.5" fill={color} />
-      <circle cx="40" cy="6" r="2.5" fill={color} />
-    </svg>
+    <img
+      src={src}
+      alt="DAPI HUB — Recrutamento & Seleção"
+      className={className}
+      draggable={false}
+    />
   );
 }
 
-export function DapiLogo({ color = "currentColor", accent = "var(--brand)" }: { color?: string; accent?: string }) {
+/** Apenas o símbolo (sem wordmark) — recortado da arte oficial. */
+export function DapiSymbol({
+  variant = "color",
+  className = "h-8 w-8",
+}: {
+  variant?: "color" | "white";
+  className?: string;
+}) {
+  const src = variant === "white" ? logoWhite : logoColor;
+  // Recorta apenas o quadrante esquerdo (~24% da largura) onde está o símbolo.
   return (
-    <div className="flex items-center gap-3">
-      <DapiSymbol className="w-9 h-9" color={accent} />
-      <div className="leading-none">
-        <span className="block font-black text-lg tracking-tight" style={{ color }}>
-          DAPI<span style={{ color: accent }}>.</span>HUB
-        </span>
-        <span className="block text-[9px] uppercase tracking-[0.22em] opacity-60 mt-1" style={{ color }}>
-          Recrutamento &amp; Seleção
-        </span>
-      </div>
-    </div>
+    <span
+      className={className}
+      style={{
+        display: "inline-block",
+        backgroundImage: `url(${src})`,
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "left center",
+        backgroundSize: "auto 100%",
+        width: "1em",
+        aspectRatio: "1 / 1",
+      }}
+      aria-label="DAPI HUB"
+      role="img"
+    />
   );
 }
