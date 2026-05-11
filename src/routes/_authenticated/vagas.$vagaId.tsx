@@ -21,7 +21,7 @@ import {
 import dapiLogoColor from "@/assets/dapi-logo-color.png";
 import dapiSymbol from "@/assets/dapi-symbol.png";
 
-export const Route = createFileRoute("/vagas/$vagaId")({
+export const Route = createFileRoute("/_authenticated/vagas/$vagaId")({
   head: () => ({
     meta: [{ title: "Detalhes da Vaga — DAPI HUB" }],
   }),

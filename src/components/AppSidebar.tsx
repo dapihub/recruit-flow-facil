@@ -1,7 +1,8 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Briefcase, Users, Wallet } from "lucide-react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Briefcase, Users, Wallet, LogOut } from "lucide-react";
 import { useVagas, useCandidatos, useFaturas } from "@/lib/store";
 import { DapiLogo } from "@/components/DapiLogo";
+import { useAuth } from "@/lib/auth";
 
 const items = [
   { to: "/", label: "Vagas", icon: Briefcase },
@@ -11,6 +12,8 @@ const items = [
 
 export function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const vagas = useVagas();
   const candidatos = useCandidatos();
   const faturas = useFaturas();
@@ -55,6 +58,17 @@ export function AppSidebar() {
         <p className="text-[10px] text-white/40 leading-snug pt-2 italic">
           Muito mais que consultoria,<br/>um parceiro estratégico.
         </p>
+        <div className="pt-3 border-t border-white/10 space-y-2">
+          <p className="text-[11px] text-white/60 truncate" title={user?.email ?? ""}>
+            {user?.email}
+          </p>
+          <button
+            onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs text-white/75 hover:bg-white/5 hover:text-white transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" /> Sair
+          </button>
+        </div>
       </div>
     </aside>
   );
