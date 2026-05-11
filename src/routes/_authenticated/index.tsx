@@ -137,7 +137,7 @@ function VagasPage() {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
-                    </Td>
+                    </td>
                   </tr>
                 ))}
                 {filtradas.length === 0 && (
