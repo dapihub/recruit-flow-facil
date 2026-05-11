@@ -114,7 +114,7 @@ function VagasPage() {
                     <Td><span className="text-xs px-2 py-1 rounded-full bg-brand/10 text-brand font-medium">{v.etapa}</span></Td>
                     <Td>{new Date(v.prazo).toLocaleDateString("pt-BR")}</Td>
                     <Td><StatusBadge status={v.status} /></Td>
-                    <Td onClick={(e) => e.stopPropagation()}>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
