@@ -233,7 +233,7 @@ const buildDescritivoFromBriefing = (b: Briefing | undefined, cargo: string, emp
   requisitosObrigatorios: [b?.formacao, b?.experienciaMinima, b?.habilidadesTecnicas].filter(Boolean).join("\n"),
   requisitosDesejaveis: b?.diferenciais || "",
   oferece: [b?.faixaSalarial && `Salário: ${b.faixaSalarial}`, b?.beneficios && `Benefícios: ${b.beneficios}`, b?.modeloTrabalho && `Modelo: ${b.modeloTrabalho}${b.localizacao ? ` (${b.localizacao})` : ""}`].filter(Boolean).join("\n"),
-  comoCandidatar: "Envie seu currículo para recrutamento@recruitflow.com.br com o assunto: " + (b?.cargo || cargo),
+  comoCandidatar: "Envie seu currículo para contato@dapihub.com.br com o assunto: " + (b?.cargo || cargo),
 });
 
 function DescritivoTab({ vagaId, initial, briefing, cargo, empresa }: { vagaId: string; initial?: Descritivo; briefing?: Briefing; cargo: string; empresa: string }) {
@@ -263,7 +263,7 @@ function DescritivoTab({ vagaId, initial, briefing, cargo, empresa }: { vagaId: 
   const exportPDF = () => {
     const html = `<!doctype html><html><head><meta charset="utf-8"/><title>${escapeHtml(d.titulo)}</title>
       <style>body{font-family:Arial,sans-serif;max-width:780px;margin:40px auto;padding:0 24px;color:#222;line-height:1.55}
-      h1{color:#185FA5;border-bottom:3px solid #185FA5;padding-bottom:8px}h2{color:#185FA5;margin-top:28px;font-size:16px;text-transform:uppercase;letter-spacing:.5px}
+      h1{color:#D24925;border-bottom:3px solid #D24925;padding-bottom:8px}h2{color:#D24925;margin-top:28px;font-size:16px;text-transform:uppercase;letter-spacing:.5px}
       ul{padding-left:20px}p{white-space:pre-wrap}</style></head><body>
       <h1>${escapeHtml(d.titulo)}</h1>
       <h2>Sobre a empresa</h2><p>${escapeHtml(d.sobreEmpresa)}</p>
@@ -372,8 +372,8 @@ function ContratoTab({ vagaId, initial, empresa, cargo }: { vagaId: string; init
       <style>
         @page { margin: 28mm 22mm; }
         body{font-family:Arial,Helvetica,sans-serif;max-width:780px;margin:0 auto;padding:0 8px;color:#1f2937;line-height:1.65;text-align:justify;font-size:12pt}
-        h1{text-align:center;color:#185FA5;font-size:15pt;text-transform:uppercase;letter-spacing:.5px;margin-bottom:24px}
-        h2{color:#185FA5;font-size:11pt;margin-top:20px;text-transform:uppercase;letter-spacing:.5px}
+        h1{text-align:center;color:#D24925;font-size:15pt;text-transform:uppercase;letter-spacing:.5px;margin-bottom:24px}
+        h2{color:#D24925;font-size:11pt;margin-top:20px;text-transform:uppercase;letter-spacing:.5px}
         p{margin:6px 0}
         .party{margin:8px 0 14px}
         ul{margin:6px 0 6px 0;padding-left:22px}
