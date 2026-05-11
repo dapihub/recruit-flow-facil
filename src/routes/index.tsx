@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, MoreHorizontal } from "lucide-react";
+import { Plus, ChevronRight } from "lucide-react";
 import { PageHeader, MetricCard } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ const STATUS: VagaStatus[] = ["Aberta", "Em processo", "Fechada", "Encerrada"];
 
 function VagasPage() {
   const vagas = useVagas();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
   const [filtroArea, setFiltroArea] = useState<string>("todos");
@@ -94,6 +95,7 @@ function VagasPage() {
                 <tr>
                   <Th>Cargo</Th><Th>Empresa</Th><Th>Área</Th>
                   <Th className="text-center">Candidatos</Th>
+                  <Th>Etapa</Th>
                   <Th>Prazo</Th><Th>Status</Th><Th className="w-12"></Th>
                 </tr>
               </thead>
@@ -101,19 +103,21 @@ function VagasPage() {
                 {filtradas.map((v, i) => (
                   <tr
                     key={v.id}
+                    onClick={() => navigate({ to: "/vagas/$vagaId", params: { vagaId: v.id } })}
                     className={`border-t transition-colors cursor-pointer ${i % 2 ? "bg-muted/10" : ""} hover:bg-brand/5 hover:shadow-[inset_3px_0_0_0_var(--brand)]`}
                   >
                     <Td className="font-medium text-foreground">{v.cargo}</Td>
                     <Td>{v.empresa}</Td>
                     <Td>{v.area}</Td>
                     <Td className="text-center font-semibold">{v.candidatos}</Td>
+                    <Td><span className="text-xs px-2 py-1 rounded-full bg-brand/10 text-brand font-medium">{v.etapa}</span></Td>
                     <Td>{new Date(v.prazo).toLocaleDateString("pt-BR")}</Td>
                     <Td><StatusBadge status={v.status} /></Td>
-                    <Td><button className="p-1 hover:bg-muted rounded"><MoreHorizontal className="w-4 h-4" /></button></Td>
+                    <Td><ChevronRight className="w-4 h-4 text-muted-foreground" /></Td>
                   </tr>
                 ))}
                 {filtradas.length === 0 && (
-                  <tr><td colSpan={7} className="text-center py-12 text-muted-foreground">Nenhuma vaga encontrada</td></tr>
+                  <tr><td colSpan={8} className="text-center py-12 text-muted-foreground">Nenhuma vaga encontrada</td></tr>
                 )}
               </tbody>
             </table>

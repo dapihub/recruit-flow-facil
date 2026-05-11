@@ -1,6 +1,69 @@
 import { useSyncExternalStore } from "react";
 
 export type VagaStatus = "Aberta" | "Em processo" | "Fechada" | "Encerrada";
+
+export type PipelineEtapa =
+  | "Briefing"
+  | "Contrato"
+  | "Descritivo publicado"
+  | "Candidatos em triagem"
+  | "Finalizada";
+
+export const PIPELINE_ETAPAS: PipelineEtapa[] = [
+  "Briefing",
+  "Contrato",
+  "Descritivo publicado",
+  "Candidatos em triagem",
+  "Finalizada",
+];
+
+export type Briefing = {
+  cliente: string;
+  contatoResponsavel: string;
+  cargo: string;
+  quantidade: number;
+  motivo: "Substituição" | "Expansão" | "Novo projeto";
+  formacao: string;
+  experienciaMinima: string;
+  habilidadesTecnicas: string;
+  softSkills: string;
+  diferenciais: string;
+  faixaSalarial: string;
+  beneficios: string;
+  modeloTrabalho: "Presencial" | "Híbrido" | "Remoto";
+  localizacao: string;
+  prazo: string;
+  observacoes: string;
+};
+
+export type Descritivo = {
+  titulo: string;
+  sobreEmpresa: string;
+  responsabilidades: string;
+  requisitosObrigatorios: string;
+  requisitosDesejaveis: string;
+  oferece: string;
+  comoCandidatar: string;
+};
+
+export type Contrato = {
+  contratanteRazao: string;
+  contratanteCnpj: string;
+  contratanteEndereco: string;
+  contratanteRepresentante: string;
+  contratadaRazao: string;
+  contratadaCnpj: string;
+  contratadaRepresentante: string;
+  objeto: string;
+  modeloCobranca: "Percentual sobre salário" | "Valor fixo por vaga";
+  valor: string;
+  condicoesPagamento: string;
+  prazoGarantia: string;
+  clausulas: string;
+  dataAssinatura: string;
+  localAssinatura: string;
+};
+
 export type Vaga = {
   id: string;
   cargo: string;
@@ -12,6 +75,10 @@ export type Vaga = {
   descricao?: string;
   salario?: string;
   regime?: "CLT" | "PJ" | "Híbrido";
+  etapa: PipelineEtapa;
+  briefing?: Briefing;
+  descritivo?: Descritivo;
+  contrato?: Contrato;
 };
 
 export type CandidatoStatus = "Triagem" | "Entrevista" | "Contratado" | "Reprovado";
@@ -42,12 +109,12 @@ export type Fatura = {
 };
 
 let vagas: Vaga[] = [
-  { id: "1", cargo: "Desenvolvedor Full Stack Sênior", empresa: "TechNova", area: "Tecnologia", candidatos: 24, prazo: "2026-06-15", status: "Aberta", salario: "R$ 15.000", regime: "CLT" },
-  { id: "2", cargo: "Analista de Marketing Digital", empresa: "BrandUp", area: "Marketing", candidatos: 18, prazo: "2026-05-30", status: "Em processo", salario: "R$ 7.500", regime: "Híbrido" },
-  { id: "3", cargo: "Gerente Comercial", empresa: "Vendaz", area: "Comercial", candidatos: 12, prazo: "2026-06-01", status: "Em processo", salario: "R$ 12.000", regime: "CLT" },
-  { id: "4", cargo: "Designer UX/UI", empresa: "Pixel Lab", area: "Design", candidatos: 31, prazo: "2026-05-20", status: "Fechada", salario: "R$ 9.000", regime: "PJ" },
-  { id: "5", cargo: "Analista Financeiro Pleno", empresa: "FinCore", area: "Financeiro", candidatos: 15, prazo: "2026-06-10", status: "Aberta", salario: "R$ 8.500", regime: "CLT" },
-  { id: "6", cargo: "Recrutador Tech", empresa: "TalentHub", area: "RH", candidatos: 9, prazo: "2026-04-15", status: "Encerrada", salario: "R$ 6.000", regime: "CLT" },
+  { id: "1", cargo: "Desenvolvedor Full Stack Sênior", empresa: "TechNova", area: "Tecnologia", candidatos: 24, prazo: "2026-06-15", status: "Aberta", salario: "R$ 15.000", regime: "CLT", etapa: "Candidatos em triagem" },
+  { id: "2", cargo: "Analista de Marketing Digital", empresa: "BrandUp", area: "Marketing", candidatos: 18, prazo: "2026-05-30", status: "Em processo", salario: "R$ 7.500", regime: "Híbrido", etapa: "Descritivo publicado" },
+  { id: "3", cargo: "Gerente Comercial", empresa: "Vendaz", area: "Comercial", candidatos: 12, prazo: "2026-06-01", status: "Em processo", salario: "R$ 12.000", regime: "CLT", etapa: "Contrato" },
+  { id: "4", cargo: "Designer UX/UI", empresa: "Pixel Lab", area: "Design", candidatos: 31, prazo: "2026-05-20", status: "Fechada", salario: "R$ 9.000", regime: "PJ", etapa: "Finalizada" },
+  { id: "5", cargo: "Analista Financeiro Pleno", empresa: "FinCore", area: "Financeiro", candidatos: 15, prazo: "2026-06-10", status: "Aberta", salario: "R$ 8.500", regime: "CLT", etapa: "Briefing" },
+  { id: "6", cargo: "Recrutador Tech", empresa: "TalentHub", area: "RH", candidatos: 9, prazo: "2026-04-15", status: "Encerrada", salario: "R$ 6.000", regime: "CLT", etapa: "Finalizada" },
 ];
 
 let candidatos: Candidato[] = [
@@ -77,9 +144,26 @@ export const useVagas = () => useSyncExternalStore(subscribe, () => vagas, () =>
 export const useCandidatos = () => useSyncExternalStore(subscribe, () => candidatos, () => candidatos);
 export const useFaturas = () => useSyncExternalStore(subscribe, () => faturas, () => faturas);
 
-export function addVaga(v: Omit<Vaga, "id" | "candidatos" | "status">) {
-  vagas = [{ ...v, id: crypto.randomUUID(), candidatos: 0, status: "Aberta" }, ...vagas];
+export function addVaga(v: Omit<Vaga, "id" | "candidatos" | "status" | "etapa">) {
+  vagas = [{ ...v, id: crypto.randomUUID(), candidatos: 0, status: "Aberta", etapa: "Briefing" }, ...vagas];
   emit();
+}
+
+export function updateVaga(id: string, patch: Partial<Vaga>) {
+  vagas = vagas.map((v) => (v.id === id ? { ...v, ...patch } : v));
+  emit();
+}
+
+export function getVaga(id: string): Vaga | undefined {
+  return vagas.find((v) => v.id === id);
+}
+
+export function useVaga(id: string) {
+  return useSyncExternalStore(
+    subscribe,
+    () => vagas.find((v) => v.id === id),
+    () => vagas.find((v) => v.id === id),
+  );
 }
 export function addCandidato(c: Omit<Candidato, "id" | "etapa" | "proximaAcao" | "pontuacao" | "status">) {
   candidatos = [{ ...c, id: crypto.randomUUID(), etapa: "Triagem inicial", proximaAcao: "Análise CV", pontuacao: 0, status: "Triagem" }, ...candidatos];
