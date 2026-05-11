@@ -10,7 +10,7 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <header className="flex items-center justify-between px-8 py-6 bg-card border-b">
+    <header className="sticky top-0 z-20 flex items-center justify-between px-8 py-5 bg-card/90 backdrop-blur border-b shadow-sm">
       <div>
         <h1 className="text-2xl font-bold text-foreground">{title}</h1>
         {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
@@ -38,7 +38,7 @@ export function MetricCard({
     info: "bg-info",
   };
   return (
-    <div className="bg-card rounded-xl border p-5 relative overflow-hidden">
+    <div className="bg-card rounded-xl border p-5 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${bar[accent]}`} />
       <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">{label}</p>
       <p className="text-3xl font-bold mt-2 text-foreground">{value}</p>
