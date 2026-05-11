@@ -47,21 +47,39 @@ export type Descritivo = {
 };
 
 export type Contrato = {
+  // Contratante (cliente)
   contratanteRazao: string;
   contratanteCnpj: string;
   contratanteEndereco: string;
   contratanteRepresentante: string;
+  // Contratada (R&S)
   contratadaRazao: string;
   contratadaCnpj: string;
+  contratadaEndereco: string;
+  contratadaTelefone: string;
+  contratadaEmail: string;
   contratadaRepresentante: string;
-  objeto: string;
-  modeloCobranca: "Percentual sobre salário" | "Valor fixo por vaga";
-  valor: string;
-  condicoesPagamento: string;
+  // Objeto
+  cargo: string;
+  // Cláusula 2 — prazo de execução
+  prazoExecucao: string;
+  // Cláusula 3 — valor e pagamento
+  valorTotal: string;
+  valorTotalExtenso: string;
+  parcela1: string;
+  parcela2: string;
+  diaPagamento: string;
+  chavePix: string;
+  // Cláusula 4 — garantia
   prazoGarantia: string;
-  clausulas: string;
+  maxReposicoes: string;
+  prazoEscolha: string;
+  // Cláusula 5 — disposições gerais e foro
+  foro: string;
+  // Assinatura
   dataAssinatura: string;
   localAssinatura: string;
+  observacoes: string;
 };
 
 export type Vaga = {
