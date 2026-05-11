@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addCandidato, useCandidatos, useVagas } from "@/lib/store";
 
-export const Route = createFileRoute("/candidatos")({
+export const Route = createFileRoute("/_authenticated/candidatos")({
   head: () => ({
     meta: [
       { title: "Candidatos — DAPI HUB" },

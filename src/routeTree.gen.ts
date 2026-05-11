@@ -9,105 +9,166 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as FinanceiroRouteImport } from './routes/financeiro'
-import { Route as CandidatosRouteImport } from './routes/candidatos'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as VagasVagaIdRouteImport } from './routes/vagas.$vagaId'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedCandidatosRouteImport } from './routes/_authenticated/candidatos'
+import { Route as AuthenticatedVagasVagaIdRouteImport } from './routes/_authenticated/vagas.$vagaId'
 
-const FinanceiroRoute = FinanceiroRouteImport.update({
-  id: '/financeiro',
-  path: '/financeiro',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CandidatosRoute = CandidatosRouteImport.update({
-  id: '/candidatos',
-  path: '/candidatos',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const VagasVagaIdRoute = VagasVagaIdRouteImport.update({
-  id: '/vagas/$vagaId',
-  path: '/vagas/$vagaId',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCandidatosRoute = AuthenticatedCandidatosRouteImport.update({
+  id: '/candidatos',
+  path: '/candidatos',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedVagasVagaIdRoute =
+  AuthenticatedVagasVagaIdRouteImport.update({
+    id: '/vagas/$vagaId',
+    path: '/vagas/$vagaId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/candidatos': typeof CandidatosRoute
-  '/financeiro': typeof FinanceiroRoute
-  '/vagas/$vagaId': typeof VagasVagaIdRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/login': typeof LoginRoute
+  '/candidatos': typeof AuthenticatedCandidatosRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/candidatos': typeof CandidatosRoute
-  '/financeiro': typeof FinanceiroRoute
-  '/vagas/$vagaId': typeof VagasVagaIdRoute
+  '/login': typeof LoginRoute
+  '/candidatos': typeof AuthenticatedCandidatosRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/candidatos': typeof CandidatosRoute
-  '/financeiro': typeof FinanceiroRoute
-  '/vagas/$vagaId': typeof VagasVagaIdRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_authenticated/candidatos': typeof AuthenticatedCandidatosRoute
+  '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/candidatos' | '/financeiro' | '/vagas/$vagaId'
+  fullPaths: '/' | '/login' | '/candidatos' | '/financeiro' | '/vagas/$vagaId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/candidatos' | '/financeiro' | '/vagas/$vagaId'
-  id: '__root__' | '/' | '/candidatos' | '/financeiro' | '/vagas/$vagaId'
+  to: '/login' | '/candidatos' | '/financeiro' | '/' | '/vagas/$vagaId'
+  id:
+    | '__root__'
+    | '/_authenticated'
+    | '/login'
+    | '/_authenticated/candidatos'
+    | '/_authenticated/financeiro'
+    | '/_authenticated/'
+    | '/_authenticated/vagas/$vagaId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  CandidatosRoute: typeof CandidatosRoute
-  FinanceiroRoute: typeof FinanceiroRoute
-  VagasVagaIdRoute: typeof VagasVagaIdRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/financeiro': {
-      id: '/financeiro'
-      path: '/financeiro'
-      fullPath: '/financeiro'
-      preLoaderRoute: typeof FinanceiroRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/candidatos': {
-      id: '/candidatos'
-      path: '/candidatos'
-      fullPath: '/candidatos'
-      preLoaderRoute: typeof CandidatosRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/vagas/$vagaId': {
-      id: '/vagas/$vagaId'
+    '/_authenticated/financeiro': {
+      id: '/_authenticated/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/candidatos': {
+      id: '/_authenticated/candidatos'
+      path: '/candidatos'
+      fullPath: '/candidatos'
+      preLoaderRoute: typeof AuthenticatedCandidatosRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/vagas/$vagaId': {
+      id: '/_authenticated/vagas/$vagaId'
       path: '/vagas/$vagaId'
       fullPath: '/vagas/$vagaId'
-      preLoaderRoute: typeof VagasVagaIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedVagasVagaIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedCandidatosRoute: typeof AuthenticatedCandidatosRoute
+  AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedVagasVagaIdRoute: typeof AuthenticatedVagasVagaIdRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedCandidatosRoute: AuthenticatedCandidatosRoute,
+  AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedVagasVagaIdRoute: AuthenticatedVagasVagaIdRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  CandidatosRoute: CandidatosRoute,
-  FinanceiroRoute: FinanceiroRoute,
-  VagasVagaIdRoute: VagasVagaIdRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -20,7 +20,7 @@ import {
   type CustoTipo,
 } from "@/lib/store";
 
-export const Route = createFileRoute("/financeiro")({
+export const Route = createFileRoute("/_authenticated/financeiro")({
   head: () => ({
     meta: [
       { title: "Financeiro — DAPI HUB" },
