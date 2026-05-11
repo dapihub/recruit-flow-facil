@@ -14,7 +14,7 @@ import { addCandidato, useCandidatos, useVagas } from "@/lib/store";
 export const Route = createFileRoute("/candidatos")({
   head: () => ({
     meta: [
-      { title: "Candidatos — RecruitFlow" },
+      { title: "Candidatos — DAPI HUB" },
       { name: "description", content: "Gerencie candidatos e o pipeline de seleção." },
     ],
   }),

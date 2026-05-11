@@ -21,7 +21,7 @@ import {
 
 export const Route = createFileRoute("/vagas/$vagaId")({
   head: () => ({
-    meta: [{ title: "Detalhes da Vaga — RecruitFlow" }],
+    meta: [{ title: "Detalhes da Vaga — DAPI HUB" }],
   }),
   component: VagaDetailPage,
 });
