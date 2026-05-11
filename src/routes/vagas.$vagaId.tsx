@@ -372,116 +372,209 @@ function ContratoTab({ vagaId, initial, empresa, cargo }: { vagaId: string; init
   const exportPDF = () => {
     const logoUrl = new URL(dapiLogoColor, window.location.origin).href;
     const symbolUrl = new URL(dapiSymbol, window.location.origin).href;
-    const html = `<!doctype html><html><head><meta charset="utf-8"/><title>Contrato — ${escapeHtml(c.cargo)}</title>
-      <style>
-        @page {
-          margin: 38mm 22mm 28mm 22mm;
-          @top-center {
-            content: element(letterhead);
-          }
-          @bottom-center {
-            content: element(letterfoot);
-          }
-        }
-        .letterhead{
-          position: running(letterhead);
-          display:flex;align-items:center;justify-content:space-between;
-          padding:10mm 22mm 6mm 22mm;
-          border-bottom:2px solid #D24925;
-        }
-        .letterhead img.logo{height:14mm;width:auto}
-        .letterhead .meta{font:500 8.5pt Arial,sans-serif;color:#474747;text-align:right;line-height:1.35}
-        .letterhead .meta b{color:#161616}
-        .letterfoot{
-          position: running(letterfoot);
-          display:flex;align-items:center;gap:10px;
-          padding:4mm 22mm 6mm 22mm;
-          border-top:1px solid #e5e1dc;
-          font:500 8pt Arial,sans-serif;color:#6b6660;
-        }
-        .letterfoot img{height:7mm;width:auto;opacity:.95}
-        .letterfoot .tag{flex:1}
-        .letterfoot .tag b{color:#D24925;letter-spacing:.5px}
-        .letterfoot .pg{color:#9a958e}
-        body{font-family:Arial,Helvetica,sans-serif;max-width:780px;margin:0 auto;padding:0 8px;color:#1f2937;line-height:1.65;text-align:justify;font-size:12pt}
-        h1{text-align:center;color:#D24925;font-size:15pt;text-transform:uppercase;letter-spacing:.5px;margin:6mm 0 24px}
-        h2{color:#D24925;font-size:11pt;margin-top:20px;text-transform:uppercase;letter-spacing:.5px}
-        p{margin:6px 0}
-        .party{margin:8px 0 14px}
-        ul{margin:6px 0 6px 0;padding-left:22px}
-        .sig{margin-top:60px;display:flex;justify-content:space-between;gap:40px}
-        .sig div{flex:1;text-align:center;border-top:1px solid #222;padding-top:6px;font-size:11pt}
-        .sig b{display:block;margin-bottom:2px}
-        /* Fallback para navegadores sem suporte a running elements: imprime no topo da 1ª página */
-        @supports not (top: running(letterhead)) {
-          .letterhead{position:static;margin:-10mm -8px 8mm -8px}
-          .letterfoot{position:static;margin:14mm -8px -6mm -8px}
-        }
-      </style></head><body>
-      <div class="letterhead">
-        <img class="logo" src="${logoUrl}" alt="DAPI HUB"/>
-        <div class="meta">
-          <b>DAPI HUB · Recrutamento &amp; Seleção</b><br/>
-          ${escapeHtml(c.contratadaEndereco)}<br/>
-          ${escapeHtml(c.contratadaTelefone)} · ${escapeHtml(c.contratadaEmail)}
-        </div>
-      </div>
-      <div class="letterfoot">
-        <img src="${symbolUrl}" alt=""/>
-        <span class="tag"><b>DAPI.HUB</b> &nbsp;·&nbsp; Muito mais que consultoria, um parceiro estratégico.</span>
-        <span class="pg">Contrato — ${escapeHtml(c.cargo)}</span>
-      </div>
-      <h1>Contrato de Prestação de Serviços de Recrutamento e Seleção</h1>
+    const obs = c.observacoes
+      ? `<h2>Observações</h2><p class="just">${escapeHtml(c.observacoes).replace(/\n/g, "<br/>")}</p>`
+      : "";
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/>
+<title>Contrato — ${escapeHtml(c.cargo)}</title>
+<style>
+  /* ============================================================
+     PAPEL TIMBRADO + FORMATAÇÃO ABNT (NBR 14724 adaptada)
+     - Papel A4 (210 × 297 mm)
+     - Margens: 3 cm sup./esq., 2 cm inf./dir.
+     - Fonte: Times New Roman 12pt
+     - Espaçamento entre linhas: 1,5
+     - Texto justificado, recuo de 1,25 cm na primeira linha
+     - Numeração de páginas: canto superior direito
+     ============================================================ */
+  @page {
+    size: A4;
+    margin: 3cm 2cm 2.5cm 3cm;
+    @top-right {
+      content: counter(page) " / " counter(pages);
+      font: 10pt "Times New Roman", serif;
+      color: #6b6660;
+      margin-top: 1cm;
+    }
+    @bottom-center {
+      content: "DAPI HUB · Recrutamento & Seleção · Muito mais que consultoria, um parceiro estratégico.";
+      font: 9pt "Times New Roman", serif;
+      color: #6b6660;
+      margin-bottom: 1cm;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #161616;
+    text-align: justify;
+  }
 
-      <h2>Contratante</h2>
-      <p class="party"><b>${escapeHtml(c.contratanteRazao)}</b>, inscrita no CNPJ sob o nº ${escapeHtml(c.contratanteCnpj)}, com sede em ${escapeHtml(c.contratanteEndereco)}, neste ato representada por ${escapeHtml(c.contratanteRepresentante)}, doravante denominada &ldquo;CONTRATANTE&rdquo;.</p>
+  /* Cabeçalho institucional — primeira página */
+  .letterhead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16mm;
+    padding-bottom: 6mm;
+    margin-bottom: 10mm;
+    border-bottom: 1.5pt solid #D24925;
+  }
+  .letterhead img.logo { height: 18mm; width: auto; }
+  .letterhead .meta {
+    text-align: right;
+    font-size: 9pt;
+    line-height: 1.35;
+    color: #474747;
+  }
+  .letterhead .meta b { color: #161616; display: block; margin-bottom: 2pt; font-size: 10pt; }
 
-      <h2>Contratada</h2>
-      <p class="party"><b>${escapeHtml(c.contratadaRazao)}</b>, inscrita no CNPJ sob o nº ${escapeHtml(c.contratadaCnpj)}, com sede na ${escapeHtml(c.contratadaEndereco)}, telefone ${escapeHtml(c.contratadaTelefone)}, e-mail ${escapeHtml(c.contratadaEmail)}, doravante denominada &ldquo;CONTRATADA&rdquo;.</p>
+  /* Título do documento — ABNT: caixa alta, centralizado, negrito */
+  h1.titulo {
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 12pt;
+    font-weight: bold;
+    letter-spacing: 0.3pt;
+    margin: 0 0 18pt 0;
+    line-height: 1.5;
+  }
 
-      <p>As partes acima identificadas resolvem celebrar o presente <b>Contrato de Prestação de Serviços de Recrutamento e Seleção</b>, que se regerá pelas cláusulas e condições seguintes:</p>
+  /* Títulos de cláusula — ABNT: caixa alta, negrito, alinhado à esquerda */
+  h2.clausula {
+    font-size: 12pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-align: left;
+    margin: 18pt 0 6pt 0;
+    page-break-after: avoid;
+    color: #161616;
+  }
 
-      <h2>Cláusula 1 — Objeto do Contrato</h2>
-      <p>1.1 O presente contrato tem por objeto a prestação de <b>serviços de Recrutamento e Seleção</b> pela CONTRATADA, com o propósito de identificar, avaliar e indicar candidatos qualificados para a vaga de <b>${escapeHtml(c.cargo)}</b>, conforme perfil previamente definido em conjunto com a CONTRATANTE.</p>
-      <p>1.2 O processo será conduzido de forma consultiva, utilizando metodologia própria da CONTRATADA, incluindo triagem curricular, entrevistas comportamentais, avaliação técnica e análise de aderência cultural.</p>
-      <p>1.3 A entrega será considerada concluída com a apresentação dos candidatos finalistas e recomendação de contratação, cabendo à CONTRATANTE a decisão final.</p>
+  /* Parágrafos — ABNT: justificado, recuo 1,25 cm na primeira linha */
+  p.just {
+    text-indent: 1.25cm;
+    margin: 0 0 6pt 0;
+    text-align: justify;
+    orphans: 2;
+    widows: 2;
+  }
+  p.no-indent { text-indent: 0; margin: 0 0 6pt 0; text-align: justify; }
 
-      <h2>Cláusula 2 — Prazo de Execução</h2>
-      <p>2.1 O prazo estimado para a entrega final é de até <b>${escapeHtml(c.prazoExecucao)}</b>, contados a partir da confirmação do pagamento inicial e do alinhamento do perfil da vaga.</p>
+  /* Qualificação das partes — sem recuo */
+  .party { text-indent: 0; margin: 0 0 12pt 0; text-align: justify; }
 
-      <h2>Cláusula 3 — Valor e Condições de Pagamento</h2>
-      <p>3.1 Pela execução dos serviços descritos neste contrato, a CONTRATANTE pagará à CONTRATADA o valor total de <b>${escapeHtml(c.valorTotal)}</b> (${escapeHtml(c.valorTotalExtenso)}).</p>
-      <p>3.2 O pagamento será efetuado em duas parcelas, da seguinte forma:</p>
-      <ul>
-        <li>${escapeHtml(c.parcela1)};</li>
-        <li>${escapeHtml(c.parcela2)}.</li>
-      </ul>
-      <p>3.3 O pagamento se dará na <b>${escapeHtml(c.diaPagamento)}</b>.</p>
-      <p>3.4 Caso essa data coincida com feriado nacional, o pagamento ocorrerá no <b>próximo dia útil</b>.</p>
-      <p>3.5 O pagamento deverá ser realizado via <b>PIX</b> no CNPJ da CONTRATADA: <b>${escapeHtml(c.chavePix)}</b>.</p>
-      <p>3.6 A Nota Fiscal será emitida pelo CNPJ da CONTRATADA após a entrega total de cada parcela, caso assim deseje a CONTRATANTE.</p>
+  /* Listas com recuo coerente */
+  ul.abnt {
+    margin: 6pt 0 6pt 1.25cm;
+    padding-left: 1cm;
+  }
+  ul.abnt li { margin-bottom: 4pt; }
 
-      <h2>Cláusula 4 — Garantia</h2>
-      <p>4.1 A CONTRATADA concede à CONTRATANTE uma <b>garantia de ${escapeHtml(c.prazoGarantia)}</b>, contados a partir da data de contratação do(a) profissional indicado(a).</p>
-      <p>4.2 Caso o(a) profissional venha a ser desligado(a), por iniciativa própria ou da CONTRATANTE, dentro desse período, a CONTRATADA compromete-se a realizar <b>novo processo seletivo sem custos adicionais</b>.</p>
-      <p>4.3 A garantia não cobre alterações de escopo, perfil, remuneração, jornada, atribuições ou requisitos da vaga que não tenham sido acordados no início do processo.</p>
-      <p>4.4 A garantia não cobre desligamentos que não estejam relacionados à performance ou aderência cultural, sendo limitada a até <b>${escapeHtml(c.maxReposicoes)}</b>.</p>
-      <p>4.5 As pessoas envolvidas nas entrevistas e decisões deverão ser as mesmas que participaram do alinhamento inicial, não sendo permitida a inclusão de novos avaliadores sem comunicação prévia à CONTRATADA.</p>
-      <p>4.6 A CONTRATANTE terá o prazo máximo de <b>${escapeHtml(c.prazoEscolha)}</b> para a escolha do candidato, contados a partir do envio das opções apresentadas.</p>
+  /* Local e data — ABNT */
+  .local-data {
+    text-indent: 1.25cm;
+    margin: 30pt 0 36pt 0;
+    text-align: justify;
+  }
 
-      <h2>Cláusula 5 — Disposições Gerais</h2>
-      <p>5.1 Este contrato não gera vínculo empregatício, societário ou de subordinação entre as partes, nem entre a CONTRATADA e os candidatos apresentados.</p>
-      <p>5.2 A CONTRATADA compromete-se a manter sigilo absoluto sobre todas as informações e dados estratégicos da CONTRATANTE.</p>
-      <p>5.3 Fica eleito o foro da <b>${escapeHtml(c.foro)}</b> para dirimir quaisquer controvérsias oriundas deste contrato, com renúncia a qualquer outro, por mais privilegiado que seja.</p>
-      ${c.observacoes ? `<h2>Observações</h2><p>${escapeHtml(c.observacoes).replace(/\n/g, "<br/>")}</p>` : ""}
+  /* Bloco de assinaturas */
+  .sig {
+    margin-top: 24pt;
+    display: flex;
+    justify-content: space-between;
+    gap: 24pt;
+    page-break-inside: avoid;
+  }
+  .sig div {
+    flex: 1;
+    text-align: center;
+    border-top: 0.5pt solid #161616;
+    padding-top: 6pt;
+    font-size: 11pt;
+    line-height: 1.35;
+  }
+  .sig b { display: block; margin-bottom: 2pt; font-size: 11pt; }
 
-      <p style="margin-top:32px">${escapeHtml(c.localAssinatura)}, ${formatDateBR(c.dataAssinatura)}.</p>
+  /* Marca d'água discreta — símbolo no rodapé do documento */
+  .brand-mark {
+    margin-top: 30pt;
+    text-align: center;
+    opacity: 0.55;
+  }
+  .brand-mark img { height: 10mm; width: auto; }
 
-      <div class="sig">
-        <div><b>CONTRATANTE</b>${escapeHtml(c.contratanteRazao)}<br/>CNPJ: ${escapeHtml(c.contratanteCnpj)}</div>
-        <div><b>CONTRATADA</b>${escapeHtml(c.contratadaRazao)}<br/>CNPJ: ${escapeHtml(c.contratadaCnpj)}</div>
-      </div>
-      <script>window.onload=()=>window.print()</script></body></html>`;
+  @media print {
+    a { color: inherit; text-decoration: none; }
+  }
+</style></head><body>
+
+  <header class="letterhead">
+    <img class="logo" src="${logoUrl}" alt="DAPI HUB"/>
+    <div class="meta">
+      <b>DAPI HUB · Recrutamento &amp; Seleção</b>
+      ${escapeHtml(c.contratadaEndereco)}<br/>
+      ${escapeHtml(c.contratadaTelefone)} · ${escapeHtml(c.contratadaEmail)}
+    </div>
+  </header>
+
+  <h1 class="titulo">Contrato de Prestação de Serviços de Recrutamento e Seleção</h1>
+
+  <p class="party"><b>CONTRATANTE:</b> ${escapeHtml(c.contratanteRazao)}, pessoa jurídica de direito privado, inscrita no CNPJ sob o nº ${escapeHtml(c.contratanteCnpj)}, com sede em ${escapeHtml(c.contratanteEndereco)}, neste ato representada por ${escapeHtml(c.contratanteRepresentante)}, doravante denominada simplesmente &ldquo;CONTRATANTE&rdquo;.</p>
+
+  <p class="party"><b>CONTRATADA:</b> ${escapeHtml(c.contratadaRazao)}, inscrita no CNPJ sob o nº ${escapeHtml(c.contratadaCnpj)}, com sede na ${escapeHtml(c.contratadaEndereco)}, telefone ${escapeHtml(c.contratadaTelefone)}, e-mail ${escapeHtml(c.contratadaEmail)}, doravante denominada simplesmente &ldquo;CONTRATADA&rdquo;.</p>
+
+  <p class="just">As partes acima identificadas têm, entre si, justo e acordado o presente <b>Contrato de Prestação de Serviços de Recrutamento e Seleção</b>, que se regerá pelas cláusulas e condições a seguir estabelecidas.</p>
+
+  <h2 class="clausula">Cláusula 1ª — Do Objeto</h2>
+  <p class="just">1.1. O presente contrato tem por objeto a prestação, pela CONTRATADA, de serviços de <b>Recrutamento e Seleção</b>, com o propósito de identificar, avaliar e indicar candidatos qualificados para a vaga de <b>${escapeHtml(c.cargo)}</b>, conforme perfil previamente definido em conjunto com a CONTRATANTE.</p>
+  <p class="just">1.2. O processo será conduzido de forma consultiva, utilizando metodologia própria da CONTRATADA, incluindo triagem curricular, entrevistas comportamentais, avaliação técnica e análise de aderência cultural.</p>
+  <p class="just">1.3. A entrega será considerada concluída com a apresentação dos candidatos finalistas e respectiva recomendação de contratação, cabendo à CONTRATANTE a decisão final.</p>
+
+  <h2 class="clausula">Cláusula 2ª — Do Prazo de Execução</h2>
+  <p class="just">2.1. O prazo estimado para a entrega final é de até <b>${escapeHtml(c.prazoExecucao)}</b>, contados a partir da confirmação do pagamento inicial e do alinhamento do perfil da vaga.</p>
+
+  <h2 class="clausula">Cláusula 3ª — Do Valor e das Condições de Pagamento</h2>
+  <p class="just">3.1. Pela execução dos serviços descritos neste contrato, a CONTRATANTE pagará à CONTRATADA o valor total de <b>${escapeHtml(c.valorTotal)}</b> (${escapeHtml(c.valorTotalExtenso)}).</p>
+  <p class="just">3.2. O pagamento será efetuado em duas parcelas, da seguinte forma:</p>
+  <ul class="abnt">
+    <li>${escapeHtml(c.parcela1)};</li>
+    <li>${escapeHtml(c.parcela2)}.</li>
+  </ul>
+  <p class="just">3.3. O pagamento se dará na <b>${escapeHtml(c.diaPagamento)}</b>.</p>
+  <p class="just">3.4. Caso a referida data coincida com feriado nacional, o pagamento ocorrerá no <b>próximo dia útil</b>.</p>
+  <p class="just">3.5. O pagamento deverá ser realizado via <b>PIX</b> no CNPJ da CONTRATADA: <b>${escapeHtml(c.chavePix)}</b>.</p>
+  <p class="just">3.6. A Nota Fiscal será emitida pelo CNPJ da CONTRATADA após a entrega total de cada parcela, caso assim deseje a CONTRATANTE.</p>
+
+  <h2 class="clausula">Cláusula 4ª — Da Garantia</h2>
+  <p class="just">4.1. A CONTRATADA concede à CONTRATANTE <b>garantia de ${escapeHtml(c.prazoGarantia)}</b>, contados a partir da data de contratação do(a) profissional indicado(a).</p>
+  <p class="just">4.2. Caso o(a) profissional venha a ser desligado(a), por iniciativa própria ou da CONTRATANTE, dentro do referido período, a CONTRATADA compromete-se a realizar <b>novo processo seletivo sem custos adicionais</b>.</p>
+  <p class="just">4.3. A garantia não cobre alterações de escopo, perfil, remuneração, jornada, atribuições ou requisitos da vaga que não tenham sido acordados no início do processo.</p>
+  <p class="just">4.4. A garantia não cobre desligamentos que não estejam relacionados à performance ou aderência cultural, sendo limitada a até <b>${escapeHtml(c.maxReposicoes)}</b>.</p>
+  <p class="just">4.5. As pessoas envolvidas nas entrevistas e decisões deverão ser as mesmas que participaram do alinhamento inicial, não sendo permitida a inclusão de novos avaliadores sem comunicação prévia à CONTRATADA.</p>
+  <p class="just">4.6. A CONTRATANTE terá o prazo máximo de <b>${escapeHtml(c.prazoEscolha)}</b> para a escolha do candidato, contados a partir do envio das opções apresentadas.</p>
+
+  <h2 class="clausula">Cláusula 5ª — Das Disposições Gerais</h2>
+  <p class="just">5.1. O presente contrato não gera vínculo empregatício, societário ou de subordinação entre as partes, nem entre a CONTRATADA e os candidatos apresentados.</p>
+  <p class="just">5.2. A CONTRATADA compromete-se a manter sigilo absoluto sobre todas as informações e dados estratégicos da CONTRATANTE.</p>
+  <p class="just">5.3. Fica eleito o foro da <b>${escapeHtml(c.foro)}</b> para dirimir quaisquer controvérsias oriundas deste contrato, com renúncia a qualquer outro, por mais privilegiado que seja.</p>
+  ${obs}
+
+  <p class="local-data">E, por estarem assim justas e contratadas, as partes assinam o presente instrumento. ${escapeHtml(c.localAssinatura)}, ${formatDateBR(c.dataAssinatura)}.</p>
+
+  <div class="sig">
+    <div><b>CONTRATANTE</b>${escapeHtml(c.contratanteRazao)}<br/>CNPJ: ${escapeHtml(c.contratanteCnpj)}</div>
+    <div><b>CONTRATADA</b>${escapeHtml(c.contratadaRazao)}<br/>CNPJ: ${escapeHtml(c.contratadaCnpj)}</div>
+  </div>
+
+  <div class="brand-mark">
+    <img src="${symbolUrl}" alt=""/>
+  </div>
+
+<script>window.onload=()=>window.print()</script></body></html>`;
     openPrintWindow(html);
   };
 
