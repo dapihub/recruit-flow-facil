@@ -207,6 +207,12 @@ const emit = () => listeners.forEach(l => l());
 export const useVagas = () => useSyncExternalStore(subscribe, () => vagas, () => vagas);
 export const useCandidatos = () => useSyncExternalStore(subscribe, () => candidatos, () => candidatos);
 export const useFaturas = () => useSyncExternalStore(subscribe, () => faturas, () => faturas);
+export const useCustos = () => useSyncExternalStore(subscribe, () => custos, () => custos);
+
+export function addCusto(c: Omit<Custo, "id">) {
+  custos = [{ ...c, id: crypto.randomUUID() }, ...custos];
+  emit();
+}
 
 export function addVaga(v: Omit<Vaga, "id" | "candidatos" | "status" | "etapa">) {
   vagas = [{ ...v, id: crypto.randomUUID(), candidatos: 0, status: "Aberta", etapa: "Briefing" }, ...vagas];
