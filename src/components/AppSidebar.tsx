@@ -1,0 +1,72 @@
+import { Link, useRouterState } from "@tanstack/react-router";
+import { Briefcase, Users, Wallet, Sparkles } from "lucide-react";
+import { useVagas, useCandidatos, useFaturas } from "@/lib/store";
+
+const items = [
+  { to: "/", label: "Vagas", icon: Briefcase },
+  { to: "/candidatos", label: "Candidatos", icon: Users },
+  { to: "/financeiro", label: "Financeiro", icon: Wallet },
+];
+
+export function AppSidebar() {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const vagas = useVagas();
+  const candidatos = useCandidatos();
+  const faturas = useFaturas();
+
+  const vagasAbertas = vagas.filter((v) => v.status === "Aberta").length;
+  const emEntrevista = candidatos.filter((c) => c.status === "Entrevista").length;
+  const aReceber = faturas.filter((f) => f.status !== "Pago").reduce((s, f) => s + f.valor, 0);
+
+  return (
+    <aside className="w-64 shrink-0 bg-[var(--sidebar-bg)] text-[var(--sidebar-fg)] flex flex-col min-h-screen">
+      <div className="px-6 py-6 flex items-center gap-3 border-b border-white/10">
+        <div className="w-10 h-10 rounded-lg bg-brand flex items-center justify-center shadow-lg">
+          <Sparkles className="w-5 h-5 text-brand-foreground" />
+        </div>
+        <div>
+          <h1 className="font-bold text-lg leading-tight">RecruitFlow</h1>
+          <p className="text-xs text-white/60">Gestão de R&S</p>
+        </div>
+      </div>
+
+      <nav className="flex-1 p-4 space-y-1">
+        {items.map(({ to, label, icon: Icon }) => {
+          const active = path === to;
+          return (
+            <Link
+              key={to}
+              to={to}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                active
+                  ? "bg-[var(--sidebar-active)] text-white shadow"
+                  : "text-white/75 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="p-4 border-t border-white/10 space-y-3">
+        <p className="text-xs uppercase tracking-wider text-white/50 font-semibold px-1">Resumo</p>
+        <div className="space-y-2">
+          <SummaryRow label="Vagas abertas" value={vagasAbertas.toString()} />
+          <SummaryRow label="Em entrevista" value={emEntrevista.toString()} />
+          <SummaryRow label="A receber" value={`R$ ${(aReceber / 1000).toFixed(1)}k`} />
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between bg-white/5 rounded-md px-3 py-2">
+      <span className="text-xs text-white/70">{label}</span>
+      <span className="text-sm font-semibold">{value}</span>
+    </div>
+  );
+}
