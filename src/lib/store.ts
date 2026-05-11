@@ -126,6 +126,43 @@ export type Fatura = {
   observacoes?: string;
 };
 
+export type CustoCategoria =
+  | "Pessoal"
+  | "Software"
+  | "Marketing"
+  | "Anúncios"
+  | "Infraestrutura"
+  | "Impostos"
+  | "Operacional"
+  | "Outros";
+
+export const CUSTO_CATEGORIAS: CustoCategoria[] = [
+  "Pessoal",
+  "Software",
+  "Marketing",
+  "Anúncios",
+  "Infraestrutura",
+  "Impostos",
+  "Operacional",
+  "Outros",
+];
+
+export type CustoTipo = "Fixo" | "Variável";
+export type CustoStatus = "Pago" | "Pendente" | "Atrasado";
+
+export type Custo = {
+  id: string;
+  descricao: string;
+  categoria: CustoCategoria;
+  tipo: CustoTipo;
+  valor: number;
+  data: string; // competência (YYYY-MM-DD)
+  status: CustoStatus;
+  fornecedor?: string;
+  vagaId?: string;
+  observacoes?: string;
+};
+
 let vagas: Vaga[] = [
   { id: "1", cargo: "Desenvolvedor Full Stack Sênior", empresa: "TechNova", area: "Tecnologia", candidatos: 24, prazo: "2026-06-15", status: "Aberta", salario: "R$ 15.000", regime: "CLT", etapa: "Candidatos em triagem" },
   { id: "2", cargo: "Analista de Marketing Digital", empresa: "BrandUp", area: "Marketing", candidatos: 18, prazo: "2026-05-30", status: "Em processo", salario: "R$ 7.500", regime: "Híbrido", etapa: "Descritivo publicado" },
