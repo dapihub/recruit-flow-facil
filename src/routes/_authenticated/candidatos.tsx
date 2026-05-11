@@ -68,6 +68,7 @@ function CandidatosPage() {
                 <Th>Candidato</Th><Th>E-mail</Th><Th>Vaga</Th>
                 <Th>Etapa</Th><Th>Próxima ação</Th>
                 <Th className="text-center">Pontuação</Th><Th>Status</Th>
+                <Th className="w-12"></Th>
               </tr>
             </thead>
             <tbody>
