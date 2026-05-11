@@ -109,12 +109,12 @@ export type Fatura = {
 };
 
 let vagas: Vaga[] = [
-  { id: "1", cargo: "Desenvolvedor Full Stack Sênior", empresa: "TechNova", area: "Tecnologia", candidatos: 24, prazo: "2026-06-15", status: "Aberta", salario: "R$ 15.000", regime: "CLT" },
-  { id: "2", cargo: "Analista de Marketing Digital", empresa: "BrandUp", area: "Marketing", candidatos: 18, prazo: "2026-05-30", status: "Em processo", salario: "R$ 7.500", regime: "Híbrido" },
-  { id: "3", cargo: "Gerente Comercial", empresa: "Vendaz", area: "Comercial", candidatos: 12, prazo: "2026-06-01", status: "Em processo", salario: "R$ 12.000", regime: "CLT" },
-  { id: "4", cargo: "Designer UX/UI", empresa: "Pixel Lab", area: "Design", candidatos: 31, prazo: "2026-05-20", status: "Fechada", salario: "R$ 9.000", regime: "PJ" },
-  { id: "5", cargo: "Analista Financeiro Pleno", empresa: "FinCore", area: "Financeiro", candidatos: 15, prazo: "2026-06-10", status: "Aberta", salario: "R$ 8.500", regime: "CLT" },
-  { id: "6", cargo: "Recrutador Tech", empresa: "TalentHub", area: "RH", candidatos: 9, prazo: "2026-04-15", status: "Encerrada", salario: "R$ 6.000", regime: "CLT" },
+  { id: "1", cargo: "Desenvolvedor Full Stack Sênior", empresa: "TechNova", area: "Tecnologia", candidatos: 24, prazo: "2026-06-15", status: "Aberta", salario: "R$ 15.000", regime: "CLT", etapa: "Candidatos em triagem" },
+  { id: "2", cargo: "Analista de Marketing Digital", empresa: "BrandUp", area: "Marketing", candidatos: 18, prazo: "2026-05-30", status: "Em processo", salario: "R$ 7.500", regime: "Híbrido", etapa: "Descritivo publicado" },
+  { id: "3", cargo: "Gerente Comercial", empresa: "Vendaz", area: "Comercial", candidatos: 12, prazo: "2026-06-01", status: "Em processo", salario: "R$ 12.000", regime: "CLT", etapa: "Contrato" },
+  { id: "4", cargo: "Designer UX/UI", empresa: "Pixel Lab", area: "Design", candidatos: 31, prazo: "2026-05-20", status: "Fechada", salario: "R$ 9.000", regime: "PJ", etapa: "Finalizada" },
+  { id: "5", cargo: "Analista Financeiro Pleno", empresa: "FinCore", area: "Financeiro", candidatos: 15, prazo: "2026-06-10", status: "Aberta", salario: "R$ 8.500", regime: "CLT", etapa: "Briefing" },
+  { id: "6", cargo: "Recrutador Tech", empresa: "TalentHub", area: "RH", candidatos: 9, prazo: "2026-04-15", status: "Encerrada", salario: "R$ 6.000", regime: "CLT", etapa: "Finalizada" },
 ];
 
 let candidatos: Candidato[] = [
