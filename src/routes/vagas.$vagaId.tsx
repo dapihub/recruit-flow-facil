@@ -326,18 +326,27 @@ const emptyContrato = (empresa = "", cargo = ""): Contrato => ({
   contratanteCnpj: "",
   contratanteEndereco: "",
   contratanteRepresentante: "",
-  contratadaRazao: "RecruitFlow Recrutamento e Seleção Ltda.",
-  contratadaCnpj: "00.000.000/0001-00",
-  contratadaRepresentante: "",
-  objeto: `Recrutamento e seleção para a posição de ${cargo}`,
-  modeloCobranca: "Percentual sobre salário",
-  valor: "",
-  condicoesPagamento: "50% na assinatura do contrato e 50% na contratação do candidato.",
-  prazoGarantia: "90 dias — em caso de desligamento, será realizada nova busca sem custo adicional.",
-  clausulas:
-    "Confidencialidade: as partes se comprometem a manter sigilo das informações trocadas.\nExclusividade: durante o prazo do contrato, o cliente não poderá contratar terceiros para a mesma posição.\nRescisão: qualquer parte poderá rescindir mediante aviso prévio de 30 dias.",
+  contratadaRazao: "66.475.894 ANA CAROLINA DE CAMPOS",
+  contratadaCnpj: "66.475.894/0001-84",
+  contratadaEndereco: "Rua Figueiredo Magalhães, nº 249, Copacabana, Rio de Janeiro/RJ, CEP 22.031-011",
+  contratadaTelefone: "(48) 98870-0560",
+  contratadaEmail: "ana@dapihub.com.br",
+  contratadaRepresentante: "Ana Carolina de Campos",
+  cargo,
+  prazoExecucao: "20 (vinte) dias corridos",
+  valorTotal: "R$ 4.000,00",
+  valorTotalExtenso: "quatro mil reais",
+  parcela1: "R$ 2.000,00 (cinquenta por cento) no ato da assinatura deste contrato",
+  parcela2: "R$ 2.000,00 (cinquenta por cento) na entrega do serviço",
+  diaPagamento: "1ª quinta-feira da semana subsequente à emissão da respectiva nota fiscal",
+  chavePix: "66.475.894/0001-84",
+  prazoGarantia: "90 (noventa) dias corridos",
+  maxReposicoes: "3 (três) reposições",
+  prazoEscolha: "30 (trinta) dias",
+  foro: "Comarca da Capital do Rio de Janeiro/RJ",
   dataAssinatura: new Date().toISOString().slice(0, 10),
-  localAssinatura: "",
+  localAssinatura: "Rio de Janeiro/RJ",
+  observacoes: "",
 });
 
 function ContratoTab({ vagaId, initial, empresa, cargo }: { vagaId: string; initial?: Contrato; empresa: string; cargo: string }) {
@@ -359,78 +368,143 @@ function ContratoTab({ vagaId, initial, empresa, cargo }: { vagaId: string; init
   };
 
   const exportPDF = () => {
-    const html = `<!doctype html><html><head><meta charset="utf-8"/><title>Contrato - ${escapeHtml(cargo)}</title>
-      <style>body{font-family:Georgia,serif;max-width:780px;margin:40px auto;padding:0 32px;color:#222;line-height:1.7;text-align:justify}
-      h1{text-align:center;color:#185FA5;font-size:18px;text-transform:uppercase;letter-spacing:1px}
-      h2{color:#185FA5;font-size:14px;margin-top:24px;border-bottom:1px solid #ddd;padding-bottom:4px;text-transform:uppercase}
-      .sig{margin-top:60px;display:flex;justify-content:space-between;gap:40px}
-      .sig div{flex:1;text-align:center;border-top:1px solid #222;padding-top:6px;font-size:13px}
-      p{white-space:pre-wrap;margin:8px 0}</style></head><body>
+    const html = `<!doctype html><html><head><meta charset="utf-8"/><title>Contrato — ${escapeHtml(c.cargo)}</title>
+      <style>
+        @page { margin: 28mm 22mm; }
+        body{font-family:Arial,Helvetica,sans-serif;max-width:780px;margin:0 auto;padding:0 8px;color:#1f2937;line-height:1.65;text-align:justify;font-size:12pt}
+        h1{text-align:center;color:#185FA5;font-size:15pt;text-transform:uppercase;letter-spacing:.5px;margin-bottom:24px}
+        h2{color:#185FA5;font-size:11pt;margin-top:20px;text-transform:uppercase;letter-spacing:.5px}
+        p{margin:6px 0}
+        .party{margin:8px 0 14px}
+        ul{margin:6px 0 6px 0;padding-left:22px}
+        .sig{margin-top:60px;display:flex;justify-content:space-between;gap:40px}
+        .sig div{flex:1;text-align:center;border-top:1px solid #222;padding-top:6px;font-size:11pt}
+        .sig b{display:block;margin-bottom:2px}
+      </style></head><body>
       <h1>Contrato de Prestação de Serviços de Recrutamento e Seleção</h1>
+
       <h2>Contratante</h2>
-      <p><b>${escapeHtml(c.contratanteRazao)}</b> — CNPJ: ${escapeHtml(c.contratanteCnpj)}<br/>Endereço: ${escapeHtml(c.contratanteEndereco)}<br/>Representado por: ${escapeHtml(c.contratanteRepresentante)}</p>
+      <p class="party"><b>${escapeHtml(c.contratanteRazao)}</b>, inscrita no CNPJ sob o nº ${escapeHtml(c.contratanteCnpj)}, com sede em ${escapeHtml(c.contratanteEndereco)}, neste ato representada por ${escapeHtml(c.contratanteRepresentante)}, doravante denominada &ldquo;CONTRATANTE&rdquo;.</p>
+
       <h2>Contratada</h2>
-      <p><b>${escapeHtml(c.contratadaRazao)}</b> — CNPJ: ${escapeHtml(c.contratadaCnpj)}<br/>Representada por: ${escapeHtml(c.contratadaRepresentante)}</p>
-      <h2>Cláusula 1ª — Objeto</h2><p>${escapeHtml(c.objeto)}</p>
-      <h2>Cláusula 2ª — Honorários</h2>
-      <p>Modelo de cobrança: <b>${escapeHtml(c.modeloCobranca)}</b><br/>Valor acordado: <b>${escapeHtml(c.valor)}</b><br/>Condições: ${escapeHtml(c.condicoesPagamento)}</p>
-      <h2>Cláusula 3ª — Garantia</h2><p>${escapeHtml(c.prazoGarantia)}</p>
-      <h2>Cláusula 4ª — Cláusulas gerais</h2><p>${escapeHtml(c.clausulas)}</p>
-      <h2>Cláusula 5ª — Foro</h2><p>Fica eleito o foro da comarca de ${escapeHtml(c.localAssinatura)} para dirimir quaisquer questões oriundas deste contrato.</p>
+      <p class="party"><b>${escapeHtml(c.contratadaRazao)}</b>, inscrita no CNPJ sob o nº ${escapeHtml(c.contratadaCnpj)}, com sede na ${escapeHtml(c.contratadaEndereco)}, telefone ${escapeHtml(c.contratadaTelefone)}, e-mail ${escapeHtml(c.contratadaEmail)}, doravante denominada &ldquo;CONTRATADA&rdquo;.</p>
+
+      <p>As partes acima identificadas resolvem celebrar o presente <b>Contrato de Prestação de Serviços de Recrutamento e Seleção</b>, que se regerá pelas cláusulas e condições seguintes:</p>
+
+      <h2>Cláusula 1 — Objeto do Contrato</h2>
+      <p>1.1 O presente contrato tem por objeto a prestação de <b>serviços de Recrutamento e Seleção</b> pela CONTRATADA, com o propósito de identificar, avaliar e indicar candidatos qualificados para a vaga de <b>${escapeHtml(c.cargo)}</b>, conforme perfil previamente definido em conjunto com a CONTRATANTE.</p>
+      <p>1.2 O processo será conduzido de forma consultiva, utilizando metodologia própria da CONTRATADA, incluindo triagem curricular, entrevistas comportamentais, avaliação técnica e análise de aderência cultural.</p>
+      <p>1.3 A entrega será considerada concluída com a apresentação dos candidatos finalistas e recomendação de contratação, cabendo à CONTRATANTE a decisão final.</p>
+
+      <h2>Cláusula 2 — Prazo de Execução</h2>
+      <p>2.1 O prazo estimado para a entrega final é de até <b>${escapeHtml(c.prazoExecucao)}</b>, contados a partir da confirmação do pagamento inicial e do alinhamento do perfil da vaga.</p>
+
+      <h2>Cláusula 3 — Valor e Condições de Pagamento</h2>
+      <p>3.1 Pela execução dos serviços descritos neste contrato, a CONTRATANTE pagará à CONTRATADA o valor total de <b>${escapeHtml(c.valorTotal)}</b> (${escapeHtml(c.valorTotalExtenso)}).</p>
+      <p>3.2 O pagamento será efetuado em duas parcelas, da seguinte forma:</p>
+      <ul>
+        <li>${escapeHtml(c.parcela1)};</li>
+        <li>${escapeHtml(c.parcela2)}.</li>
+      </ul>
+      <p>3.3 O pagamento se dará na <b>${escapeHtml(c.diaPagamento)}</b>.</p>
+      <p>3.4 Caso essa data coincida com feriado nacional, o pagamento ocorrerá no <b>próximo dia útil</b>.</p>
+      <p>3.5 O pagamento deverá ser realizado via <b>PIX</b> no CNPJ da CONTRATADA: <b>${escapeHtml(c.chavePix)}</b>.</p>
+      <p>3.6 A Nota Fiscal será emitida pelo CNPJ da CONTRATADA após a entrega total de cada parcela, caso assim deseje a CONTRATANTE.</p>
+
+      <h2>Cláusula 4 — Garantia</h2>
+      <p>4.1 A CONTRATADA concede à CONTRATANTE uma <b>garantia de ${escapeHtml(c.prazoGarantia)}</b>, contados a partir da data de contratação do(a) profissional indicado(a).</p>
+      <p>4.2 Caso o(a) profissional venha a ser desligado(a), por iniciativa própria ou da CONTRATANTE, dentro desse período, a CONTRATADA compromete-se a realizar <b>novo processo seletivo sem custos adicionais</b>.</p>
+      <p>4.3 A garantia não cobre alterações de escopo, perfil, remuneração, jornada, atribuições ou requisitos da vaga que não tenham sido acordados no início do processo.</p>
+      <p>4.4 A garantia não cobre desligamentos que não estejam relacionados à performance ou aderência cultural, sendo limitada a até <b>${escapeHtml(c.maxReposicoes)}</b>.</p>
+      <p>4.5 As pessoas envolvidas nas entrevistas e decisões deverão ser as mesmas que participaram do alinhamento inicial, não sendo permitida a inclusão de novos avaliadores sem comunicação prévia à CONTRATADA.</p>
+      <p>4.6 A CONTRATANTE terá o prazo máximo de <b>${escapeHtml(c.prazoEscolha)}</b> para a escolha do candidato, contados a partir do envio das opções apresentadas.</p>
+
+      <h2>Cláusula 5 — Disposições Gerais</h2>
+      <p>5.1 Este contrato não gera vínculo empregatício, societário ou de subordinação entre as partes, nem entre a CONTRATADA e os candidatos apresentados.</p>
+      <p>5.2 A CONTRATADA compromete-se a manter sigilo absoluto sobre todas as informações e dados estratégicos da CONTRATANTE.</p>
+      <p>5.3 Fica eleito o foro da <b>${escapeHtml(c.foro)}</b> para dirimir quaisquer controvérsias oriundas deste contrato, com renúncia a qualquer outro, por mais privilegiado que seja.</p>
+      ${c.observacoes ? `<h2>Observações</h2><p>${escapeHtml(c.observacoes).replace(/\n/g, "<br/>")}</p>` : ""}
+
       <p style="margin-top:32px">${escapeHtml(c.localAssinatura)}, ${formatDateBR(c.dataAssinatura)}.</p>
-      <div class="sig"><div>Contratante</div><div>Contratada</div></div>
+
+      <div class="sig">
+        <div><b>CONTRATANTE</b>${escapeHtml(c.contratanteRazao)}<br/>CNPJ: ${escapeHtml(c.contratanteCnpj)}</div>
+        <div><b>CONTRATADA</b>${escapeHtml(c.contratadaRazao)}<br/>CNPJ: ${escapeHtml(c.contratadaCnpj)}</div>
+      </div>
       <script>window.onload=()=>window.print()</script></body></html>`;
     openPrintWindow(html);
   };
 
   return (
     <div className="bg-card rounded-xl border shadow-sm p-6 space-y-5">
-      <SectionTitle title="Contrato de prestação de serviços" desc="Contrato entre a empresa de R&S e o cliente." />
+      <SectionTitle title="Contrato de prestação de serviços" desc="Modelo padrão — Recrutamento e Seleção. Preencha os campos e gere o documento." />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <fieldset className="border rounded-lg p-4 space-y-3">
           <legend className="px-2 text-xs font-semibold uppercase text-brand">Contratante (cliente)</legend>
           <Field label="Razão social"><Input value={c.contratanteRazao} onChange={(e) => set("contratanteRazao", e.target.value)} /></Field>
-          <Field label="CNPJ"><Input value={c.contratanteCnpj} onChange={(e) => set("contratanteCnpj", e.target.value)} /></Field>
-          <Field label="Endereço"><Input value={c.contratanteEndereco} onChange={(e) => set("contratanteEndereco", e.target.value)} /></Field>
+          <Field label="CNPJ"><Input value={c.contratanteCnpj} onChange={(e) => set("contratanteCnpj", e.target.value)} placeholder="00.000.000/0000-00" /></Field>
+          <Field label="Endereço completo"><Input value={c.contratanteEndereco} onChange={(e) => set("contratanteEndereco", e.target.value)} placeholder="Rua, nº, bairro, cidade/UF, CEP" /></Field>
           <Field label="Representante"><Input value={c.contratanteRepresentante} onChange={(e) => set("contratanteRepresentante", e.target.value)} /></Field>
         </fieldset>
         <fieldset className="border rounded-lg p-4 space-y-3">
           <legend className="px-2 text-xs font-semibold uppercase text-brand">Contratada (R&S)</legend>
           <Field label="Razão social"><Input value={c.contratadaRazao} onChange={(e) => set("contratadaRazao", e.target.value)} /></Field>
           <Field label="CNPJ"><Input value={c.contratadaCnpj} onChange={(e) => set("contratadaCnpj", e.target.value)} /></Field>
+          <Field label="Endereço completo"><Input value={c.contratadaEndereco} onChange={(e) => set("contratadaEndereco", e.target.value)} /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Telefone"><Input value={c.contratadaTelefone} onChange={(e) => set("contratadaTelefone", e.target.value)} /></Field>
+            <Field label="E-mail"><Input value={c.contratadaEmail} onChange={(e) => set("contratadaEmail", e.target.value)} /></Field>
+          </div>
           <Field label="Representante"><Input value={c.contratadaRepresentante} onChange={(e) => set("contratadaRepresentante", e.target.value)} /></Field>
         </fieldset>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Objeto do contrato" className="md:col-span-2"><Textarea rows={2} value={c.objeto} onChange={(e) => set("objeto", e.target.value)} /></Field>
-        <Field label="Modelo de cobrança">
-          <Select value={c.modeloCobranca} onValueChange={(v) => set("modeloCobranca", v as Contrato["modeloCobranca"])}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Percentual sobre salário">Percentual sobre salário contratado</SelectItem>
-              <SelectItem value="Valor fixo por vaga">Valor fixo por vaga</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="Valor acordado"><Input value={c.valor} onChange={(e) => set("valor", e.target.value)} placeholder="Ex: 18% ou R$ 12.000" /></Field>
-        <Field label="Condições de pagamento" className="md:col-span-2"><Textarea rows={2} value={c.condicoesPagamento} onChange={(e) => set("condicoesPagamento", e.target.value)} /></Field>
-        <Field label="Prazo de garantia" className="md:col-span-2"><Textarea rows={2} value={c.prazoGarantia} onChange={(e) => set("prazoGarantia", e.target.value)} /></Field>
-        <Field label="Cláusulas (confidencialidade, exclusividade, rescisão)" className="md:col-span-2"><Textarea rows={4} value={c.clausulas} onChange={(e) => set("clausulas", e.target.value)} /></Field>
+      <fieldset className="border rounded-lg p-4 space-y-3">
+        <legend className="px-2 text-xs font-semibold uppercase text-brand">Cláusula 1 — Objeto</legend>
+        <Field label="Cargo / vaga"><Input value={c.cargo} onChange={(e) => set("cargo", e.target.value)} /></Field>
+      </fieldset>
+
+      <fieldset className="border rounded-lg p-4 space-y-3">
+        <legend className="px-2 text-xs font-semibold uppercase text-brand">Cláusula 2 — Prazo de execução</legend>
+        <Field label="Prazo estimado de entrega"><Input value={c.prazoExecucao} onChange={(e) => set("prazoExecucao", e.target.value)} placeholder="Ex: 20 (vinte) dias corridos" /></Field>
+      </fieldset>
+
+      <fieldset className="border rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <legend className="px-2 text-xs font-semibold uppercase text-brand">Cláusula 3 — Valor e pagamento</legend>
+        <Field label="Valor total"><Input value={c.valorTotal} onChange={(e) => set("valorTotal", e.target.value)} placeholder="Ex: R$ 4.000,00" /></Field>
+        <Field label="Valor por extenso"><Input value={c.valorTotalExtenso} onChange={(e) => set("valorTotalExtenso", e.target.value)} placeholder="Ex: quatro mil reais" /></Field>
+        <Field label="Parcela 1" className="md:col-span-2"><Input value={c.parcela1} onChange={(e) => set("parcela1", e.target.value)} /></Field>
+        <Field label="Parcela 2" className="md:col-span-2"><Input value={c.parcela2} onChange={(e) => set("parcela2", e.target.value)} /></Field>
+        <Field label="Dia do pagamento" className="md:col-span-2"><Input value={c.diaPagamento} onChange={(e) => set("diaPagamento", e.target.value)} /></Field>
+        <Field label="Chave PIX (CNPJ)" className="md:col-span-2"><Input value={c.chavePix} onChange={(e) => set("chavePix", e.target.value)} /></Field>
+      </fieldset>
+
+      <fieldset className="border rounded-lg p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <legend className="px-2 text-xs font-semibold uppercase text-brand">Cláusula 4 — Garantia</legend>
+        <Field label="Prazo de garantia"><Input value={c.prazoGarantia} onChange={(e) => set("prazoGarantia", e.target.value)} placeholder="Ex: 90 dias corridos" /></Field>
+        <Field label="Limite de reposições"><Input value={c.maxReposicoes} onChange={(e) => set("maxReposicoes", e.target.value)} placeholder="Ex: 3 (três)" /></Field>
+        <Field label="Prazo p/ escolha do candidato"><Input value={c.prazoEscolha} onChange={(e) => set("prazoEscolha", e.target.value)} placeholder="Ex: 30 dias" /></Field>
+      </fieldset>
+
+      <fieldset className="border rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <legend className="px-2 text-xs font-semibold uppercase text-brand">Cláusula 5 — Disposições gerais</legend>
+        <Field label="Foro" className="md:col-span-2"><Input value={c.foro} onChange={(e) => set("foro", e.target.value)} placeholder="Ex: Comarca da Capital do Rio de Janeiro/RJ" /></Field>
         <Field label="Data de assinatura"><Input type="date" value={c.dataAssinatura} onChange={(e) => set("dataAssinatura", e.target.value)} /></Field>
-        <Field label="Local de assinatura"><Input value={c.localAssinatura} onChange={(e) => set("localAssinatura", e.target.value)} placeholder="Cidade / UF" /></Field>
-      </div>
+        <Field label="Local de assinatura"><Input value={c.localAssinatura} onChange={(e) => set("localAssinatura", e.target.value)} placeholder="Cidade/UF" /></Field>
+        <Field label="Observações adicionais (opcional)" className="md:col-span-2"><Textarea rows={2} value={c.observacoes} onChange={(e) => set("observacoes", e.target.value)} /></Field>
+      </fieldset>
 
       {generated && (
-        <div className="bg-muted/30 border rounded-lg p-6 text-sm leading-relaxed">
+        <div className="bg-muted/30 border rounded-lg p-6 text-sm leading-relaxed space-y-2">
           <h3 className="text-center font-bold text-brand uppercase tracking-wide mb-4">Contrato de Prestação de Serviços de Recrutamento e Seleção</h3>
-          <p><b>Contratante:</b> {c.contratanteRazao} — CNPJ {c.contratanteCnpj}, com sede em {c.contratanteEndereco}, representado por {c.contratanteRepresentante}.</p>
-          <p className="mt-2"><b>Contratada:</b> {c.contratadaRazao} — CNPJ {c.contratadaCnpj}, representada por {c.contratadaRepresentante}.</p>
-          <p className="mt-3"><b>Objeto:</b> {c.objeto}</p>
-          <p className="mt-2"><b>Honorários:</b> {c.modeloCobranca} — {c.valor}. {c.condicoesPagamento}</p>
-          <p className="mt-2"><b>Garantia:</b> {c.prazoGarantia}</p>
-          <p className="mt-2 whitespace-pre-wrap"><b>Cláusulas gerais:</b> {c.clausulas}</p>
+          <p><b>CONTRATANTE:</b> {c.contratanteRazao} — CNPJ {c.contratanteCnpj}, com sede em {c.contratanteEndereco}, representada por {c.contratanteRepresentante}.</p>
+          <p><b>CONTRATADA:</b> {c.contratadaRazao} — CNPJ {c.contratadaCnpj}, sediada em {c.contratadaEndereco}, telefone {c.contratadaTelefone}, e-mail {c.contratadaEmail}.</p>
+          <p><b>Cláusula 1 — Objeto:</b> serviços de R&S para a vaga de <b>{c.cargo}</b>.</p>
+          <p><b>Cláusula 2 — Prazo:</b> até {c.prazoExecucao} a partir do pagamento inicial.</p>
+          <p><b>Cláusula 3 — Valor:</b> {c.valorTotal} ({c.valorTotalExtenso}), em duas parcelas: {c.parcela1}; {c.parcela2}. Pagamento via PIX ({c.chavePix}) na {c.diaPagamento}.</p>
+          <p><b>Cláusula 4 — Garantia:</b> {c.prazoGarantia}, limitada a {c.maxReposicoes}. Prazo de escolha do candidato: {c.prazoEscolha}.</p>
+          <p><b>Cláusula 5 — Foro:</b> {c.foro}.</p>
           <p className="mt-4">{c.localAssinatura}, {formatDateBR(c.dataAssinatura)}.</p>
         </div>
       )}
