@@ -22,7 +22,7 @@ export function AppSidebar() {
   return (
     <aside className="w-64 shrink-0 bg-[var(--sidebar-bg)] text-[var(--sidebar-fg)] flex flex-col h-screen sticky top-0 shadow-xl">
       <div className="px-6 py-6 border-b border-white/10">
-        <DapiLogo variant="white" className="h-10 w-auto" />
+        <DapiLogo variant="color" className="h-10 w-auto" />
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
