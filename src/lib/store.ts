@@ -209,6 +209,26 @@ export const useCandidatos = () => useSyncExternalStore(subscribe, () => candida
 export const useFaturas = () => useSyncExternalStore(subscribe, () => faturas, () => faturas);
 export const useCustos = () => useSyncExternalStore(subscribe, () => custos, () => custos);
 
+export function deleteVaga(id: string) {
+  vagas = vagas.filter((v) => v.id !== id);
+  emit();
+}
+
+export function deleteCandidato(id: string) {
+  candidatos = candidatos.filter((c) => c.id !== id);
+  emit();
+}
+
+export function deleteFatura(id: string) {
+  faturas = faturas.filter((f) => f.id !== id);
+  emit();
+}
+
+export function deleteCusto(id: string) {
+  custos = custos.filter((c) => c.id !== id);
+  emit();
+}
+
 export function addCusto(c: Omit<Custo, "id">) {
   custos = [{ ...c, id: crypto.randomUUID() }, ...custos];
   emit();
