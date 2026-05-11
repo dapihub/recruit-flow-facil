@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, ChevronRight } from "lucide-react";
+import { Plus, ChevronRight, Trash2 } from "lucide-react";
 import { PageHeader, MetricCard } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { addVaga, useVagas, VagaStatus } from "@/lib/store";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { addVaga, deleteVaga, useVagas, VagaStatus } from "@/lib/store";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
@@ -113,7 +114,30 @@ function VagasPage() {
                     <Td><span className="text-xs px-2 py-1 rounded-full bg-brand/10 text-brand font-medium">{v.etapa}</span></Td>
                     <Td>{new Date(v.prazo).toLocaleDateString("pt-BR")}</Td>
                     <Td><StatusBadge status={v.status} /></Td>
-                    <Td><ChevronRight className="w-4 h-4 text-muted-foreground" /></Td>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir vaga?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta ação não pode ser desfeita. A vaga "{v.cargo}" será removida permanentemente.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={() => deleteVaga(v.id)}
+                            >Excluir</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </td>
                   </tr>
                 ))}
                 {filtradas.length === 0 && (
