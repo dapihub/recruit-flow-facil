@@ -18,6 +18,8 @@ import {
   updateVaga,
   useVaga,
 } from "@/lib/store";
+import dapiLogoColor from "@/assets/dapi-logo-color.png";
+import dapiSymbol from "@/assets/dapi-symbol.png";
 
 export const Route = createFileRoute("/vagas/$vagaId")({
   head: () => ({
