@@ -191,6 +191,15 @@ let faturas: Fatura[] = [
   { id: "6", numero: "RF-2026-006", cliente: "TalentHub", servico: "Recrutamento Recrutador Tech", vencimento: "2026-04-10", valor: 7200, status: "Pago" },
 ];
 
+let custos: Custo[] = [
+  { id: "c1", descricao: "Salários time interno", categoria: "Pessoal", tipo: "Fixo", valor: 24000, data: "2026-05-05", status: "Pago", fornecedor: "Folha DAPI" },
+  { id: "c2", descricao: "Assinatura LinkedIn Recruiter", categoria: "Software", tipo: "Fixo", valor: 3200, data: "2026-05-03", status: "Pago", fornecedor: "LinkedIn" },
+  { id: "c3", descricao: "Anúncios Meta Ads — vaga TechNova", categoria: "Anúncios", tipo: "Variável", valor: 1800, data: "2026-05-08", status: "Pago", fornecedor: "Meta", vagaId: "1" },
+  { id: "c4", descricao: "Aluguel sala comercial", categoria: "Infraestrutura", tipo: "Fixo", valor: 4500, data: "2026-05-10", status: "Pendente", fornecedor: "Imobiliária Centro" },
+  { id: "c5", descricao: "Simples Nacional — DAS", categoria: "Impostos", tipo: "Variável", valor: 5200, data: "2026-05-20", status: "Pendente", fornecedor: "Receita Federal" },
+  { id: "c6", descricao: "Campanha branding", categoria: "Marketing", tipo: "Variável", valor: 2700, data: "2026-04-28", status: "Atrasado", fornecedor: "Agência Norte" },
+];
+
 const listeners = new Set<() => void>();
 const subscribe = (cb: () => void) => { listeners.add(cb); return () => listeners.delete(cb); };
 const emit = () => listeners.forEach(l => l());
