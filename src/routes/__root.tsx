@@ -76,7 +76,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "DAPI HUB — Gestão de Recrutamento e Seleção" },
       { name: "description", content: "DAPI HUB · O HUB que conecta estratégia, pessoas e processos para acelerar empresas." },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
