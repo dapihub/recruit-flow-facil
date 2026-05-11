@@ -73,8 +73,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RecruitFlow — Gestão de Recrutamento e Seleção" },
-      { name: "description", content: "Plataforma de gestão para empresas de recrutamento e seleção." },
+      { title: "DAPI HUB — Gestão de Recrutamento e Seleção" },
+      { name: "description", content: "DAPI HUB · O HUB que conecta estratégia, pessoas e processos para acelerar empresas." },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
   }),
@@ -86,7 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>

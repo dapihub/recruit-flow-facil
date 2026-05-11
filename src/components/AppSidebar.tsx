@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Briefcase, Users, Wallet, Sparkles } from "lucide-react";
+import { Briefcase, Users, Wallet } from "lucide-react";
 import { useVagas, useCandidatos, useFaturas } from "@/lib/store";
+import { DapiLogo } from "@/components/DapiLogo";
 
 const items = [
   { to: "/", label: "Vagas", icon: Briefcase },
@@ -20,14 +21,8 @@ export function AppSidebar() {
 
   return (
     <aside className="w-64 shrink-0 bg-[var(--sidebar-bg)] text-[var(--sidebar-fg)] flex flex-col h-screen sticky top-0 shadow-xl">
-      <div className="px-6 py-6 flex items-center gap-3 border-b border-white/10">
-        <div className="w-10 h-10 rounded-lg bg-brand flex items-center justify-center shadow-lg">
-          <Sparkles className="w-5 h-5 text-brand-foreground" />
-        </div>
-        <div>
-          <h1 className="font-bold text-lg leading-tight">RecruitFlow</h1>
-          <p className="text-xs text-white/60">Gestão de R&S</p>
-        </div>
+      <div className="px-6 py-6 border-b border-white/10">
+        <DapiLogo color="#FFFFFF" accent="#D24925" />
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
@@ -57,6 +52,9 @@ export function AppSidebar() {
           <SummaryRow label="Em entrevista" value={emEntrevista.toString()} />
           <SummaryRow label="A receber" value={`R$ ${(aReceber / 1000).toFixed(1)}k`} />
         </div>
+        <p className="text-[10px] text-white/40 leading-snug pt-2 italic">
+          Muito mais que consultoria,<br/>um parceiro estratégico.
+        </p>
       </div>
     </aside>
   );

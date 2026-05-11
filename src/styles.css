@@ -1,4 +1,5 @@
 @import "tailwindcss" source(none);
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap");
 @source "../src";
 @import "tw-animate-css";
 
@@ -73,29 +74,30 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.975 0.005 250);
-  --foreground: oklch(0.2 0.03 255);
+  /* DAPI HUB — paleta oficial: terracota #D24925, preto #161616, grafite #474747, branco */
+  --background: oklch(0.975 0.006 60);
+  --foreground: oklch(0.18 0 0);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.18 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.5 0.13 253);
+  --popover-foreground: oklch(0.18 0 0);
+  --primary: oklch(0.58 0.17 38);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0.01 250);
-  --secondary-foreground: oklch(0.3 0.05 255);
-  --brand: oklch(0.5 0.13 253);
+  --secondary: oklch(0.96 0.008 50);
+  --secondary-foreground: oklch(0.25 0.01 50);
+  --brand: oklch(0.58 0.17 38);
   --brand-foreground: oklch(0.99 0 0);
-  --success: oklch(0.68 0.16 150);
+  --success: oklch(0.66 0.15 150);
   --success-foreground: oklch(0.99 0 0);
-  --warning: oklch(0.74 0.16 55);
-  --warning-foreground: oklch(0.2 0.03 255);
-  --info: oklch(0.62 0.15 250);
+  --warning: oklch(0.74 0.16 70);
+  --warning-foreground: oklch(0.18 0 0);
+  --info: oklch(0.55 0.05 50);
   --info-foreground: oklch(0.99 0 0);
-  --neutral: oklch(0.7 0.01 250);
+  --neutral: oklch(0.4 0 0);
   --neutral-foreground: oklch(0.99 0 0);
-  --sidebar-bg: oklch(0.32 0.09 254);
-  --sidebar-fg: oklch(0.97 0.01 250);
-  --sidebar-active: oklch(0.5 0.13 253);
+  --sidebar-bg: oklch(0.18 0 0);
+  --sidebar-fg: oklch(0.97 0.003 60);
+  --sidebar-active: oklch(0.58 0.17 38);
   --muted: oklch(0.968 0.007 247.896);
   --muted-foreground: oklch(0.554 0.046 257.417);
   --accent: oklch(0.968 0.007 247.896);
@@ -158,6 +160,10 @@
 @layer base {
   * {
     border-color: var(--color-border);
+  }
+
+  html, body {
+    font-family: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
   }
 
   body {

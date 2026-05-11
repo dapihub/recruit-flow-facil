@@ -13,7 +13,7 @@ import { addFatura, useFaturas } from "@/lib/store";
 export const Route = createFileRoute("/financeiro")({
   head: () => ({
     meta: [
-      { title: "Financeiro — RecruitFlow" },
+      { title: "Financeiro — DAPI HUB" },
       { name: "description", content: "Acompanhe receitas, faturas e metas financeiras da operação." },
     ],
   }),
