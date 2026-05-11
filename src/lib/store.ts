@@ -126,6 +126,43 @@ export type Fatura = {
   observacoes?: string;
 };
 
+export type CustoCategoria =
+  | "Pessoal"
+  | "Software"
+  | "Marketing"
+  | "Anúncios"
+  | "Infraestrutura"
+  | "Impostos"
+  | "Operacional"
+  | "Outros";
+
+export const CUSTO_CATEGORIAS: CustoCategoria[] = [
+  "Pessoal",
+  "Software",
+  "Marketing",
+  "Anúncios",
+  "Infraestrutura",
+  "Impostos",
+  "Operacional",
+  "Outros",
+];
+
+export type CustoTipo = "Fixo" | "Variável";
+export type CustoStatus = "Pago" | "Pendente" | "Atrasado";
+
+export type Custo = {
+  id: string;
+  descricao: string;
+  categoria: CustoCategoria;
+  tipo: CustoTipo;
+  valor: number;
+  data: string; // competência (YYYY-MM-DD)
+  status: CustoStatus;
+  fornecedor?: string;
+  vagaId?: string;
+  observacoes?: string;
+};
+
 let vagas: Vaga[] = [
   { id: "1", cargo: "Desenvolvedor Full Stack Sênior", empresa: "TechNova", area: "Tecnologia", candidatos: 24, prazo: "2026-06-15", status: "Aberta", salario: "R$ 15.000", regime: "CLT", etapa: "Candidatos em triagem" },
   { id: "2", cargo: "Analista de Marketing Digital", empresa: "BrandUp", area: "Marketing", candidatos: 18, prazo: "2026-05-30", status: "Em processo", salario: "R$ 7.500", regime: "Híbrido", etapa: "Descritivo publicado" },
@@ -154,6 +191,15 @@ let faturas: Fatura[] = [
   { id: "6", numero: "RF-2026-006", cliente: "TalentHub", servico: "Recrutamento Recrutador Tech", vencimento: "2026-04-10", valor: 7200, status: "Pago" },
 ];
 
+let custos: Custo[] = [
+  { id: "c1", descricao: "Salários time interno", categoria: "Pessoal", tipo: "Fixo", valor: 24000, data: "2026-05-05", status: "Pago", fornecedor: "Folha DAPI" },
+  { id: "c2", descricao: "Assinatura LinkedIn Recruiter", categoria: "Software", tipo: "Fixo", valor: 3200, data: "2026-05-03", status: "Pago", fornecedor: "LinkedIn" },
+  { id: "c3", descricao: "Anúncios Meta Ads — vaga TechNova", categoria: "Anúncios", tipo: "Variável", valor: 1800, data: "2026-05-08", status: "Pago", fornecedor: "Meta", vagaId: "1" },
+  { id: "c4", descricao: "Aluguel sala comercial", categoria: "Infraestrutura", tipo: "Fixo", valor: 4500, data: "2026-05-10", status: "Pendente", fornecedor: "Imobiliária Centro" },
+  { id: "c5", descricao: "Simples Nacional — DAS", categoria: "Impostos", tipo: "Variável", valor: 5200, data: "2026-05-20", status: "Pendente", fornecedor: "Receita Federal" },
+  { id: "c6", descricao: "Campanha branding", categoria: "Marketing", tipo: "Variável", valor: 2700, data: "2026-04-28", status: "Atrasado", fornecedor: "Agência Norte" },
+];
+
 const listeners = new Set<() => void>();
 const subscribe = (cb: () => void) => { listeners.add(cb); return () => listeners.delete(cb); };
 const emit = () => listeners.forEach(l => l());
@@ -161,6 +207,12 @@ const emit = () => listeners.forEach(l => l());
 export const useVagas = () => useSyncExternalStore(subscribe, () => vagas, () => vagas);
 export const useCandidatos = () => useSyncExternalStore(subscribe, () => candidatos, () => candidatos);
 export const useFaturas = () => useSyncExternalStore(subscribe, () => faturas, () => faturas);
+export const useCustos = () => useSyncExternalStore(subscribe, () => custos, () => custos);
+
+export function addCusto(c: Omit<Custo, "id">) {
+  custos = [{ ...c, id: crypto.randomUUID() }, ...custos];
+  emit();
+}
 
 export function addVaga(v: Omit<Vaga, "id" | "candidatos" | "status" | "etapa">) {
   vagas = [{ ...v, id: crypto.randomUUID(), candidatos: 0, status: "Aberta", etapa: "Briefing" }, ...vagas];
