@@ -1,6 +1,69 @@
 import { useSyncExternalStore } from "react";
 
 export type VagaStatus = "Aberta" | "Em processo" | "Fechada" | "Encerrada";
+
+export type PipelineEtapa =
+  | "Briefing"
+  | "Contrato"
+  | "Descritivo publicado"
+  | "Candidatos em triagem"
+  | "Finalizada";
+
+export const PIPELINE_ETAPAS: PipelineEtapa[] = [
+  "Briefing",
+  "Contrato",
+  "Descritivo publicado",
+  "Candidatos em triagem",
+  "Finalizada",
+];
+
+export type Briefing = {
+  cliente: string;
+  contatoResponsavel: string;
+  cargo: string;
+  quantidade: number;
+  motivo: "Substituição" | "Expansão" | "Novo projeto";
+  formacao: string;
+  experienciaMinima: string;
+  habilidadesTecnicas: string;
+  softSkills: string;
+  diferenciais: string;
+  faixaSalarial: string;
+  beneficios: string;
+  modeloTrabalho: "Presencial" | "Híbrido" | "Remoto";
+  localizacao: string;
+  prazo: string;
+  observacoes: string;
+};
+
+export type Descritivo = {
+  titulo: string;
+  sobreEmpresa: string;
+  responsabilidades: string;
+  requisitosObrigatorios: string;
+  requisitosDesejaveis: string;
+  oferece: string;
+  comoCandidatar: string;
+};
+
+export type Contrato = {
+  contratanteRazao: string;
+  contratanteCnpj: string;
+  contratanteEndereco: string;
+  contratanteRepresentante: string;
+  contratadaRazao: string;
+  contratadaCnpj: string;
+  contratadaRepresentante: string;
+  objeto: string;
+  modeloCobranca: "Percentual sobre salário" | "Valor fixo por vaga";
+  valor: string;
+  condicoesPagamento: string;
+  prazoGarantia: string;
+  clausulas: string;
+  dataAssinatura: string;
+  localAssinatura: string;
+};
+
 export type Vaga = {
   id: string;
   cargo: string;
@@ -12,6 +75,10 @@ export type Vaga = {
   descricao?: string;
   salario?: string;
   regime?: "CLT" | "PJ" | "Híbrido";
+  etapa: PipelineEtapa;
+  briefing?: Briefing;
+  descritivo?: Descritivo;
+  contrato?: Contrato;
 };
 
 export type CandidatoStatus = "Triagem" | "Entrevista" | "Contratado" | "Reprovado";
