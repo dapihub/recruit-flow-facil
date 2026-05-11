@@ -19,7 +19,7 @@ export function AppSidebar() {
   const aReceber = faturas.filter((f) => f.status !== "Pago").reduce((s, f) => s + f.valor, 0);
 
   return (
-    <aside className="w-64 shrink-0 bg-[var(--sidebar-bg)] text-[var(--sidebar-fg)] flex flex-col min-h-screen">
+    <aside className="w-64 shrink-0 bg-[var(--sidebar-bg)] text-[var(--sidebar-fg)] flex flex-col h-screen sticky top-0 shadow-xl">
       <div className="px-6 py-6 flex items-center gap-3 border-b border-white/10">
         <div className="w-10 h-10 rounded-lg bg-brand flex items-center justify-center shadow-lg">
           <Sparkles className="w-5 h-5 text-brand-foreground" />

@@ -68,7 +68,7 @@ function VagasPage() {
           <MetricCard label="Taxa de preenchimento" value={`${taxa}%`} accent="warning" hint="Vagas fechadas / total" />
         </div>
 
-        <div className="bg-card rounded-xl border">
+        <div className="bg-card rounded-xl border shadow-sm">
           <div className="flex flex-wrap items-center gap-3 p-4 border-b">
             <span className="text-sm font-medium text-muted-foreground">Filtros:</span>
             <Select value={filtroStatus} onValueChange={setFiltroStatus}>
@@ -98,8 +98,11 @@ function VagasPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtradas.map((v) => (
-                  <tr key={v.id} className="border-t hover:bg-muted/20">
+                {filtradas.map((v, i) => (
+                  <tr
+                    key={v.id}
+                    className={`border-t transition-colors cursor-pointer ${i % 2 ? "bg-muted/10" : ""} hover:bg-brand/5 hover:shadow-[inset_3px_0_0_0_var(--brand)]`}
+                  >
                     <Td className="font-medium text-foreground">{v.cargo}</Td>
                     <Td>{v.empresa}</Td>
                     <Td>{v.area}</Td>
