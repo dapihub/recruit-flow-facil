@@ -144,9 +144,26 @@ export const useVagas = () => useSyncExternalStore(subscribe, () => vagas, () =>
 export const useCandidatos = () => useSyncExternalStore(subscribe, () => candidatos, () => candidatos);
 export const useFaturas = () => useSyncExternalStore(subscribe, () => faturas, () => faturas);
 
-export function addVaga(v: Omit<Vaga, "id" | "candidatos" | "status">) {
-  vagas = [{ ...v, id: crypto.randomUUID(), candidatos: 0, status: "Aberta" }, ...vagas];
+export function addVaga(v: Omit<Vaga, "id" | "candidatos" | "status" | "etapa">) {
+  vagas = [{ ...v, id: crypto.randomUUID(), candidatos: 0, status: "Aberta", etapa: "Briefing" }, ...vagas];
   emit();
+}
+
+export function updateVaga(id: string, patch: Partial<Vaga>) {
+  vagas = vagas.map((v) => (v.id === id ? { ...v, ...patch } : v));
+  emit();
+}
+
+export function getVaga(id: string): Vaga | undefined {
+  return vagas.find((v) => v.id === id);
+}
+
+export function useVaga(id: string) {
+  return useSyncExternalStore(
+    subscribe,
+    () => vagas.find((v) => v.id === id),
+    () => vagas.find((v) => v.id === id),
+  );
 }
 export function addCandidato(c: Omit<Candidato, "id" | "etapa" | "proximaAcao" | "pontuacao" | "status">) {
   candidatos = [{ ...c, id: crypto.randomUUID(), etapa: "Triagem inicial", proximaAcao: "Análise CV", pontuacao: 0, status: "Triagem" }, ...candidatos];
