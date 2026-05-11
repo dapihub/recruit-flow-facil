@@ -72,7 +72,7 @@ function FinanceiroPage() {
           </div>
         </div>
 
-        <div className="bg-card rounded-xl border overflow-x-auto">
+        <div className="bg-card rounded-xl border overflow-x-auto shadow-sm">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
@@ -81,8 +81,11 @@ function FinanceiroPage() {
               </tr>
             </thead>
             <tbody>
-              {faturas.map((f) => (
-                <tr key={f.id} className="border-t hover:bg-muted/20">
+              {faturas.map((f, i) => (
+                <tr
+                  key={f.id}
+                  className={`border-t transition-colors cursor-pointer ${i % 2 ? "bg-muted/10" : ""} hover:bg-brand/5 hover:shadow-[inset_3px_0_0_0_var(--brand)]`}
+                >
                   <Td className="font-mono text-xs">{f.numero}</Td>
                   <Td className="font-medium text-foreground">{f.cliente}</Td>
                   <Td>{f.servico}</Td>

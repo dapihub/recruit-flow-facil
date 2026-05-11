@@ -60,7 +60,7 @@ function CandidatosPage() {
           <MetricCard label="Taxa de aprovação" value={`${taxa}%`} accent="warning" />
         </div>
 
-        <div className="bg-card rounded-xl border overflow-x-auto">
+        <div className="bg-card rounded-xl border overflow-x-auto shadow-sm">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
@@ -70,8 +70,11 @@ function CandidatosPage() {
               </tr>
             </thead>
             <tbody>
-              {candidatos.map((c) => (
-                <tr key={c.id} className="border-t hover:bg-muted/20">
+              {candidatos.map((c, i) => (
+                <tr
+                  key={c.id}
+                  className={`border-t transition-colors cursor-pointer ${i % 2 ? "bg-muted/10" : ""} hover:bg-brand/5 hover:shadow-[inset_3px_0_0_0_var(--brand)]`}
+                >
                   <Td>
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-brand text-brand-foreground flex items-center justify-center text-xs font-bold">
