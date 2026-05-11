@@ -52,6 +52,9 @@ export function AppSidebar() {
           <SummaryRow label="Em entrevista" value={emEntrevista.toString()} />
           <SummaryRow label="A receber" value={`R$ ${(aReceber / 1000).toFixed(1)}k`} />
         </div>
+        <p className="text-[10px] text-white/40 leading-snug pt-2 italic">
+          Muito mais que consultoria,<br/>um parceiro estratégico.
+        </p>
       </div>
     </aside>
   );
