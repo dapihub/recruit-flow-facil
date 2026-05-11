@@ -18,6 +18,8 @@ import {
   updateVaga,
   useVaga,
 } from "@/lib/store";
+import dapiLogoColor from "@/assets/dapi-logo-color.png";
+import dapiSymbol from "@/assets/dapi-symbol.png";
 
 export const Route = createFileRoute("/vagas/$vagaId")({
   head: () => ({
@@ -368,11 +370,41 @@ function ContratoTab({ vagaId, initial, empresa, cargo }: { vagaId: string; init
   };
 
   const exportPDF = () => {
+    const logoUrl = new URL(dapiLogoColor, window.location.origin).href;
+    const symbolUrl = new URL(dapiSymbol, window.location.origin).href;
     const html = `<!doctype html><html><head><meta charset="utf-8"/><title>Contrato — ${escapeHtml(c.cargo)}</title>
       <style>
-        @page { margin: 28mm 22mm; }
+        @page {
+          margin: 38mm 22mm 28mm 22mm;
+          @top-center {
+            content: element(letterhead);
+          }
+          @bottom-center {
+            content: element(letterfoot);
+          }
+        }
+        .letterhead{
+          position: running(letterhead);
+          display:flex;align-items:center;justify-content:space-between;
+          padding:10mm 22mm 6mm 22mm;
+          border-bottom:2px solid #D24925;
+        }
+        .letterhead img.logo{height:14mm;width:auto}
+        .letterhead .meta{font:500 8.5pt Arial,sans-serif;color:#474747;text-align:right;line-height:1.35}
+        .letterhead .meta b{color:#161616}
+        .letterfoot{
+          position: running(letterfoot);
+          display:flex;align-items:center;gap:10px;
+          padding:4mm 22mm 6mm 22mm;
+          border-top:1px solid #e5e1dc;
+          font:500 8pt Arial,sans-serif;color:#6b6660;
+        }
+        .letterfoot img{height:7mm;width:auto;opacity:.95}
+        .letterfoot .tag{flex:1}
+        .letterfoot .tag b{color:#D24925;letter-spacing:.5px}
+        .letterfoot .pg{color:#9a958e}
         body{font-family:Arial,Helvetica,sans-serif;max-width:780px;margin:0 auto;padding:0 8px;color:#1f2937;line-height:1.65;text-align:justify;font-size:12pt}
-        h1{text-align:center;color:#D24925;font-size:15pt;text-transform:uppercase;letter-spacing:.5px;margin-bottom:24px}
+        h1{text-align:center;color:#D24925;font-size:15pt;text-transform:uppercase;letter-spacing:.5px;margin:6mm 0 24px}
         h2{color:#D24925;font-size:11pt;margin-top:20px;text-transform:uppercase;letter-spacing:.5px}
         p{margin:6px 0}
         .party{margin:8px 0 14px}
@@ -380,7 +412,25 @@ function ContratoTab({ vagaId, initial, empresa, cargo }: { vagaId: string; init
         .sig{margin-top:60px;display:flex;justify-content:space-between;gap:40px}
         .sig div{flex:1;text-align:center;border-top:1px solid #222;padding-top:6px;font-size:11pt}
         .sig b{display:block;margin-bottom:2px}
+        /* Fallback para navegadores sem suporte a running elements: imprime no topo da 1ª página */
+        @supports not (top: running(letterhead)) {
+          .letterhead{position:static;margin:-10mm -8px 8mm -8px}
+          .letterfoot{position:static;margin:14mm -8px -6mm -8px}
+        }
       </style></head><body>
+      <div class="letterhead">
+        <img class="logo" src="${logoUrl}" alt="DAPI HUB"/>
+        <div class="meta">
+          <b>DAPI HUB · Recrutamento &amp; Seleção</b><br/>
+          ${escapeHtml(c.contratadaEndereco)}<br/>
+          ${escapeHtml(c.contratadaTelefone)} · ${escapeHtml(c.contratadaEmail)}
+        </div>
+      </div>
+      <div class="letterfoot">
+        <img src="${symbolUrl}" alt=""/>
+        <span class="tag"><b>DAPI.HUB</b> &nbsp;·&nbsp; Muito mais que consultoria, um parceiro estratégico.</span>
+        <span class="pg">Contrato — ${escapeHtml(c.cargo)}</span>
+      </div>
       <h1>Contrato de Prestação de Serviços de Recrutamento e Seleção</h1>
 
       <h2>Contratante</h2>
