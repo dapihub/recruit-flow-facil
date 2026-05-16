@@ -339,7 +339,7 @@ async function seedDemoData() {
 
   const [{ error: candidatosError }, { error: faturasError }, { error: custosError }] = await Promise.all([
     supabase.from("candidatos").insert(candidatosPayload),
-    supabase.from("faturas").insert(INITIAL_FATURAS.map(({ numero, ...fatura }) => fatura)),
+    supabase.from("faturas").insert(INITIAL_FATURAS.map(({ numero, ...fatura }) => ({ ...fatura, vaga_id: null }))),
     supabase.from("custos").insert(custosPayload),
   ]);
 
