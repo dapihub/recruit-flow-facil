@@ -95,6 +95,7 @@ export type Vaga = {
   descritivo?: Descritivo;
   contrato?: Contrato;
   createdAt?: string;
+  updatedAt?: string;
 };
 
 export type CandidatoStatus = "Triagem" | "Entrevista" | "Contratado" | "Reprovado";
@@ -258,6 +259,7 @@ function mapVaga(row: any): Vaga {
     descritivo: row.descritivo ?? undefined,
     contrato: row.contrato ?? undefined,
     createdAt: row.created_at ?? undefined,
+    updatedAt: row.updated_at ?? undefined,
   };
 }
 
@@ -324,7 +326,7 @@ function ensureAuthListener() {
 }
 
 async function seedDemoData() {
-  const vagasPayload = INITIAL_VAGAS.map(({ prazoGarantia, garantiaInicio, createdAt, ...rest }) => rest);
+  const vagasPayload = INITIAL_VAGAS.map(({ prazoGarantia, garantiaInicio, createdAt, updatedAt, ...rest }) => rest);
   const { data: vagasData, error: vagasError } = await supabase.from("vagas").insert(vagasPayload).select("id, cargo");
   if (vagasError) throw vagasError;
 

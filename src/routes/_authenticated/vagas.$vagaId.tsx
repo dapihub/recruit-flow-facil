@@ -94,7 +94,7 @@ function VagaDetailPage() {
           </div>
         </div>
 
-        <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} diasAndamento={diasEmAndamento(vaga.createdAt)} totalCandidatos={vaga.candidatos} />
+        <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} diasAndamento={diasEmAndamento(vaga.createdAt, vaga.etapa === "Finalizada" ? vaga.updatedAt : undefined)} totalCandidatos={vaga.candidatos} />
       </div>
     </div>
   );
@@ -961,9 +961,10 @@ function EmptyRow({ text }: { text: string }) {
 }
 
 /* ---------------- helpers ---------------- */
-function diasEmAndamento(createdAt?: string) {
+function diasEmAndamento(createdAt?: string, finalizadoEm?: string) {
   if (!createdAt) return 0;
-  const ms = Date.now() - new Date(createdAt).getTime();
+  const fim = finalizadoEm ? new Date(finalizadoEm).getTime() : Date.now();
+  const ms = fim - new Date(createdAt).getTime();
   return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
 }
 
