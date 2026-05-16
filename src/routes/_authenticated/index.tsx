@@ -168,7 +168,7 @@ function Td({ children, className = "" }: { children?: React.ReactNode; classNam
 }
 
 function NovaVagaModal({ onClose }: { onClose: () => void }) {
-  const [form, setForm] = useState({ cargo: "", empresa: "", quantidade: "1", receita: "" });
+  const [form, setForm] = useState({ cargo: "", empresa: "", quantidade: "1", receita: "", prazoGarantia: "90" });
   return (
     <DialogContent className="max-w-lg">
       <DialogHeader><DialogTitle>Nova Vaga</DialogTitle></DialogHeader>
@@ -177,6 +177,7 @@ function NovaVagaModal({ onClose }: { onClose: () => void }) {
         <Field label="Empresa" className="col-span-2"><Input value={form.empresa} onChange={(e) => setForm({ ...form, empresa: e.target.value })} /></Field>
         <Field label="Quantidade"><Input type="number" min="1" value={form.quantidade} onChange={(e) => setForm({ ...form, quantidade: e.target.value })} /></Field>
         <Field label="Receita por vaga (R$)"><Input type="number" min="0" step="0.01" placeholder="0,00" value={form.receita} onChange={(e) => setForm({ ...form, receita: e.target.value })} /></Field>
+        <Field label="Prazo de garantia (dias)" className="col-span-2"><Input type="number" min="0" value={form.prazoGarantia} onChange={(e) => setForm({ ...form, prazoGarantia: e.target.value })} /></Field>
       </div>
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>Cancelar</Button>
@@ -190,6 +191,7 @@ function NovaVagaModal({ onClose }: { onClose: () => void }) {
                 empresa: form.empresa,
                 quantidade: Number(form.quantidade) || 1,
                 receita: Number(form.receita) || 0,
+                prazoGarantia: Number(form.prazoGarantia) || 90,
               });
               toast.success("Vaga criada e receita lançada no financeiro.");
               onClose();

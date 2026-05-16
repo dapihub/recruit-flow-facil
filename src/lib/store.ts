@@ -89,6 +89,8 @@ export type Vaga = {
   salario?: string;
   regime?: "CLT" | "PJ" | "Híbrido";
   etapa: PipelineEtapa;
+  prazoGarantia?: number;
+  garantiaInicio?: string | null;
   briefing?: Briefing;
   descritivo?: Descritivo;
   contrato?: Contrato;
@@ -249,6 +251,8 @@ function mapVaga(row: any): Vaga {
     salario: row.salario ?? undefined,
     regime: row.regime ?? undefined,
     etapa: row.etapa,
+    prazoGarantia: row.prazo_garantia ?? undefined,
+    garantiaInicio: row.garantia_inicio ?? null,
     briefing: row.briefing ?? undefined,
     descritivo: row.descritivo ?? undefined,
     contrato: row.contrato ?? undefined,
@@ -318,7 +322,8 @@ function ensureAuthListener() {
 }
 
 async function seedDemoData() {
-  const { data: vagasData, error: vagasError } = await supabase.from("vagas").insert(INITIAL_VAGAS).select("id, cargo");
+  const vagasPayload = INITIAL_VAGAS.map(({ prazoGarantia, garantiaInicio, ...rest }) => rest);
+  const { data: vagasData, error: vagasError } = await supabase.from("vagas").insert(vagasPayload).select("id, cargo");
   if (vagasError) throw vagasError;
 
   const vagaByCargo = new Map((vagasData ?? []).map((vaga) => [vaga.cargo, vaga.id]));
@@ -531,6 +536,7 @@ export async function addVaga(vaga: {
   empresa: string;
   quantidade?: number;
   receita?: number;
+  prazoGarantia?: number;
   area?: string;
   prazo?: string;
   descricao?: string;
@@ -548,6 +554,7 @@ export async function addVaga(vaga: {
     descricao: vaga.descricao ?? null,
     salario: vaga.salario ?? null,
     regime: vaga.regime ?? null,
+    prazo_garantia: vaga.prazoGarantia ?? 90,
     briefing: { quantidade } as any,
   };
 
@@ -593,6 +600,8 @@ export async function updateVaga(id: string, patch: Partial<Vaga>) {
   if (patch.briefing !== undefined) payload.briefing = patch.briefing;
   if (patch.descritivo !== undefined) payload.descritivo = patch.descritivo;
   if (patch.contrato !== undefined) payload.contrato = patch.contrato;
+  if (patch.prazoGarantia !== undefined) payload.prazo_garantia = patch.prazoGarantia;
+  if (patch.garantiaInicio !== undefined) payload.garantia_inicio = patch.garantiaInicio;
 
   const { data, error } = await supabase.from("vagas").update(payload).eq("id", id).select().single();
   if (error) throw error;

@@ -204,8 +204,10 @@ export type Database = {
           descritivo: Json | null
           empresa: string
           etapa: Database["public"]["Enums"]["pipeline_etapa"]
+          garantia_inicio: string | null
           id: string
           prazo: string
+          prazo_garantia: number
           regime: Database["public"]["Enums"]["regime_trabalho"] | null
           salario: string | null
           status: Database["public"]["Enums"]["vaga_status"]
@@ -222,8 +224,10 @@ export type Database = {
           descritivo?: Json | null
           empresa: string
           etapa?: Database["public"]["Enums"]["pipeline_etapa"]
+          garantia_inicio?: string | null
           id?: string
           prazo: string
+          prazo_garantia?: number
           regime?: Database["public"]["Enums"]["regime_trabalho"] | null
           salario?: string | null
           status?: Database["public"]["Enums"]["vaga_status"]
@@ -240,8 +244,10 @@ export type Database = {
           descritivo?: Json | null
           empresa?: string
           etapa?: Database["public"]["Enums"]["pipeline_etapa"]
+          garantia_inicio?: string | null
           id?: string
           prazo?: string
+          prazo_garantia?: number
           regime?: Database["public"]["Enums"]["regime_trabalho"] | null
           salario?: string | null
           status?: Database["public"]["Enums"]["vaga_status"]
@@ -254,6 +260,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      finalize_expired_garantias: { Args: never; Returns: undefined }
       generate_fatura_numero: { Args: never; Returns: string }
     }
     Enums: {
