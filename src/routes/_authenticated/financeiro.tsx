@@ -529,7 +529,8 @@ function NovoCustoModal({ onClose }: { onClose: () => void }) {
 }
 
 function EditCustoModal({ custo, onClose }: { custo: Custo; onClose: () => void }) {
-  const [form, setForm] = useState({
+  const parsed = parseAnuncio(custo.observacoes ?? "");
+  const [form, setForm] = useState<CustoForm>({
     descricao: custo.descricao,
     categoria: custo.categoria,
     tipo: custo.tipo,
@@ -537,7 +538,9 @@ function EditCustoModal({ custo, onClose }: { custo: Custo; onClose: () => void 
     data: custo.data,
     status: custo.status,
     fornecedor: custo.fornecedor ?? "",
-    observacoes: custo.observacoes ?? "",
+    observacoes: parsed.resto,
+    candidaturas: parsed.candidaturas,
+    visualizacoes: parsed.visualizacoes,
   });
   const [saving, setSaving] = useState(false);
   return (
