@@ -86,7 +86,7 @@ function VagasPage() {
                   <Th>Cargo</Th><Th>Empresa</Th>
                   <Th className="text-center">Candidatos</Th>
                   <Th>Etapa</Th>
-                  <Th>Início</Th><Th>Status</Th><Th className="w-12"></Th>
+                  <Th>Início</Th><Th>Status</Th><Th className="w-24"></Th>
                 </tr>
               </thead>
               <tbody>
@@ -103,35 +103,38 @@ function VagasPage() {
                     <Td>{v.createdAt ? new Date(v.createdAt).toLocaleDateString("pt-BR") : "—"}</Td>
                     <Td><StatusBadge status={v.status} /></Td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Excluir vaga?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Esta ação não pode ser desfeita. A vaga "{v.cargo}" será removida permanentemente.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              onClick={async () => {
-                                try {
-                                  await deleteVaga(v.id);
-                                  toast.success("Vaga excluída com sucesso.");
-                                } catch {
-                                  toast.error("Não foi possível excluir a vaga.");
-                                }
-                              }}
-                            >Excluir</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <div className="flex items-center gap-1">
+                        <EditarVagaButton vaga={v} />
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir vaga?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta ação não pode ser desfeita. A vaga "{v.cargo}" será removida permanentemente.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={async () => {
+                                  try {
+                                    await deleteVaga(v.id);
+                                    toast.success("Vaga excluída com sucesso.");
+                                  } catch {
+                                    toast.error("Não foi possível excluir a vaga.");
+                                  }
+                                }}
+                              >Excluir</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </td>
                   </tr>
                 ))}
