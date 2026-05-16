@@ -117,6 +117,7 @@ export type Fatura = {
   vencimento: string;
   valor: number;
   status: FaturaStatus;
+  vagaId?: string | null;
   observacoes?: string;
 };
 
@@ -278,6 +279,7 @@ function mapFatura(row: any): Fatura {
     vencimento: row.vencimento,
     valor: Number(row.valor ?? 0),
     status: row.status,
+    vagaId: row.vaga_id ?? null,
     observacoes: row.observacoes ?? undefined,
   };
 }
@@ -595,6 +597,7 @@ export async function addFatura(fatura: Omit<Fatura, "id" | "numero" | "status">
     servico: fatura.servico,
     valor: fatura.valor,
     vencimento: fatura.vencimento,
+    vaga_id: fatura.vagaId ?? null,
     observacoes: fatura.observacoes ?? null,
   };
 
@@ -612,6 +615,7 @@ export async function updateFatura(id: string, patch: Partial<Fatura>) {
   if (patch.vencimento !== undefined) payload.vencimento = patch.vencimento;
   if (patch.valor !== undefined) payload.valor = patch.valor;
   if (patch.status !== undefined) payload.status = patch.status;
+  if (patch.vagaId !== undefined) payload.vaga_id = patch.vagaId;
   if (patch.observacoes !== undefined) payload.observacoes = patch.observacoes;
 
   const { data, error } = await supabase.from("faturas").update(payload).eq("id", id).select().single();
