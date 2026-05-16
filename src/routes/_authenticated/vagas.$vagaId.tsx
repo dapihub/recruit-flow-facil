@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Copy, FileDown, FileText, Briefcase, FileSignature, Check, DollarSign, TrendingUp, TrendingDown, Link2, X } from "lucide-react";
+import { ArrowLeft, Copy, FileDown, FileText, Briefcase, FileSignature, Check, DollarSign, TrendingUp, TrendingDown, Link2, X, Calendar, Users } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -69,36 +69,32 @@ function VagaDetailPage() {
       />
 
       <div className="p-8 space-y-6">
-        <PipelineProgress
-          etapaAtual={vaga.etapa}
-          onChange={(etapa) => updateVaga(vaga.id, { etapa })}
-        />
-
-        <div className="flex flex-wrap items-center gap-3">
-          <DocDialog
-            title="Briefing da vaga"
-            triggerLabel="Briefing"
-            icon={<FileText className="w-4 h-4" />}
-          >
-            <BriefingTab vagaId={vaga.id} initial={vaga.briefing} empresa={vaga.empresa} cargo={vaga.cargo} />
-          </DocDialog>
-          <DocDialog
-            title="Descritivo da vaga"
-            triggerLabel="Descritivo"
-            icon={<Briefcase className="w-4 h-4" />}
-          >
-            <DescritivoTab vagaId={vaga.id} initial={vaga.descritivo} briefing={vaga.briefing} cargo={vaga.cargo} empresa={vaga.empresa} />
-          </DocDialog>
-          <DocDialog
-            title="Contrato"
-            triggerLabel="Contrato"
-            icon={<FileSignature className="w-4 h-4" />}
-          >
-            <ContratoTab vagaId={vaga.id} initial={vaga.contrato} empresa={vaga.empresa} cargo={vaga.cargo} />
-          </DocDialog>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Status</Label>
+            <Select value={vaga.etapa} onValueChange={(v) => updateVaga(vaga.id, { etapa: v as PipelineEtapa })}>
+              <SelectTrigger className="w-[260px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {PIPELINE_ETAPAS.map((e) => (
+                  <SelectItem key={e} value={e}>{e}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <DocDialog title="Briefing da vaga" triggerLabel="Briefing" icon={<FileText className="w-4 h-4" />}>
+              <BriefingTab vagaId={vaga.id} initial={vaga.briefing} empresa={vaga.empresa} cargo={vaga.cargo} />
+            </DocDialog>
+            <DocDialog title="Descritivo da vaga" triggerLabel="Descritivo" icon={<Briefcase className="w-4 h-4" />}>
+              <DescritivoTab vagaId={vaga.id} initial={vaga.descritivo} briefing={vaga.briefing} cargo={vaga.cargo} empresa={vaga.empresa} />
+            </DocDialog>
+            <DocDialog title="Contrato" triggerLabel="Contrato" icon={<FileSignature className="w-4 h-4" />}>
+              <ContratoTab vagaId={vaga.id} initial={vaga.contrato} empresa={vaga.empresa} cargo={vaga.cargo} />
+            </DocDialog>
+          </div>
         </div>
 
-        <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} />
+        <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} diasAndamento={diasEmAndamento(vaga.createdAt)} totalCandidatos={vaga.candidatos} />
       </div>
     </div>
   );
@@ -674,7 +670,7 @@ function ContratoTab({ vagaId, initial, empresa, cargo }: { vagaId: string; init
 }
 
 /* ---------------- FINANCEIRO ---------------- */
-function FinanceiroTab({ vagaId, empresa, cargo }: { vagaId: string; empresa: string; cargo: string }) {
+function FinanceiroTab({ vagaId, empresa, cargo, diasAndamento, totalCandidatos }: { vagaId: string; empresa: string; cargo: string; diasAndamento: number; totalCandidatos: number }) {
   const faturas = useFaturas();
   const custos = useCustos();
 
@@ -733,7 +729,21 @@ function FinanceiroTab({ vagaId, empresa, cargo }: { vagaId: string; empresa: st
   return (
     <div className="space-y-6">
       {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <KpiCard
+          title="Dias em andamento"
+          value={`${diasAndamento}`}
+          sub={diasAndamento === 1 ? "dia desde a abertura" : "dias desde a abertura"}
+          icon={<Calendar className="w-5 h-5" />}
+          tone="brand"
+        />
+        <KpiCard
+          title="Candidatos"
+          value={`${totalCandidatos}`}
+          sub="total cadastrado(s)"
+          icon={<Users className="w-5 h-5" />}
+          tone="brand"
+        />
         <KpiCard
           title="Receita prevista"
           value={fmt(receita)}
@@ -972,6 +982,12 @@ function EmptyRow({ text }: { text: string }) {
 }
 
 /* ---------------- helpers ---------------- */
+function diasEmAndamento(createdAt?: string) {
+  if (!createdAt) return 0;
+  const ms = Date.now() - new Date(createdAt).getTime();
+  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+}
+
 function DocDialog({ title, triggerLabel, icon, children }: { title: string; triggerLabel: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <Dialog>
