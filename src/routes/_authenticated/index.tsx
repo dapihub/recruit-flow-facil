@@ -30,14 +30,9 @@ function VagasPage() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
-  const [filtroArea, setFiltroArea] = useState<string>("todos");
-
-  const areas = useMemo(() => Array.from(new Set(vagas.map((v) => v.area))), [vagas]);
 
   const filtradas = vagas.filter(
-    (v) =>
-      (filtroStatus === "todos" || v.status === filtroStatus) &&
-      (filtroArea === "todos" || v.area === filtroArea),
+    (v) => filtroStatus === "todos" || v.status === filtroStatus,
   );
 
   const abertas = vagas.filter((v) => v.status === "Aberta").length;
