@@ -182,42 +182,7 @@ const state: StoreState = {
   loadedUserId: null,
 };
 
-const INITIAL_VAGAS: Omit<Vaga, "id">[] = [
-  { cargo: "Desenvolvedor Full Stack Sênior", empresa: "TechNova", area: "Tecnologia", candidatos: 24, prazo: "2026-06-15", status: "Aberta", salario: "R$ 15.000", regime: "CLT", etapa: "Candidatos em triagem" },
-  { cargo: "Analista de Marketing Digital", empresa: "BrandUp", area: "Marketing", candidatos: 18, prazo: "2026-05-30", status: "Em processo", salario: "R$ 7.500", regime: "Híbrido", etapa: "Descritivo publicado" },
-  { cargo: "Gerente Comercial", empresa: "Vendaz", area: "Comercial", candidatos: 12, prazo: "2026-06-01", status: "Em processo", salario: "R$ 12.000", regime: "CLT", etapa: "Contrato" },
-  { cargo: "Designer UX/UI", empresa: "Pixel Lab", area: "Design", candidatos: 31, prazo: "2026-05-20", status: "Fechada", salario: "R$ 9.000", regime: "PJ", etapa: "Finalizada" },
-  { cargo: "Analista Financeiro Pleno", empresa: "FinCore", area: "Financeiro", candidatos: 15, prazo: "2026-06-10", status: "Aberta", salario: "R$ 8.500", regime: "CLT", etapa: "Briefing" },
-  { cargo: "Recrutador Tech", empresa: "TalentHub", area: "RH", candidatos: 9, prazo: "2026-04-15", status: "Encerrada", salario: "R$ 6.000", regime: "CLT", etapa: "Finalizada" },
-];
-
-const INITIAL_CANDIDATOS = [
-  { nome: "Ana Carolina Silva", email: "ana.silva@email.com", vaga: "Desenvolvedor Full Stack Sênior", etapa: "Entrevista técnica", proximaAcao: "Teste prático", pontuacao: 8.7, status: "Entrevista" as CandidatoStatus },
-  { nome: "Bruno Henrique Costa", email: "bruno.costa@email.com", vaga: "Analista de Marketing Digital", etapa: "Triagem inicial", proximaAcao: "Análise CV", pontuacao: 7.2, status: "Triagem" as CandidatoStatus },
-  { nome: "Camila Oliveira", email: "camila.o@email.com", vaga: "Designer UX/UI", etapa: "Proposta enviada", proximaAcao: "Aguardar resposta", pontuacao: 9.4, status: "Contratado" as CandidatoStatus },
-  { nome: "Diego Martins", email: "diego.m@email.com", vaga: "Gerente Comercial", etapa: "Entrevista RH", proximaAcao: "Entrevista gestor", pontuacao: 8.1, status: "Entrevista" as CandidatoStatus },
-  { nome: "Eduarda Ramos", email: "edu.ramos@email.com", vaga: "Analista Financeiro Pleno", etapa: "Triagem inicial", proximaAcao: "Ligação inicial", pontuacao: 6.8, status: "Triagem" as CandidatoStatus },
-  { nome: "Felipe Andrade", email: "felipe.a@email.com", vaga: "Desenvolvedor Full Stack Sênior", etapa: "Reprovado", proximaAcao: "—", pontuacao: 4.5, status: "Reprovado" as CandidatoStatus },
-  { nome: "Giovanna Lopes", email: "gi.lopes@email.com", vaga: "Recrutador Tech", etapa: "Contratada", proximaAcao: "Onboarding", pontuacao: 9.1, status: "Contratado" as CandidatoStatus },
-];
-
-const INITIAL_FATURAS: Omit<Fatura, "id">[] = [
-  { numero: "RF-2026-001", cliente: "TechNova", servico: "Recrutamento Dev Sênior", vencimento: "2026-05-20", valor: 18000, status: "Pago" },
-  { numero: "RF-2026-002", cliente: "Pixel Lab", servico: "Recrutamento Designer UX", vencimento: "2026-05-25", valor: 9500, status: "Pago" },
-  { numero: "RF-2026-003", cliente: "Vendaz", servico: "Headhunting Gerente Comercial", vencimento: "2026-05-15", valor: 22000, status: "Pendente" },
-  { numero: "RF-2026-004", cliente: "BrandUp", servico: "Recrutamento Marketing", vencimento: "2026-04-30", valor: 8800, status: "Atrasado" },
-  { numero: "RF-2026-005", cliente: "FinCore", servico: "Recrutamento Analista Financeiro", vencimento: "2026-06-05", valor: 11000, status: "Pendente" },
-  { numero: "RF-2026-006", cliente: "TalentHub", servico: "Recrutamento Recrutador Tech", vencimento: "2026-04-10", valor: 7200, status: "Pago" },
-];
-
-const INITIAL_CUSTOS: Omit<Custo, "id">[] = [
-  { descricao: "Salários time interno", categoria: "Pessoal", tipo: "Fixo", valor: 24000, data: "2026-05-05", status: "Pago", fornecedor: "Folha DAPI" },
-  { descricao: "Assinatura LinkedIn Recruiter", categoria: "Software", tipo: "Fixo", valor: 3200, data: "2026-05-03", status: "Pago", fornecedor: "LinkedIn" },
-  { descricao: "Anúncios Meta Ads — vaga TechNova", categoria: "Anúncios", tipo: "Variável", valor: 1800, data: "2026-05-08", status: "Pago", fornecedor: "Meta" },
-  { descricao: "Aluguel sala comercial", categoria: "Infraestrutura", tipo: "Fixo", valor: 4500, data: "2026-05-10", status: "Pendente", fornecedor: "Imobiliária Centro" },
-  { descricao: "Simples Nacional — DAS", categoria: "Impostos", tipo: "Variável", valor: 5200, data: "2026-05-20", status: "Pendente", fornecedor: "Receita Federal" },
-  { descricao: "Campanha branding", categoria: "Marketing", tipo: "Variável", valor: 2700, data: "2026-04-28", status: "Atrasado", fornecedor: "Agência Norte" },
-];
+// Demo seed data removido permanentemente para evitar reaparecimento de registros.
 
 const listeners = new Set<() => void>();
 let authListenerReady = false;
