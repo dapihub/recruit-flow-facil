@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Copy, FileDown, FileText, Briefcase, FileSignature, Check, DollarSign, TrendingUp, TrendingDown, Link2, X } from "lucide-react";
+import { ArrowLeft, Copy, FileDown, FileText, Briefcase, FileSignature, Check, DollarSign, TrendingUp, TrendingDown, Link2, X, Calendar, Users } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
