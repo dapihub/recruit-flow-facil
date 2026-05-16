@@ -136,6 +136,7 @@ export type Database = {
           servico: string
           status: Database["public"]["Enums"]["fatura_status"]
           updated_at: string
+          vaga_id: string | null
           valor: number
           vencimento: string
         }
@@ -148,6 +149,7 @@ export type Database = {
           servico: string
           status?: Database["public"]["Enums"]["fatura_status"]
           updated_at?: string
+          vaga_id?: string | null
           valor: number
           vencimento: string
         }
@@ -160,6 +162,7 @@ export type Database = {
           servico?: string
           status?: Database["public"]["Enums"]["fatura_status"]
           updated_at?: string
+          vaga_id?: string | null
           valor?: number
           vencimento?: string
         }
