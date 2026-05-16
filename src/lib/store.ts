@@ -94,6 +94,7 @@ export type Vaga = {
   briefing?: Briefing;
   descritivo?: Descritivo;
   contrato?: Contrato;
+  createdAt?: string;
 };
 
 export type CandidatoStatus = "Triagem" | "Entrevista" | "Contratado" | "Reprovado";
