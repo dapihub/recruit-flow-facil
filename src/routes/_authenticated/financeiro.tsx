@@ -297,7 +297,22 @@ function FinanceiroPage() {
                       <Td className="text-right font-semibold text-destructive">
                         <span className="inline-flex items-center gap-1"><TrendingDown className="w-3.5 h-3.5" />{brl(c.valor)}</span>
                       </Td>
-                      <Td><StatusBadge status={c.status} /></Td>
+                      <Td>
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            checked={c.status === "Pago"}
+                            onCheckedChange={async (checked) => {
+                              try {
+                                await updateCusto(c.id, { status: checked ? "Pago" : "Pendente" });
+                                toast.success(checked ? "Marcado como pago" : "Marcado como pendente");
+                              } catch (e: any) {
+                                toast.error(e?.message ?? "Erro ao atualizar");
+                              }
+                            }}
+                          />
+                          <StatusBadge status={c.status} />
+                        </div>
+                      </Td>
                       <Td className="text-right">
                         <div className="flex justify-end gap-1">
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditCusto(c)}>
