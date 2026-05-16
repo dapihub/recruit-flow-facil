@@ -729,7 +729,21 @@ function FinanceiroTab({ vagaId, empresa, cargo, diasAndamento, totalCandidatos 
   return (
     <div className="space-y-6">
       {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <KpiCard
+          title="Dias em andamento"
+          value={`${diasAndamento}`}
+          sub={diasAndamento === 1 ? "dia desde a abertura" : "dias desde a abertura"}
+          icon={<Calendar className="w-5 h-5" />}
+          tone="brand"
+        />
+        <KpiCard
+          title="Candidatos"
+          value={`${totalCandidatos}`}
+          sub="total cadastrado(s)"
+          icon={<Users className="w-5 h-5" />}
+          tone="brand"
+        />
         <KpiCard
           title="Receita prevista"
           value={fmt(receita)}
