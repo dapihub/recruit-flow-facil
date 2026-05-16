@@ -89,6 +89,8 @@ export type Vaga = {
   salario?: string;
   regime?: "CLT" | "PJ" | "Híbrido";
   etapa: PipelineEtapa;
+  prazoGarantia?: number;
+  garantiaInicio?: string | null;
   briefing?: Briefing;
   descritivo?: Descritivo;
   contrato?: Contrato;
