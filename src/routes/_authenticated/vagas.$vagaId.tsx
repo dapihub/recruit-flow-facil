@@ -69,36 +69,32 @@ function VagaDetailPage() {
       />
 
       <div className="p-8 space-y-6">
-        <PipelineProgress
-          etapaAtual={vaga.etapa}
-          onChange={(etapa) => updateVaga(vaga.id, { etapa })}
-        />
-
-        <div className="flex flex-wrap items-center gap-3">
-          <DocDialog
-            title="Briefing da vaga"
-            triggerLabel="Briefing"
-            icon={<FileText className="w-4 h-4" />}
-          >
-            <BriefingTab vagaId={vaga.id} initial={vaga.briefing} empresa={vaga.empresa} cargo={vaga.cargo} />
-          </DocDialog>
-          <DocDialog
-            title="Descritivo da vaga"
-            triggerLabel="Descritivo"
-            icon={<Briefcase className="w-4 h-4" />}
-          >
-            <DescritivoTab vagaId={vaga.id} initial={vaga.descritivo} briefing={vaga.briefing} cargo={vaga.cargo} empresa={vaga.empresa} />
-          </DocDialog>
-          <DocDialog
-            title="Contrato"
-            triggerLabel="Contrato"
-            icon={<FileSignature className="w-4 h-4" />}
-          >
-            <ContratoTab vagaId={vaga.id} initial={vaga.contrato} empresa={vaga.empresa} cargo={vaga.cargo} />
-          </DocDialog>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Status</Label>
+            <Select value={vaga.etapa} onValueChange={(v) => updateVaga(vaga.id, { etapa: v as PipelineEtapa })}>
+              <SelectTrigger className="w-[260px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {PIPELINE_ETAPAS.map((e) => (
+                  <SelectItem key={e} value={e}>{e}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <DocDialog title="Briefing da vaga" triggerLabel="Briefing" icon={<FileText className="w-4 h-4" />}>
+              <BriefingTab vagaId={vaga.id} initial={vaga.briefing} empresa={vaga.empresa} cargo={vaga.cargo} />
+            </DocDialog>
+            <DocDialog title="Descritivo da vaga" triggerLabel="Descritivo" icon={<Briefcase className="w-4 h-4" />}>
+              <DescritivoTab vagaId={vaga.id} initial={vaga.descritivo} briefing={vaga.briefing} cargo={vaga.cargo} empresa={vaga.empresa} />
+            </DocDialog>
+            <DocDialog title="Contrato" triggerLabel="Contrato" icon={<FileSignature className="w-4 h-4" />}>
+              <ContratoTab vagaId={vaga.id} initial={vaga.contrato} empresa={vaga.empresa} cargo={vaga.cargo} />
+            </DocDialog>
+          </div>
         </div>
 
-        <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} />
+        <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} diasAndamento={diasEmAndamento(vaga.createdAt)} totalCandidatos={vaga.candidatos} />
       </div>
     </div>
   );
