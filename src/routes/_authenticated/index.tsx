@@ -168,27 +168,15 @@ function Td({ children, className = "" }: { children?: React.ReactNode; classNam
 }
 
 function NovaVagaModal({ onClose }: { onClose: () => void }) {
-  const [form, setForm] = useState({ cargo: "", empresa: "", area: "", descricao: "", prazo: "", salario: "", regime: "CLT" as "CLT" | "PJ" | "Híbrido" });
+  const [form, setForm] = useState({ cargo: "", empresa: "", quantidade: "1", receita: "" });
   return (
     <DialogContent className="max-w-lg">
       <DialogHeader><DialogTitle>Nova Vaga</DialogTitle></DialogHeader>
       <div className="grid grid-cols-2 gap-4">
         <Field label="Cargo" className="col-span-2"><Input value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} /></Field>
-        <Field label="Empresa"><Input value={form.empresa} onChange={(e) => setForm({ ...form, empresa: e.target.value })} /></Field>
-        <Field label="Área"><Input value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} /></Field>
-        <Field label="Prazo"><Input type="date" value={form.prazo} onChange={(e) => setForm({ ...form, prazo: e.target.value })} /></Field>
-        <Field label="Salário"><Input placeholder="R$ 0,00" value={form.salario} onChange={(e) => setForm({ ...form, salario: e.target.value })} /></Field>
-        <Field label="Regime" className="col-span-2">
-          <Select value={form.regime} onValueChange={(v) => setForm({ ...form, regime: v as never })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="CLT">CLT</SelectItem>
-              <SelectItem value="PJ">PJ</SelectItem>
-              <SelectItem value="Híbrido">Híbrido</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="Descrição" className="col-span-2"><Textarea rows={3} value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} /></Field>
+        <Field label="Empresa" className="col-span-2"><Input value={form.empresa} onChange={(e) => setForm({ ...form, empresa: e.target.value })} /></Field>
+        <Field label="Quantidade"><Input type="number" min="1" value={form.quantidade} onChange={(e) => setForm({ ...form, quantidade: e.target.value })} /></Field>
+        <Field label="Receita por vaga (R$)"><Input type="number" min="0" step="0.01" placeholder="0,00" value={form.receita} onChange={(e) => setForm({ ...form, receita: e.target.value })} /></Field>
       </div>
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>Cancelar</Button>
@@ -197,8 +185,13 @@ function NovaVagaModal({ onClose }: { onClose: () => void }) {
           disabled={!form.cargo || !form.empresa}
           onClick={async () => {
             try {
-              await addVaga(form);
-              toast.success("Vaga criada com sucesso.");
+              await addVaga({
+                cargo: form.cargo,
+                empresa: form.empresa,
+                quantidade: Number(form.quantidade) || 1,
+                receita: Number(form.receita) || 0,
+              });
+              toast.success("Vaga criada e receita lançada no financeiro.");
               onClose();
             } catch {
               toast.error("Não foi possível salvar a vaga.");
