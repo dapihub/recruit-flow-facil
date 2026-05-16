@@ -251,6 +251,8 @@ function mapVaga(row: any): Vaga {
     salario: row.salario ?? undefined,
     regime: row.regime ?? undefined,
     etapa: row.etapa,
+    prazoGarantia: row.prazo_garantia ?? undefined,
+    garantiaInicio: row.garantia_inicio ?? null,
     briefing: row.briefing ?? undefined,
     descritivo: row.descritivo ?? undefined,
     contrato: row.contrato ?? undefined,
