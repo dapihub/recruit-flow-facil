@@ -565,19 +565,29 @@ export async function addVaga(vaga: {
   state.vagas = [novaVaga, ...state.vagas];
   emit();
 
-  // Cria fatura automaticamente vinculada à vaga
+  // Cria 2 faturas (50% entrada + 50% conclusão) vinculadas à vaga
   if (vaga.receita && vaga.receita > 0) {
     const valorTotal = vaga.receita * quantidade;
+    const metade = Math.round((valorTotal / 2) * 100) / 100;
+    const hoje = new Date().toISOString().slice(0, 10);
+    const sufixo = quantidade > 1 ? ` (${quantidade} vagas)` : "";
     try {
       await addFatura({
         cliente: vaga.empresa,
-        servico: `Recrutamento — ${vaga.cargo}${quantidade > 1 ? ` (${quantidade} vagas)` : ""}`,
-        valor: valorTotal,
+        servico: `Recrutamento — ${vaga.cargo}${sufixo} — Entrada (50%)`,
+        valor: metade,
+        vencimento: hoje,
+        vagaId: novaVaga.id,
+      });
+      await addFatura({
+        cliente: vaga.empresa,
+        servico: `Recrutamento — ${vaga.cargo}${sufixo} — Conclusão (50%)`,
+        valor: valorTotal - metade,
         vencimento: prazo,
         vagaId: novaVaga.id,
       });
     } catch (err) {
-      console.error("Erro ao criar fatura automática:", err);
+      console.error("Erro ao criar faturas automáticas:", err);
     }
   }
 
