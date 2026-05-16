@@ -982,6 +982,12 @@ function EmptyRow({ text }: { text: string }) {
 }
 
 /* ---------------- helpers ---------------- */
+function diasEmAndamento(createdAt?: string) {
+  if (!createdAt) return 0;
+  const ms = Date.now() - new Date(createdAt).getTime();
+  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+}
+
 function DocDialog({ title, triggerLabel, icon, children }: { title: string; triggerLabel: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <Dialog>
