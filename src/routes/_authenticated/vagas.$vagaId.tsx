@@ -61,7 +61,24 @@ function VagaDetailPage() {
         subtitle={`${vaga.empresa} · ${vaga.area}`}
         action={
           <div className="flex items-center gap-3">
-            <StatusBadge status={vaga.status} />
+            <Select
+              value={vaga.status}
+              onValueChange={async (v) => {
+                try {
+                  await updateVaga(vaga.id, { status: v as VagaStatus });
+                  toast.success("Status atualizado.");
+                } catch {
+                  toast.error("Não foi possível atualizar o status.");
+                }
+              }}
+            >
+              <SelectTrigger className="w-[170px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {(["Aberta", "Em processo", "Fechada", "Encerrada"] as VagaStatus[]).map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button variant="outline" onClick={() => navigate({ to: "/" })}>
               <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
             </Button>
