@@ -972,6 +972,22 @@ function EmptyRow({ text }: { text: string }) {
 }
 
 /* ---------------- helpers ---------------- */
+function DocDialog({ title, triggerLabel, icon, children }: { title: string; triggerLabel: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="gap-2">{icon}{triggerLabel}</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        {children}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
   return <div className={`space-y-1.5 ${className}`}><Label className="text-xs">{label}</Label>{children}</div>;
 }
