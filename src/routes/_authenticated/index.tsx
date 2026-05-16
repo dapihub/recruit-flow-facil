@@ -204,17 +204,6 @@ function NovaVagaModal({ onClose }: { onClose: () => void }) {
     </DialogContent>
   );
 }
-              toast.success("Vaga criada e receita lançada no financeiro.");
-              onClose();
-            } catch {
-              toast.error("Não foi possível salvar a vaga.");
-            }
-          }}
-        >Criar vaga</Button>
-      </DialogFooter>
-    </DialogContent>
-  );
-}
 
 function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
   return <div className={`space-y-1.5 ${className}`}><Label className="text-xs">{label}</Label>{children}</div>;
