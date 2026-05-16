@@ -600,6 +600,8 @@ export async function updateVaga(id: string, patch: Partial<Vaga>) {
   if (patch.briefing !== undefined) payload.briefing = patch.briefing;
   if (patch.descritivo !== undefined) payload.descritivo = patch.descritivo;
   if (patch.contrato !== undefined) payload.contrato = patch.contrato;
+  if (patch.prazoGarantia !== undefined) payload.prazo_garantia = patch.prazoGarantia;
+  if (patch.garantiaInicio !== undefined) payload.garantia_inicio = patch.garantiaInicio;
 
   const { data, error } = await supabase.from("vagas").update(payload).eq("id", id).select().single();
   if (error) throw error;
