@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { addVaga, deleteVaga, useVagas, VagaStatus } from "@/lib/store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
@@ -132,7 +133,14 @@ function VagasPage() {
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
                             <AlertDialogAction
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              onClick={() => deleteVaga(v.id)}
+                              onClick={async () => {
+                                try {
+                                  await deleteVaga(v.id);
+                                  toast.success("Vaga excluída com sucesso.");
+                                } catch {
+                                  toast.error("Não foi possível excluir a vaga.");
+                                }
+                              }}
                             >Excluir</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -187,7 +195,15 @@ function NovaVagaModal({ onClose }: { onClose: () => void }) {
         <Button
           className="bg-brand hover:bg-brand/90 text-brand-foreground"
           disabled={!form.cargo || !form.empresa}
-          onClick={() => { addVaga(form); onClose(); }}
+          onClick={async () => {
+            try {
+              await addVaga(form);
+              toast.success("Vaga criada com sucesso.");
+              onClose();
+            } catch {
+              toast.error("Não foi possível salvar a vaga.");
+            }
+          }}
         >Criar vaga</Button>
       </DialogFooter>
     </DialogContent>
