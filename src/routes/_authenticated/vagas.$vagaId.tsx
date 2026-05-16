@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Copy, FileDown, FileText, Briefcase, FileSignature, Check } from "lucide-react";
+import { ArrowLeft, Copy, FileDown, FileText, Briefcase, FileSignature, Check, DollarSign, TrendingUp, TrendingDown, Link2, X } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -9,13 +9,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 import {
   Briefing,
   Contrato,
   Descritivo,
+  Fatura,
+  Custo,
   PIPELINE_ETAPAS,
   PipelineEtapa,
   updateVaga,
+  updateFatura,
+  updateCusto,
+  useFaturas,
+  useCustos,
   useVaga,
 } from "@/lib/store";
 import dapiLogoColor from "@/assets/dapi-logo-color.png";
@@ -78,6 +85,9 @@ function VagaDetailPage() {
             <TabsTrigger value="contrato" className="data-[state=active]:bg-brand data-[state=active]:text-brand-foreground gap-2">
               <FileSignature className="w-4 h-4" /> Contrato
             </TabsTrigger>
+            <TabsTrigger value="financeiro" className="data-[state=active]:bg-brand data-[state=active]:text-brand-foreground gap-2">
+              <DollarSign className="w-4 h-4" /> Financeiro
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="briefing" className="mt-4">
@@ -88,6 +98,9 @@ function VagaDetailPage() {
           </TabsContent>
           <TabsContent value="contrato" className="mt-4">
             <ContratoTab vagaId={vaga.id} initial={vaga.contrato} empresa={vaga.empresa} cargo={vaga.cargo} />
+          </TabsContent>
+          <TabsContent value="financeiro" className="mt-4">
+            <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} />
           </TabsContent>
         </Tabs>
       </div>
@@ -660,6 +673,304 @@ function ContratoTab({ vagaId, initial, empresa, cargo }: { vagaId: string; init
         </Button>
         <Button className="bg-brand hover:bg-brand/90 text-brand-foreground" onClick={save}>Salvar contrato</Button>
       </div>
+    </div>
+  );
+}
+
+/* ---------------- FINANCEIRO ---------------- */
+function FinanceiroTab({ vagaId, empresa, cargo }: { vagaId: string; empresa: string; cargo: string }) {
+  const faturas = useFaturas();
+  const custos = useCustos();
+
+  const faturasVinculadas = faturas.filter((f) => f.vagaId === vagaId);
+  const custosVinculados = custos.filter((c) => c.vagaId === vagaId);
+
+  const sugestoesFaturas = faturas.filter((f) => !f.vagaId && f.cliente === empresa);
+  const faturasDisponiveis = faturas.filter((f) => !f.vagaId);
+  const custosDisponiveis = custos.filter((c) => !c.vagaId);
+
+  const receita = faturasVinculadas.reduce((acc, f) => acc + f.valor, 0);
+  const receitaRecebida = faturasVinculadas.filter((f) => f.status === "Pago").reduce((acc, f) => acc + f.valor, 0);
+  const totalCustos = custosVinculados.reduce((acc, c) => acc + c.valor, 0);
+  const resultado = receita - totalCustos;
+  const margem = receita > 0 ? (resultado / receita) * 100 : 0;
+
+  const fmt = (v: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+
+  const vincularFatura = async (id: string) => {
+    try {
+      await updateFatura(id, { vagaId });
+      toast.success("Receita vinculada à vaga");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao vincular receita");
+    }
+  };
+
+  const desvincularFatura = async (id: string) => {
+    try {
+      await updateFatura(id, { vagaId: null });
+      toast.success("Receita desvinculada");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao desvincular");
+    }
+  };
+
+  const vincularCusto = async (id: string) => {
+    try {
+      await updateCusto(id, { vagaId });
+      toast.success("Custo vinculado à vaga");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao vincular custo");
+    }
+  };
+
+  const desvincularCusto = async (id: string) => {
+    try {
+      await updateCusto(id, { vagaId: undefined });
+      toast.success("Custo desvinculado");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao desvincular");
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <KpiCard
+          title="Receita prevista"
+          value={fmt(receita)}
+          sub={`${faturasVinculadas.length} ${faturasVinculadas.length === 1 ? "receita" : "receitas"} vinculada(s)`}
+          icon={<TrendingUp className="w-5 h-5" />}
+          tone="success"
+        />
+        <KpiCard
+          title="Recebido"
+          value={fmt(receitaRecebida)}
+          sub={`${faturasVinculadas.filter((f) => f.status === "Pago").length} fatura(s) paga(s)`}
+          icon={<DollarSign className="w-5 h-5" />}
+          tone="brand"
+        />
+        <KpiCard
+          title="Custos"
+          value={fmt(totalCustos)}
+          sub={`${custosVinculados.length} ${custosVinculados.length === 1 ? "custo" : "custos"} vinculado(s)`}
+          icon={<TrendingDown className="w-5 h-5" />}
+          tone="danger"
+        />
+        <KpiCard
+          title="Resultado"
+          value={fmt(resultado)}
+          sub={`Margem: ${margem.toFixed(1)}%`}
+          icon={<TrendingUp className="w-5 h-5" />}
+          tone={resultado >= 0 ? "success" : "danger"}
+        />
+      </div>
+
+      {/* RECEITAS */}
+      <div className="bg-card rounded-xl border shadow-sm p-6 space-y-4">
+        <div className="flex items-start justify-between flex-wrap gap-3">
+          <SectionTitle title="Receitas desta vaga" desc={`Faturas emitidas para ${empresa} vinculadas à vaga de ${cargo}.`} />
+          <div className="flex items-center gap-2">
+            <Select onValueChange={vincularFatura} value="">
+              <SelectTrigger className="w-[280px]">
+                <SelectValue placeholder="Vincular fatura existente..." />
+              </SelectTrigger>
+              <SelectContent>
+                {faturasDisponiveis.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">Nenhuma fatura disponível</div>
+                )}
+                {sugestoesFaturas.length > 0 && (
+                  <>
+                    <div className="px-3 py-1.5 text-[10px] uppercase font-semibold text-brand">Sugeridas ({empresa})</div>
+                    {sugestoesFaturas.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.numero} · {f.servico} · {fmt(f.valor)}
+                      </SelectItem>
+                    ))}
+                    <div className="px-3 py-1.5 text-[10px] uppercase font-semibold text-muted-foreground border-t mt-1">Outras</div>
+                  </>
+                )}
+                {faturasDisponiveis
+                  .filter((f) => f.cliente !== empresa)
+                  .map((f) => (
+                    <SelectItem key={f.id} value={f.id}>
+                      {f.numero} · {f.cliente} · {fmt(f.valor)}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {faturasVinculadas.length === 0 ? (
+          <EmptyRow text="Nenhuma receita vinculada ainda. Use o seletor acima para vincular faturas a esta vaga." />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-xs uppercase text-muted-foreground border-b">
+                <tr>
+                  <th className="text-left font-medium py-2 px-2">Nº</th>
+                  <th className="text-left font-medium py-2 px-2">Cliente</th>
+                  <th className="text-left font-medium py-2 px-2">Serviço</th>
+                  <th className="text-left font-medium py-2 px-2">Vencimento</th>
+                  <th className="text-left font-medium py-2 px-2">Status</th>
+                  <th className="text-right font-medium py-2 px-2">Valor</th>
+                  <th className="py-2 px-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {faturasVinculadas.map((f) => (
+                  <tr key={f.id} className="border-b last:border-0">
+                    <td className="py-2.5 px-2 font-mono text-xs">{f.numero}</td>
+                    <td className="py-2.5 px-2">{f.cliente}</td>
+                    <td className="py-2.5 px-2">{f.servico}</td>
+                    <td className="py-2.5 px-2">{formatDateBR(f.vencimento)}</td>
+                    <td className="py-2.5 px-2"><StatusBadge status={f.status} /></td>
+                    <td className="py-2.5 px-2 text-right font-semibold">{fmt(f.valor)}</td>
+                    <td className="py-2.5 px-2 text-right">
+                      <Button variant="ghost" size="sm" onClick={() => desvincularFatura(f.id)} title="Desvincular">
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+                <tr className="bg-muted/30 font-semibold">
+                  <td colSpan={5} className="py-2.5 px-2 text-right">Total</td>
+                  <td className="py-2.5 px-2 text-right text-success">{fmt(receita)}</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* CUSTOS */}
+      <div className="bg-card rounded-xl border shadow-sm p-6 space-y-4">
+        <div className="flex items-start justify-between flex-wrap gap-3">
+          <SectionTitle title="Custos desta vaga" desc="Despesas específicas alocadas a esta vaga (anúncios, ferramentas, etc.)." />
+          <Select onValueChange={vincularCusto} value="">
+            <SelectTrigger className="w-[280px]">
+              <SelectValue placeholder="Vincular custo existente..." />
+            </SelectTrigger>
+            <SelectContent>
+              {custosDisponiveis.length === 0 ? (
+                <div className="px-3 py-2 text-sm text-muted-foreground">Nenhum custo disponível</div>
+              ) : (
+                custosDisponiveis.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.descricao} · {fmt(c.valor)}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {custosVinculados.length === 0 ? (
+          <EmptyRow text="Nenhum custo vinculado. Vincule custos para apurar o resultado financeiro real desta vaga." />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-xs uppercase text-muted-foreground border-b">
+                <tr>
+                  <th className="text-left font-medium py-2 px-2">Descrição</th>
+                  <th className="text-left font-medium py-2 px-2">Categoria</th>
+                  <th className="text-left font-medium py-2 px-2">Tipo</th>
+                  <th className="text-left font-medium py-2 px-2">Data</th>
+                  <th className="text-left font-medium py-2 px-2">Status</th>
+                  <th className="text-right font-medium py-2 px-2">Valor</th>
+                  <th className="py-2 px-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {custosVinculados.map((c) => (
+                  <tr key={c.id} className="border-b last:border-0">
+                    <td className="py-2.5 px-2">{c.descricao}</td>
+                    <td className="py-2.5 px-2">{c.categoria}</td>
+                    <td className="py-2.5 px-2">{c.tipo}</td>
+                    <td className="py-2.5 px-2">{formatDateBR(c.data)}</td>
+                    <td className="py-2.5 px-2"><StatusBadge status={c.status} /></td>
+                    <td className="py-2.5 px-2 text-right font-semibold">{fmt(c.valor)}</td>
+                    <td className="py-2.5 px-2 text-right">
+                      <Button variant="ghost" size="sm" onClick={() => desvincularCusto(c.id)} title="Desvincular">
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+                <tr className="bg-muted/30 font-semibold">
+                  <td colSpan={5} className="py-2.5 px-2 text-right">Total</td>
+                  <td className="py-2.5 px-2 text-right text-destructive">{fmt(totalCustos)}</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* RESUMO */}
+      <div className="bg-gradient-to-br from-brand/5 to-transparent rounded-xl border shadow-sm p-6">
+        <SectionTitle title="Resultado financeiro" desc="Receita prevista menos custos vinculados a esta vaga." />
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <ResumoLine label="Receita" value={fmt(receita)} tone="success" />
+          <ResumoLine label="(-) Custos" value={fmt(totalCustos)} tone="danger" />
+          <ResumoLine label="= Resultado" value={fmt(resultado)} tone={resultado >= 0 ? "success" : "danger"} bold />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function KpiCard({
+  title,
+  value,
+  sub,
+  icon,
+  tone,
+}: {
+  title: string;
+  value: string;
+  sub: string;
+  icon: React.ReactNode;
+  tone: "success" | "danger" | "brand";
+}) {
+  const toneClass =
+    tone === "success"
+      ? "text-success bg-success/10"
+      : tone === "danger"
+      ? "text-destructive bg-destructive/10"
+      : "text-brand bg-brand/10";
+  return (
+    <div className="bg-card rounded-xl border shadow-sm p-5">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">{title}</p>
+        <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${toneClass}`}>{icon}</div>
+      </div>
+      <p className="text-2xl font-bold text-foreground">{value}</p>
+      <p className="text-xs text-muted-foreground mt-1">{sub}</p>
+    </div>
+  );
+}
+
+function ResumoLine({ label, value, tone, bold }: { label: string; value: string; tone: "success" | "danger"; bold?: boolean }) {
+  const toneClass = tone === "success" ? "text-success" : "text-destructive";
+  return (
+    <div className="flex items-center justify-between bg-card rounded-lg border p-4">
+      <span className={`text-sm ${bold ? "font-bold text-foreground" : "text-muted-foreground"}`}>{label}</span>
+      <span className={`${bold ? "text-xl font-bold" : "text-lg font-semibold"} ${toneClass}`}>{value}</span>
+    </div>
+  );
+}
+
+function EmptyRow({ text }: { text: string }) {
+  return (
+    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/30 border border-dashed rounded-lg p-4">
+      <Link2 className="w-4 h-4" />
+      {text}
     </div>
   );
 }
