@@ -70,16 +70,36 @@ function VagaDetailPage() {
 
       <div className="p-8 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Status</Label>
-            <Select value={vaga.etapa} onValueChange={(v) => updateVaga(vaga.id, { etapa: v as PipelineEtapa })}>
-              <SelectTrigger className="w-[260px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {PIPELINE_ETAPAS.map((e) => (
-                  <SelectItem key={e} value={e}>{e}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Status</Label>
+              <Select value={vaga.etapa} onValueChange={(v) => updateVaga(vaga.id, { etapa: v as PipelineEtapa })}>
+                <SelectTrigger className="w-[260px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PIPELINE_ETAPAS.map((e) => (
+                    <SelectItem key={e} value={e}>{e}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Início</Label>
+              <Input
+                type="date"
+                className="w-[170px]"
+                value={vaga.createdAt ? vaga.createdAt.slice(0, 10) : ""}
+                onChange={async (e) => {
+                  const v = e.target.value;
+                  if (!v) return;
+                  try {
+                    await updateVaga(vaga.id, { createdAt: new Date(v + "T12:00:00").toISOString() });
+                    toast.success("Início atualizado.");
+                  } catch {
+                    toast.error("Não foi possível atualizar o início.");
+                  }
+                }}
+              />
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <DocDialog title="Briefing da vaga" triggerLabel="Briefing" icon={<FileText className="w-4 h-4" />}>
