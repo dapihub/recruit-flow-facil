@@ -30,14 +30,9 @@ function VagasPage() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
-  const [filtroArea, setFiltroArea] = useState<string>("todos");
-
-  const areas = useMemo(() => Array.from(new Set(vagas.map((v) => v.area))), [vagas]);
 
   const filtradas = vagas.filter(
-    (v) =>
-      (filtroStatus === "todos" || v.status === filtroStatus) &&
-      (filtroArea === "todos" || v.area === filtroArea),
+    (v) => filtroStatus === "todos" || v.status === filtroStatus,
   );
 
   const abertas = vagas.filter((v) => v.status === "Aberta").length;
@@ -81,13 +76,6 @@ function VagasPage() {
                 {STATUS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={filtroArea} onValueChange={setFiltroArea}>
-              <SelectTrigger className="w-[180px]"><SelectValue placeholder="Área" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todas as áreas</SelectItem>
-                {areas.filter(Boolean).map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
-              </SelectContent>
-            </Select>
             <span className="ml-auto text-sm text-muted-foreground">{filtradas.length} vagas</span>
           </div>
 
@@ -95,10 +83,10 @@ function VagasPage() {
             <table className="w-full text-sm">
               <thead className="bg-muted/40 text-muted-foreground">
                 <tr>
-                  <Th>Cargo</Th><Th>Empresa</Th><Th>Área</Th>
+                  <Th>Cargo</Th><Th>Empresa</Th>
                   <Th className="text-center">Candidatos</Th>
                   <Th>Etapa</Th>
-                  <Th>Prazo</Th><Th>Status</Th><Th className="w-12"></Th>
+                  <Th>Início</Th><Th>Status</Th><Th className="w-12"></Th>
                 </tr>
               </thead>
               <tbody>
@@ -110,10 +98,9 @@ function VagasPage() {
                   >
                     <Td className="font-medium text-foreground">{v.cargo}</Td>
                     <Td>{v.empresa}</Td>
-                    <Td>{v.area}</Td>
                     <Td className="text-center font-semibold">{v.candidatos}</Td>
                     <Td><span className="text-xs px-2 py-1 rounded-full bg-brand/10 text-brand font-medium">{v.etapa}</span></Td>
-                    <Td>{new Date(v.prazo).toLocaleDateString("pt-BR")}</Td>
+                    <Td>{v.createdAt ? new Date(v.createdAt).toLocaleDateString("pt-BR") : "—"}</Td>
                     <Td><StatusBadge status={v.status} /></Td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <AlertDialog>
