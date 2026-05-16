@@ -204,7 +204,7 @@ function FinanceiroPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {faturas.map((f, i) => (
+                  {[...faturas].sort((a, b) => (b.vencimento ?? "").localeCompare(a.vencimento ?? "")).map((f, i) => (
                     <tr
                       key={f.id}
                       className={`border-t transition-colors ${i % 2 ? "bg-muted/10" : ""} hover:bg-brand/5`}
