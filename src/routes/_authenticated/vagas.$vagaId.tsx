@@ -774,154 +774,133 @@ function FinanceiroTab({ vagaId, empresa, cargo, diasAndamento, totalCandidatos 
         />
       </div>
 
-      {/* RECEITAS */}
-      <div className="bg-card rounded-xl border shadow-sm p-6 space-y-4">
-        <div className="flex items-start justify-between flex-wrap gap-3">
-          <SectionTitle title="Receitas desta vaga" desc={`Faturas emitidas para ${empresa} vinculadas à vaga de ${cargo}.`} />
-          <div className="flex items-center gap-2">
+      {/* RECEITAS + CUSTOS lado a lado */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* RECEITAS */}
+        <div className="bg-card rounded-xl border shadow-sm p-5 space-y-4 flex flex-col">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-success bg-success/10">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Receitas desta vaga</p>
+                <p className="text-sm text-foreground/70">{faturasVinculadas.length} vinculada(s) · <span className="font-semibold text-success">{fmt(receita)}</span></p>
+              </div>
+            </div>
             <Select onValueChange={vincularFatura} value="">
-              <SelectTrigger className="w-[280px]">
-                <SelectValue placeholder="Vincular fatura existente..." />
-              </SelectTrigger>
+              <SelectTrigger className="w-[180px] h-8 text-xs"><SelectValue placeholder="+ Vincular" /></SelectTrigger>
               <SelectContent>
                 {faturasDisponiveis.length === 0 && (
-                  <div className="px-3 py-2 text-sm text-muted-foreground">Nenhuma fatura disponível</div>
+                  <div className="px-3 py-2 text-sm text-muted-foreground">Nenhuma disponível</div>
                 )}
                 {sugestoesFaturas.length > 0 && (
                   <>
                     <div className="px-3 py-1.5 text-[10px] uppercase font-semibold text-brand">Sugeridas ({empresa})</div>
                     {sugestoesFaturas.map((f) => (
-                      <SelectItem key={f.id} value={f.id}>
-                        {f.numero} · {f.servico} · {fmt(f.valor)}
-                      </SelectItem>
+                      <SelectItem key={f.id} value={f.id}>{f.numero} · {fmt(f.valor)}</SelectItem>
                     ))}
                     <div className="px-3 py-1.5 text-[10px] uppercase font-semibold text-muted-foreground border-t mt-1">Outras</div>
                   </>
                 )}
-                {faturasDisponiveis
-                  .filter((f) => f.cliente !== empresa)
-                  .map((f) => (
-                    <SelectItem key={f.id} value={f.id}>
-                      {f.numero} · {f.cliente} · {fmt(f.valor)}
-                    </SelectItem>
-                  ))}
+                {faturasDisponiveis.filter((f) => f.cliente !== empresa).map((f) => (
+                  <SelectItem key={f.id} value={f.id}>{f.numero} · {f.cliente} · {fmt(f.valor)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
+
+          {faturasVinculadas.length === 0 ? (
+            <EmptyRow text="Nenhuma receita vinculada ainda." />
+          ) : (
+            <ul className="space-y-2 flex-1">
+              {faturasVinculadas.map((f) => (
+                <li key={f.id} className="flex items-center justify-between gap-3 bg-muted/30 rounded-lg border border-border/60 px-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[11px] text-muted-foreground">{f.numero}</span>
+                      <StatusBadge status={f.status} />
+                    </div>
+                    <p className="text-sm text-foreground truncate mt-0.5">{f.servico}</p>
+                    <p className="text-xs text-muted-foreground">Vence {formatDateBR(f.vencimento)}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-semibold text-success">{fmt(f.valor)}</p>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-muted-foreground hover:text-destructive" onClick={() => desvincularFatura(f.id)}>
+                      <X className="w-3 h-3 mr-1" /> remover
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
-        {faturasVinculadas.length === 0 ? (
-          <EmptyRow text="Nenhuma receita vinculada ainda. Use o seletor acima para vincular faturas a esta vaga." />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs uppercase text-muted-foreground border-b">
-                <tr>
-                  <th className="text-left font-medium py-2 px-2">Nº</th>
-                  <th className="text-left font-medium py-2 px-2">Cliente</th>
-                  <th className="text-left font-medium py-2 px-2">Serviço</th>
-                  <th className="text-left font-medium py-2 px-2">Vencimento</th>
-                  <th className="text-left font-medium py-2 px-2">Status</th>
-                  <th className="text-right font-medium py-2 px-2">Valor</th>
-                  <th className="py-2 px-2"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {faturasVinculadas.map((f) => (
-                  <tr key={f.id} className="border-b last:border-0">
-                    <td className="py-2.5 px-2 font-mono text-xs">{f.numero}</td>
-                    <td className="py-2.5 px-2">{f.cliente}</td>
-                    <td className="py-2.5 px-2">{f.servico}</td>
-                    <td className="py-2.5 px-2">{formatDateBR(f.vencimento)}</td>
-                    <td className="py-2.5 px-2"><StatusBadge status={f.status} /></td>
-                    <td className="py-2.5 px-2 text-right font-semibold">{fmt(f.valor)}</td>
-                    <td className="py-2.5 px-2 text-right">
-                      <Button variant="ghost" size="sm" onClick={() => desvincularFatura(f.id)} title="Desvincular">
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-                <tr className="bg-muted/30 font-semibold">
-                  <td colSpan={5} className="py-2.5 px-2 text-right">Total</td>
-                  <td className="py-2.5 px-2 text-right text-success">{fmt(receita)}</td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </table>
+        {/* CUSTOS */}
+        <div className="bg-card rounded-xl border shadow-sm p-5 space-y-4 flex flex-col">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-destructive bg-destructive/10">
+                <TrendingDown className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Custos desta vaga</p>
+                <p className="text-sm text-foreground/70">{custosVinculados.length} vinculado(s) · <span className="font-semibold text-destructive">{fmt(totalCustos)}</span></p>
+              </div>
+            </div>
+            <Select onValueChange={vincularCusto} value="">
+              <SelectTrigger className="w-[180px] h-8 text-xs"><SelectValue placeholder="+ Vincular" /></SelectTrigger>
+              <SelectContent>
+                {custosDisponiveis.length === 0 ? (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">Nenhum disponível</div>
+                ) : (
+                  custosDisponiveis.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.descricao} · {fmt(c.valor)}</SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
-        )}
-      </div>
 
-      {/* CUSTOS */}
-      <div className="bg-card rounded-xl border shadow-sm p-6 space-y-4">
-        <div className="flex items-start justify-between flex-wrap gap-3">
-          <SectionTitle title="Custos desta vaga" desc="Despesas específicas alocadas a esta vaga (anúncios, ferramentas, etc.)." />
-          <Select onValueChange={vincularCusto} value="">
-            <SelectTrigger className="w-[280px]">
-              <SelectValue placeholder="Vincular custo existente..." />
-            </SelectTrigger>
-            <SelectContent>
-              {custosDisponiveis.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-muted-foreground">Nenhum custo disponível</div>
-              ) : (
-                custosDisponiveis.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.descricao} · {fmt(c.valor)}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
+          {custosVinculados.length === 0 ? (
+            <EmptyRow text="Nenhum custo vinculado ainda." />
+          ) : (
+            <ul className="space-y-2 flex-1">
+              {custosVinculados.map((c) => (
+                <li key={c.id} className="flex items-center justify-between gap-3 bg-muted/30 rounded-lg border border-border/60 px-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] uppercase text-muted-foreground">{c.categoria} · {c.tipo}</span>
+                      <StatusBadge status={c.status} />
+                    </div>
+                    <p className="text-sm text-foreground truncate mt-0.5">{c.descricao}</p>
+                    <p className="text-xs text-muted-foreground">{formatDateBR(c.data)}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-semibold text-destructive">{fmt(c.valor)}</p>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-muted-foreground hover:text-destructive" onClick={() => desvincularCusto(c.id)}>
+                      <X className="w-3 h-3 mr-1" /> remover
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-
-        {custosVinculados.length === 0 ? (
-          <EmptyRow text="Nenhum custo vinculado. Vincule custos para apurar o resultado financeiro real desta vaga." />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs uppercase text-muted-foreground border-b">
-                <tr>
-                  <th className="text-left font-medium py-2 px-2">Descrição</th>
-                  <th className="text-left font-medium py-2 px-2">Categoria</th>
-                  <th className="text-left font-medium py-2 px-2">Tipo</th>
-                  <th className="text-left font-medium py-2 px-2">Data</th>
-                  <th className="text-left font-medium py-2 px-2">Status</th>
-                  <th className="text-right font-medium py-2 px-2">Valor</th>
-                  <th className="py-2 px-2"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {custosVinculados.map((c) => (
-                  <tr key={c.id} className="border-b last:border-0">
-                    <td className="py-2.5 px-2">{c.descricao}</td>
-                    <td className="py-2.5 px-2">{c.categoria}</td>
-                    <td className="py-2.5 px-2">{c.tipo}</td>
-                    <td className="py-2.5 px-2">{formatDateBR(c.data)}</td>
-                    <td className="py-2.5 px-2"><StatusBadge status={c.status} /></td>
-                    <td className="py-2.5 px-2 text-right font-semibold">{fmt(c.valor)}</td>
-                    <td className="py-2.5 px-2 text-right">
-                      <Button variant="ghost" size="sm" onClick={() => desvincularCusto(c.id)} title="Desvincular">
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-                <tr className="bg-muted/30 font-semibold">
-                  <td colSpan={5} className="py-2.5 px-2 text-right">Total</td>
-                  <td className="py-2.5 px-2 text-right text-destructive">{fmt(totalCustos)}</td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
 
       {/* RESUMO */}
-      <div className="bg-gradient-to-br from-brand/5 to-transparent rounded-xl border shadow-sm p-6">
-        <SectionTitle title="Resultado financeiro" desc="Receita prevista menos custos vinculados a esta vaga." />
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-gradient-to-br from-brand/10 via-card to-card rounded-xl border shadow-sm p-5">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center text-brand bg-brand/10">
+            <DollarSign className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Resultado financeiro</p>
+            <p className="text-sm text-foreground/70">Receita prevista menos custos vinculados</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <ResumoLine label="Receita" value={fmt(receita)} tone="success" />
           <ResumoLine label="(-) Custos" value={fmt(totalCustos)} tone="danger" />
           <ResumoLine label="= Resultado" value={fmt(resultado)} tone={resultado >= 0 ? "success" : "danger"} bold />
