@@ -100,6 +100,23 @@ function VagaDetailPage() {
                 }}
               />
             </div>
+            <div className="flex items-center gap-2">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Finalizada em</Label>
+              <Input
+                type="date"
+                className="w-[170px]"
+                value={vaga.prazo ? vaga.prazo.slice(0, 10) : ""}
+                onChange={async (e) => {
+                  const v = e.target.value;
+                  try {
+                    await updateVaga(vaga.id, { prazo: v });
+                    toast.success("Data de finalização atualizada.");
+                  } catch {
+                    toast.error("Não foi possível atualizar a data.");
+                  }
+                }}
+              />
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <DocDialog title="Briefing da vaga" triggerLabel="Briefing" icon={<FileText className="w-4 h-4" />}>
