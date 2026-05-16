@@ -198,3 +198,72 @@ function NovaVagaModal({ onClose }: { onClose: () => void }) {
 function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
   return <div className={`space-y-1.5 ${className}`}><Label className="text-xs">{label}</Label>{children}</div>;
 }
+
+function EditarVagaButton({ vaga }: { vaga: Vaga }) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    cargo: vaga.cargo,
+    empresa: vaga.empresa,
+    quantidade: String(vaga.briefing?.quantidade ?? 1),
+    prazoGarantia: String(vaga.prazoGarantia ?? 90),
+    createdAt: vaga.createdAt ? vaga.createdAt.slice(0, 10) : "",
+  });
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (o) {
+          setForm({
+            cargo: vaga.cargo,
+            empresa: vaga.empresa,
+            quantidade: String(vaga.briefing?.quantidade ?? 1),
+            prazoGarantia: String(vaga.prazoGarantia ?? 90),
+            createdAt: vaga.createdAt ? vaga.createdAt.slice(0, 10) : "",
+          });
+        }
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-brand">
+          <Pencil className="w-4 h-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader><DialogTitle>Editar Vaga</DialogTitle></DialogHeader>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Cargo" className="col-span-2"><Input value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} /></Field>
+          <Field label="Empresa" className="col-span-2"><Input value={form.empresa} onChange={(e) => setForm({ ...form, empresa: e.target.value })} /></Field>
+          <Field label="Quantidade"><Input type="number" min="1" value={form.quantidade} onChange={(e) => setForm({ ...form, quantidade: e.target.value })} /></Field>
+          <Field label="Prazo de garantia (dias)"><Input type="number" min="0" value={form.prazoGarantia} onChange={(e) => setForm({ ...form, prazoGarantia: e.target.value })} /></Field>
+          <Field label="Início" className="col-span-2"><Input type="date" value={form.createdAt} onChange={(e) => setForm({ ...form, createdAt: e.target.value })} /></Field>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button
+            className="bg-brand hover:bg-brand/90 text-brand-foreground"
+            disabled={!form.cargo || !form.empresa}
+            onClick={async () => {
+              try {
+                const novaQtd = Number(form.quantidade) || 1;
+                const briefingAtualizado = { ...(vaga.briefing ?? {} as any), quantidade: novaQtd };
+                await updateVaga(vaga.id, {
+                  cargo: form.cargo,
+                  empresa: form.empresa,
+                  prazoGarantia: Number(form.prazoGarantia) || 90,
+                  briefing: briefingAtualizado,
+                  createdAt: form.createdAt ? new Date(form.createdAt + "T12:00:00").toISOString() : vaga.createdAt,
+                });
+                toast.success("Vaga atualizada.");
+                setOpen(false);
+              } catch {
+                toast.error("Não foi possível atualizar a vaga.");
+              }
+            }}
+          >Salvar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
