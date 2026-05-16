@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Copy, FileDown, FileText, Briefcase, FileSignature, Check } from "lucide-react";
+import { ArrowLeft, Copy, FileDown, FileText, Briefcase, FileSignature, Check, DollarSign, TrendingUp, TrendingDown, Link2, X } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -9,13 +9,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 import {
   Briefing,
   Contrato,
   Descritivo,
+  Fatura,
+  Custo,
   PIPELINE_ETAPAS,
   PipelineEtapa,
   updateVaga,
+  updateFatura,
+  updateCusto,
+  useFaturas,
+  useCustos,
   useVaga,
 } from "@/lib/store";
 import dapiLogoColor from "@/assets/dapi-logo-color.png";
@@ -78,6 +85,9 @@ function VagaDetailPage() {
             <TabsTrigger value="contrato" className="data-[state=active]:bg-brand data-[state=active]:text-brand-foreground gap-2">
               <FileSignature className="w-4 h-4" /> Contrato
             </TabsTrigger>
+            <TabsTrigger value="financeiro" className="data-[state=active]:bg-brand data-[state=active]:text-brand-foreground gap-2">
+              <DollarSign className="w-4 h-4" /> Financeiro
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="briefing" className="mt-4">
@@ -88,6 +98,9 @@ function VagaDetailPage() {
           </TabsContent>
           <TabsContent value="contrato" className="mt-4">
             <ContratoTab vagaId={vaga.id} initial={vaga.contrato} empresa={vaga.empresa} cargo={vaga.cargo} />
+          </TabsContent>
+          <TabsContent value="financeiro" className="mt-4">
+            <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} />
           </TabsContent>
         </Tabs>
       </div>
