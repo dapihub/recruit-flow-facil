@@ -1,0 +1,1 @@
+ALTER TYPE public.pipeline_etapa ADD VALUE IF NOT EXISTS 'Em Garantia' BEFORE 'Finalizada';

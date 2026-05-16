@@ -275,6 +275,7 @@ export type Database = {
         | "Contrato"
         | "Descritivo publicado"
         | "Candidatos em triagem"
+        | "Em Garantia"
         | "Finalizada"
       regime_trabalho: "CLT" | "PJ" | "Híbrido"
       vaga_status: "Aberta" | "Em processo" | "Fechada" | "Encerrada"
@@ -424,6 +425,7 @@ export const Constants = {
         "Contrato",
         "Descritivo publicado",
         "Candidatos em triagem",
+        "Em Garantia",
         "Finalizada",
       ],
       regime_trabalho: ["CLT", "PJ", "Híbrido"],
