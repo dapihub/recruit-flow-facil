@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
@@ -74,35 +74,31 @@ function VagaDetailPage() {
           onChange={(etapa) => updateVaga(vaga.id, { etapa })}
         />
 
-        <Tabs defaultValue="briefing" className="w-full">
-          <TabsList className="bg-card border h-auto p-1">
-            <TabsTrigger value="briefing" className="data-[state=active]:bg-brand data-[state=active]:text-brand-foreground gap-2">
-              <FileText className="w-4 h-4" /> Briefing
-            </TabsTrigger>
-            <TabsTrigger value="descritivo" className="data-[state=active]:bg-brand data-[state=active]:text-brand-foreground gap-2">
-              <Briefcase className="w-4 h-4" /> Descritivo
-            </TabsTrigger>
-            <TabsTrigger value="contrato" className="data-[state=active]:bg-brand data-[state=active]:text-brand-foreground gap-2">
-              <FileSignature className="w-4 h-4" /> Contrato
-            </TabsTrigger>
-            <TabsTrigger value="financeiro" className="data-[state=active]:bg-brand data-[state=active]:text-brand-foreground gap-2">
-              <DollarSign className="w-4 h-4" /> Financeiro
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="briefing" className="mt-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <DocDialog
+            title="Briefing da vaga"
+            triggerLabel="Briefing"
+            icon={<FileText className="w-4 h-4" />}
+          >
             <BriefingTab vagaId={vaga.id} initial={vaga.briefing} empresa={vaga.empresa} cargo={vaga.cargo} />
-          </TabsContent>
-          <TabsContent value="descritivo" className="mt-4">
+          </DocDialog>
+          <DocDialog
+            title="Descritivo da vaga"
+            triggerLabel="Descritivo"
+            icon={<Briefcase className="w-4 h-4" />}
+          >
             <DescritivoTab vagaId={vaga.id} initial={vaga.descritivo} briefing={vaga.briefing} cargo={vaga.cargo} empresa={vaga.empresa} />
-          </TabsContent>
-          <TabsContent value="contrato" className="mt-4">
+          </DocDialog>
+          <DocDialog
+            title="Contrato"
+            triggerLabel="Contrato"
+            icon={<FileSignature className="w-4 h-4" />}
+          >
             <ContratoTab vagaId={vaga.id} initial={vaga.contrato} empresa={vaga.empresa} cargo={vaga.cargo} />
-          </TabsContent>
-          <TabsContent value="financeiro" className="mt-4">
-            <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} />
-          </TabsContent>
-        </Tabs>
+          </DocDialog>
+        </div>
+
+        <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} />
       </div>
     </div>
   );
@@ -976,6 +972,22 @@ function EmptyRow({ text }: { text: string }) {
 }
 
 /* ---------------- helpers ---------------- */
+function DocDialog({ title, triggerLabel, icon, children }: { title: string; triggerLabel: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="gap-2">{icon}{triggerLabel}</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        {children}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
   return <div className={`space-y-1.5 ${className}`}><Label className="text-xs">{label}</Label>{children}</div>;
 }
