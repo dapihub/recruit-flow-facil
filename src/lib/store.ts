@@ -536,6 +536,7 @@ export async function addVaga(vaga: {
   empresa: string;
   quantidade?: number;
   receita?: number;
+  prazoGarantia?: number;
   area?: string;
   prazo?: string;
   descricao?: string;
@@ -553,6 +554,7 @@ export async function addVaga(vaga: {
     descricao: vaga.descricao ?? null,
     salario: vaga.salario ?? null,
     regime: vaga.regime ?? null,
+    prazo_garantia: vaga.prazoGarantia ?? 90,
     briefing: { quantidade } as any,
   };
 
