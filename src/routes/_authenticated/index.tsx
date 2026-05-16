@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, ChevronRight, Trash2 } from "lucide-react";
+import { Plus, ChevronRight, Trash2, Pencil } from "lucide-react";
 import { PageHeader, MetricCard } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { addVaga, deleteVaga, useVagas, VagaStatus } from "@/lib/store";
+import { addVaga, deleteVaga, updateVaga, useVagas, VagaStatus, Vaga } from "@/lib/store";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -86,7 +86,7 @@ function VagasPage() {
                   <Th>Cargo</Th><Th>Empresa</Th>
                   <Th className="text-center">Candidatos</Th>
                   <Th>Etapa</Th>
-                  <Th>Início</Th><Th>Status</Th><Th className="w-12"></Th>
+                  <Th>Início</Th><Th>Status</Th><Th className="w-24"></Th>
                 </tr>
               </thead>
               <tbody>
@@ -103,35 +103,38 @@ function VagasPage() {
                     <Td>{v.createdAt ? new Date(v.createdAt).toLocaleDateString("pt-BR") : "—"}</Td>
                     <Td><StatusBadge status={v.status} /></Td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Excluir vaga?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Esta ação não pode ser desfeita. A vaga "{v.cargo}" será removida permanentemente.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              onClick={async () => {
-                                try {
-                                  await deleteVaga(v.id);
-                                  toast.success("Vaga excluída com sucesso.");
-                                } catch {
-                                  toast.error("Não foi possível excluir a vaga.");
-                                }
-                              }}
-                            >Excluir</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <div className="flex items-center gap-1">
+                        <EditarVagaButton vaga={v} />
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir vaga?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta ação não pode ser desfeita. A vaga "{v.cargo}" será removida permanentemente.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={async () => {
+                                  try {
+                                    await deleteVaga(v.id);
+                                    toast.success("Vaga excluída com sucesso.");
+                                  } catch {
+                                    toast.error("Não foi possível excluir a vaga.");
+                                  }
+                                }}
+                              >Excluir</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -194,4 +197,73 @@ function NovaVagaModal({ onClose }: { onClose: () => void }) {
 
 function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
   return <div className={`space-y-1.5 ${className}`}><Label className="text-xs">{label}</Label>{children}</div>;
+}
+
+function EditarVagaButton({ vaga }: { vaga: Vaga }) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    cargo: vaga.cargo,
+    empresa: vaga.empresa,
+    quantidade: String(vaga.briefing?.quantidade ?? 1),
+    prazoGarantia: String(vaga.prazoGarantia ?? 90),
+    createdAt: vaga.createdAt ? vaga.createdAt.slice(0, 10) : "",
+  });
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (o) {
+          setForm({
+            cargo: vaga.cargo,
+            empresa: vaga.empresa,
+            quantidade: String(vaga.briefing?.quantidade ?? 1),
+            prazoGarantia: String(vaga.prazoGarantia ?? 90),
+            createdAt: vaga.createdAt ? vaga.createdAt.slice(0, 10) : "",
+          });
+        }
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-brand">
+          <Pencil className="w-4 h-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader><DialogTitle>Editar Vaga</DialogTitle></DialogHeader>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Cargo" className="col-span-2"><Input value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} /></Field>
+          <Field label="Empresa" className="col-span-2"><Input value={form.empresa} onChange={(e) => setForm({ ...form, empresa: e.target.value })} /></Field>
+          <Field label="Quantidade"><Input type="number" min="1" value={form.quantidade} onChange={(e) => setForm({ ...form, quantidade: e.target.value })} /></Field>
+          <Field label="Prazo de garantia (dias)"><Input type="number" min="0" value={form.prazoGarantia} onChange={(e) => setForm({ ...form, prazoGarantia: e.target.value })} /></Field>
+          <Field label="Início" className="col-span-2"><Input type="date" value={form.createdAt} onChange={(e) => setForm({ ...form, createdAt: e.target.value })} /></Field>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button
+            className="bg-brand hover:bg-brand/90 text-brand-foreground"
+            disabled={!form.cargo || !form.empresa}
+            onClick={async () => {
+              try {
+                const novaQtd = Number(form.quantidade) || 1;
+                const briefingAtualizado = { ...(vaga.briefing ?? {} as any), quantidade: novaQtd };
+                await updateVaga(vaga.id, {
+                  cargo: form.cargo,
+                  empresa: form.empresa,
+                  prazoGarantia: Number(form.prazoGarantia) || 90,
+                  briefing: briefingAtualizado,
+                  createdAt: form.createdAt ? new Date(form.createdAt + "T12:00:00").toISOString() : vaga.createdAt,
+                });
+                toast.success("Vaga atualizada.");
+                setOpen(false);
+              } catch {
+                toast.error("Não foi possível atualizar a vaga.");
+              }
+            }}
+          >Salvar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
