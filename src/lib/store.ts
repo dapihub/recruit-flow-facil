@@ -290,39 +290,7 @@ function ensureAuthListener() {
   });
 }
 
-async function seedDemoData() {
-  const vagasPayload = INITIAL_VAGAS.map(({ prazoGarantia, garantiaInicio, createdAt, updatedAt, ...rest }) => rest);
-  const { data: vagasData, error: vagasError } = await supabase.from("vagas").insert(vagasPayload).select("id, cargo");
-  if (vagasError) throw vagasError;
-
-  const vagaByCargo = new Map((vagasData ?? []).map((vaga) => [vaga.cargo, vaga.id]));
-
-  const candidatosPayload = INITIAL_CANDIDATOS.map((candidato) => ({
-    nome: candidato.nome,
-    email: candidato.email,
-    vaga_id: vagaByCargo.get(candidato.vaga) ?? null,
-    vaga_nome: candidato.vaga,
-    etapa: candidato.etapa,
-    proxima_acao: candidato.proximaAcao,
-    pontuacao: candidato.pontuacao,
-    status: candidato.status,
-  }));
-
-  const custosPayload = INITIAL_CUSTOS.map(({ vagaId, ...custo }) => ({
-    ...custo,
-    vaga_id: vagaId ? vagaByCargo.get(vagaId) ?? null : null,
-  }));
-
-  const [{ error: candidatosError }, { error: faturasError }, { error: custosError }] = await Promise.all([
-    supabase.from("candidatos").insert(candidatosPayload),
-    supabase.from("faturas").insert(INITIAL_FATURAS.map(({ numero, vagaId, ...fatura }) => ({ ...fatura, vaga_id: null }))),
-    supabase.from("custos").insert(custosPayload),
-  ]);
-
-  if (candidatosError) throw candidatosError;
-  if (faturasError) throw faturasError;
-  if (custosError) throw custosError;
-}
+// seedDemoData removido — sem reintrodução automática de dados de exemplo.
 
 async function loadAll(force = false): Promise<void> {
   if (typeof window === "undefined") return;
