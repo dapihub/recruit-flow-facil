@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, TrendingDown, TrendingUp, Pencil } from "lucide-react";
+import { Plus, TrendingDown, TrendingUp, Pencil, Trash2 } from "lucide-react";
 import { PageHeader, MetricCard } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -15,11 +26,17 @@ import {
   addCusto,
   updateFatura,
   updateCusto,
+  deleteFatura,
+  deleteCusto,
   useFaturas,
   useCustos,
   CUSTO_CATEGORIAS,
   type CustoCategoria,
   type CustoTipo,
+  type CustoStatus,
+  type Fatura,
+  type FaturaStatus,
+  type Custo,
 } from "@/lib/store";
 import { toast } from "sonner";
 
@@ -42,6 +59,8 @@ function FinanceiroPage() {
   const custos = useCustos();
   const [openFatura, setOpenFatura] = useState(false);
   const [openCusto, setOpenCusto] = useState(false);
+  const [editFatura, setEditFatura] = useState<Fatura | null>(null);
+  const [editCusto, setEditCusto] = useState<Custo | null>(null);
 
   const receita = faturas.filter((f) => f.status === "Pago").reduce((s, f) => s + f.valor, 0);
   const aReceber = faturas.filter((f) => f.status !== "Pago").reduce((s, f) => s + f.valor, 0);
@@ -60,6 +79,24 @@ function FinanceiroPage() {
     custos.forEach((c) => map.set(c.categoria, (map.get(c.categoria) ?? 0) + c.valor));
     return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
   }, [custos]);
+
+  const handleDeleteFatura = async (id: string) => {
+    try {
+      await deleteFatura(id);
+      toast.success("Fatura excluída");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao excluir fatura");
+    }
+  };
+
+  const handleDeleteCusto = async (id: string) => {
+    try {
+      await deleteCusto(id);
+      toast.success("Custo excluído");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao excluir custo");
+    }
+  };
 
   return (
     <div>
@@ -162,14 +199,14 @@ function FinanceiroPage() {
                 <thead className="bg-muted/40 text-muted-foreground">
                   <tr>
                     <Th>Nº</Th><Th>Cliente</Th><Th>Serviço</Th>
-                    <Th>Vencimento</Th><Th className="text-right">Valor</Th><Th>Status</Th>
+                    <Th>Vencimento</Th><Th className="text-right">Valor</Th><Th>Status</Th><Th />
                   </tr>
                 </thead>
                 <tbody>
                   {faturas.map((f, i) => (
                     <tr
                       key={f.id}
-                      className={`border-t transition-colors cursor-pointer ${i % 2 ? "bg-muted/10" : ""} hover:bg-brand/5 hover:shadow-[inset_3px_0_0_0_var(--brand)]`}
+                      className={`border-t transition-colors ${i % 2 ? "bg-muted/10" : ""} hover:bg-brand/5`}
                     >
                       <Td className="font-mono text-xs">{f.numero}</Td>
                       <Td className="font-medium text-foreground">{f.cliente}</Td>
@@ -179,6 +216,32 @@ function FinanceiroPage() {
                         <span className="inline-flex items-center gap-1"><TrendingUp className="w-3.5 h-3.5" />{brl(f.valor)}</span>
                       </Td>
                       <Td><StatusBadge status={f.status} /></Td>
+                      <Td className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditFatura(f)}>
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir fatura?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  A fatura {f.numero} será removida permanentemente.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteFatura(f.id)}>Excluir</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </Td>
                     </tr>
                   ))}
                 </tbody>
@@ -192,12 +255,12 @@ function FinanceiroPage() {
                 <thead className="bg-muted/40 text-muted-foreground">
                   <tr>
                     <Th>Descrição</Th><Th>Categoria</Th><Th>Tipo</Th>
-                    <Th>Data</Th><Th className="text-right">Valor</Th><Th>Status</Th>
+                    <Th>Data</Th><Th className="text-right">Valor</Th><Th>Status</Th><Th />
                   </tr>
                 </thead>
                 <tbody>
                   {custos.length === 0 && (
-                    <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Nenhum custo registrado.</td></tr>
+                    <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Nenhum custo registrado.</td></tr>
                   )}
                   {custos.map((c, i) => (
                     <tr
@@ -219,6 +282,32 @@ function FinanceiroPage() {
                         <span className="inline-flex items-center gap-1"><TrendingDown className="w-3.5 h-3.5" />{brl(c.valor)}</span>
                       </Td>
                       <Td><StatusBadge status={c.status} /></Td>
+                      <Td className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditCusto(c)}>
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir custo?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  "{c.descricao}" será removido permanentemente.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteCusto(c.id)}>Excluir</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </Td>
                     </tr>
                   ))}
                 </tbody>
@@ -227,6 +316,14 @@ function FinanceiroPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={!!editFatura} onOpenChange={(o) => !o && setEditFatura(null)}>
+        {editFatura && <EditFaturaModal fatura={editFatura} onClose={() => setEditFatura(null)} />}
+      </Dialog>
+
+      <Dialog open={!!editCusto} onOpenChange={(o) => !o && setEditCusto(null)}>
+        {editCusto && <EditCustoModal custo={editCusto} onClose={() => setEditCusto(null)} />}
+      </Dialog>
     </div>
   );
 }
@@ -251,6 +348,7 @@ function Td({ children, className = "" }: { children?: React.ReactNode; classNam
 
 function NovaFaturaModal({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState({ cliente: "", servico: "", valor: "", vencimento: "", observacoes: "" });
+  const [saving, setSaving] = useState(false);
   return (
     <DialogContent className="max-w-lg">
       <DialogHeader><DialogTitle>Nova Fatura</DialogTitle></DialogHeader>
@@ -265,49 +363,45 @@ function NovaFaturaModal({ onClose }: { onClose: () => void }) {
         <Button variant="outline" onClick={onClose}>Cancelar</Button>
         <Button
           className="bg-brand hover:bg-brand/90 text-brand-foreground"
-          disabled={!form.cliente || !form.valor}
-          onClick={() => { addFatura({ cliente: form.cliente, servico: form.servico, valor: Number(form.valor), vencimento: form.vencimento, observacoes: form.observacoes }); onClose(); }}
+          disabled={!form.cliente || !form.valor || saving}
+          onClick={async () => {
+            setSaving(true);
+            try {
+              await addFatura({ cliente: form.cliente, servico: form.servico, valor: Number(form.valor), vencimento: form.vencimento, observacoes: form.observacoes });
+              toast.success("Fatura criada");
+              onClose();
+            } catch (e: any) {
+              toast.error(e?.message ?? "Erro ao criar fatura");
+            } finally {
+              setSaving(false);
+            }
+          }}
         >Criar fatura</Button>
       </DialogFooter>
     </DialogContent>
   );
 }
 
-function NovoCustoModal({ onClose }: { onClose: () => void }) {
-  const [form, setForm] = useState<{
-    descricao: string; categoria: CustoCategoria; tipo: CustoTipo; valor: string; data: string; status: "Pago" | "Pendente" | "Atrasado"; fornecedor: string; observacoes: string;
-  }>({
-    descricao: "", categoria: "Operacional", tipo: "Variável", valor: "", data: new Date().toISOString().slice(0, 10), status: "Pendente", fornecedor: "", observacoes: "",
+function EditFaturaModal({ fatura, onClose }: { fatura: Fatura; onClose: () => void }) {
+  const [form, setForm] = useState({
+    cliente: fatura.cliente,
+    servico: fatura.servico,
+    valor: String(fatura.valor),
+    vencimento: fatura.vencimento,
+    status: fatura.status,
+    observacoes: fatura.observacoes ?? "",
   });
+  const [saving, setSaving] = useState(false);
   return (
     <DialogContent className="max-w-lg">
-      <DialogHeader><DialogTitle>Novo Custo</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle>Editar Fatura {fatura.numero}</DialogTitle></DialogHeader>
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Descrição" className="col-span-2">
-          <Input value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
-        </Field>
-        <Field label="Categoria">
-          <Select value={form.categoria} onValueChange={(v) => setForm({ ...form, categoria: v as CustoCategoria })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {CUSTO_CATEGORIAS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="Tipo">
-          <Select value={form.tipo} onValueChange={(v) => setForm({ ...form, tipo: v as CustoTipo })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Fixo">Fixo</SelectItem>
-              <SelectItem value="Variável">Variável</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
+        <Field label="Cliente" className="col-span-2"><Input value={form.cliente} onChange={(e) => setForm({ ...form, cliente: e.target.value })} /></Field>
+        <Field label="Vaga / Serviço" className="col-span-2"><Input value={form.servico} onChange={(e) => setForm({ ...form, servico: e.target.value })} /></Field>
         <Field label="Valor (R$)"><Input type="number" value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} /></Field>
-        <Field label="Data"><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></Field>
-        <Field label="Fornecedor" className="col-span-2"><Input value={form.fornecedor} onChange={(e) => setForm({ ...form, fornecedor: e.target.value })} /></Field>
-        <Field label="Status">
-          <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as "Pago" | "Pendente" | "Atrasado" })}>
+        <Field label="Vencimento"><Input type="date" value={form.vencimento} onChange={(e) => setForm({ ...form, vencimento: e.target.value })} /></Field>
+        <Field label="Status" className="col-span-2">
+          <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as FaturaStatus })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="Pago">Pago</SelectItem>
@@ -316,29 +410,171 @@ function NovoCustoModal({ onClose }: { onClose: () => void }) {
             </SelectContent>
           </Select>
         </Field>
-        <Field label="Observações" className="col-span-2"><Textarea rows={2} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></Field>
+        <Field label="Observações" className="col-span-2"><Textarea rows={3} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></Field>
       </div>
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>Cancelar</Button>
         <Button
           className="bg-brand hover:bg-brand/90 text-brand-foreground"
-          disabled={!form.descricao || !form.valor}
-          onClick={() => {
-            addCusto({
-              descricao: form.descricao,
-              categoria: form.categoria,
-              tipo: form.tipo,
-              valor: Number(form.valor),
-              data: form.data,
-              status: form.status,
-              fornecedor: form.fornecedor || undefined,
-              observacoes: form.observacoes || undefined,
-            });
-            onClose();
+          disabled={!form.cliente || !form.valor || saving}
+          onClick={async () => {
+            setSaving(true);
+            try {
+              await updateFatura(fatura.id, {
+                cliente: form.cliente,
+                servico: form.servico,
+                valor: Number(form.valor),
+                vencimento: form.vencimento,
+                status: form.status,
+                observacoes: form.observacoes,
+              });
+              toast.success("Fatura atualizada");
+              onClose();
+            } catch (e: any) {
+              toast.error(e?.message ?? "Erro ao atualizar fatura");
+            } finally {
+              setSaving(false);
+            }
+          }}
+        >Salvar alterações</Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
+function NovoCustoModal({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState<{
+    descricao: string; categoria: CustoCategoria; tipo: CustoTipo; valor: string; data: string; status: CustoStatus; fornecedor: string; observacoes: string;
+  }>({
+    descricao: "", categoria: "Operacional", tipo: "Variável", valor: "", data: new Date().toISOString().slice(0, 10), status: "Pendente", fornecedor: "", observacoes: "",
+  });
+  const [saving, setSaving] = useState(false);
+  return (
+    <DialogContent className="max-w-lg">
+      <DialogHeader><DialogTitle>Novo Custo</DialogTitle></DialogHeader>
+      <CustoFields form={form} setForm={setForm} />
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>Cancelar</Button>
+        <Button
+          className="bg-brand hover:bg-brand/90 text-brand-foreground"
+          disabled={!form.descricao || !form.valor || saving}
+          onClick={async () => {
+            setSaving(true);
+            try {
+              await addCusto({
+                descricao: form.descricao,
+                categoria: form.categoria,
+                tipo: form.tipo,
+                valor: Number(form.valor),
+                data: form.data,
+                status: form.status,
+                fornecedor: form.fornecedor || undefined,
+                observacoes: form.observacoes || undefined,
+              });
+              toast.success("Custo registrado");
+              onClose();
+            } catch (e: any) {
+              toast.error(e?.message ?? "Erro ao registrar custo");
+            } finally {
+              setSaving(false);
+            }
           }}
         >Registrar custo</Button>
       </DialogFooter>
     </DialogContent>
+  );
+}
+
+function EditCustoModal({ custo, onClose }: { custo: Custo; onClose: () => void }) {
+  const [form, setForm] = useState({
+    descricao: custo.descricao,
+    categoria: custo.categoria,
+    tipo: custo.tipo,
+    valor: String(custo.valor),
+    data: custo.data,
+    status: custo.status,
+    fornecedor: custo.fornecedor ?? "",
+    observacoes: custo.observacoes ?? "",
+  });
+  const [saving, setSaving] = useState(false);
+  return (
+    <DialogContent className="max-w-lg">
+      <DialogHeader><DialogTitle>Editar Custo</DialogTitle></DialogHeader>
+      <CustoFields form={form} setForm={setForm} />
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>Cancelar</Button>
+        <Button
+          className="bg-brand hover:bg-brand/90 text-brand-foreground"
+          disabled={!form.descricao || !form.valor || saving}
+          onClick={async () => {
+            setSaving(true);
+            try {
+              await updateCusto(custo.id, {
+                descricao: form.descricao,
+                categoria: form.categoria,
+                tipo: form.tipo,
+                valor: Number(form.valor),
+                data: form.data,
+                status: form.status,
+                fornecedor: form.fornecedor || undefined,
+                observacoes: form.observacoes || undefined,
+              });
+              toast.success("Custo atualizado");
+              onClose();
+            } catch (e: any) {
+              toast.error(e?.message ?? "Erro ao atualizar custo");
+            } finally {
+              setSaving(false);
+            }
+          }}
+        >Salvar alterações</Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
+type CustoForm = {
+  descricao: string; categoria: CustoCategoria; tipo: CustoTipo; valor: string; data: string; status: CustoStatus; fornecedor: string; observacoes: string;
+};
+
+function CustoFields({ form, setForm }: { form: CustoForm; setForm: (f: CustoForm) => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <Field label="Descrição" className="col-span-2">
+        <Input value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
+      </Field>
+      <Field label="Categoria">
+        <Select value={form.categoria} onValueChange={(v) => setForm({ ...form, categoria: v as CustoCategoria })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {CUSTO_CATEGORIAS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label="Tipo">
+        <Select value={form.tipo} onValueChange={(v) => setForm({ ...form, tipo: v as CustoTipo })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Fixo">Fixo</SelectItem>
+            <SelectItem value="Variável">Variável</SelectItem>
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label="Valor (R$)"><Input type="number" value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} /></Field>
+      <Field label="Data"><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></Field>
+      <Field label="Fornecedor" className="col-span-2"><Input value={form.fornecedor} onChange={(e) => setForm({ ...form, fornecedor: e.target.value })} /></Field>
+      <Field label="Status">
+        <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as CustoStatus })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Pago">Pago</SelectItem>
+            <SelectItem value="Pendente">Pendente</SelectItem>
+            <SelectItem value="Atrasado">Atrasado</SelectItem>
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label="Observações" className="col-span-2"><Textarea rows={2} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></Field>
+    </div>
   );
 }
 
