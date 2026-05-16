@@ -259,6 +259,7 @@ function mapVaga(row: any): Vaga {
     descritivo: row.descritivo ?? undefined,
     contrato: row.contrato ?? undefined,
     createdAt: row.created_at ?? undefined,
+    updatedAt: row.updated_at ?? undefined,
   };
 }
 
