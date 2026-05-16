@@ -320,7 +320,8 @@ function ensureAuthListener() {
 }
 
 async function seedDemoData() {
-  const { data: vagasData, error: vagasError } = await supabase.from("vagas").insert(INITIAL_VAGAS).select("id, cargo");
+  const vagasPayload = INITIAL_VAGAS.map(({ prazoGarantia, garantiaInicio, ...rest }) => rest);
+  const { data: vagasData, error: vagasError } = await supabase.from("vagas").insert(vagasPayload).select("id, cargo");
   if (vagasError) throw vagasError;
 
   const vagaByCargo = new Map((vagasData ?? []).map((vaga) => [vaga.cargo, vaga.id]));
