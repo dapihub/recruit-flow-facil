@@ -563,7 +563,7 @@ function EditCustoModal({ custo, onClose }: { custo: Custo; onClose: () => void 
                 data: form.data,
                 status: form.status,
                 fornecedor: form.fornecedor || undefined,
-                observacoes: form.observacoes || undefined,
+                observacoes: buildObservacoes(form) || undefined,
               });
               toast.success("Custo atualizado");
               onClose();
