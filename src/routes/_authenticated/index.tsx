@@ -31,9 +31,10 @@ function VagasPage() {
   const [open, setOpen] = useState(false);
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
 
-  const filtradas = vagas.filter(
-    (v) => filtroStatus === "todos" || v.status === filtroStatus,
-  );
+  const filtradas = vagas
+    .filter((v) => filtroStatus === "todos" || v.status === filtroStatus)
+    .slice()
+    .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
 
   const abertas = vagas.filter((v) => v.status === "Aberta").length;
   const emProcesso = vagas.filter((v) => v.status === "Em processo").length;
