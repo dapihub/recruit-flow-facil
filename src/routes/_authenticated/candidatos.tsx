@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { addCandidato, deleteCandidato, useCandidatos, useVagas } from "@/lib/store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/candidatos")({
   head: () => ({
@@ -113,7 +114,14 @@ function CandidatosPage() {
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
                           <AlertDialogAction
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            onClick={() => deleteCandidato(c.id)}
+                            onClick={async () => {
+                              try {
+                                await deleteCandidato(c.id);
+                                toast.success("Candidato excluído com sucesso.");
+                              } catch {
+                                toast.error("Não foi possível excluir o candidato.");
+                              }
+                            }}
                           >Excluir</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -159,7 +167,15 @@ function NovoCandidatoModal({ vagas, onClose }: { vagas: string[]; onClose: () =
         <Button
           className="bg-brand hover:bg-brand/90 text-brand-foreground"
           disabled={!form.nome || !form.email}
-          onClick={() => { addCandidato(form); onClose(); }}
+          onClick={async () => {
+            try {
+              await addCandidato(form);
+              toast.success("Candidato adicionado com sucesso.");
+              onClose();
+            } catch {
+              toast.error("Não foi possível salvar o candidato.");
+            }
+          }}
         >Adicionar</Button>
       </DialogFooter>
     </DialogContent>

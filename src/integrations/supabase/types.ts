@@ -14,6 +14,157 @@ export type Database = {
   }
   public: {
     Tables: {
+      candidatos: {
+        Row: {
+          created_at: string
+          email: string
+          etapa: string
+          id: string
+          linkedin: string | null
+          nome: string
+          observacoes: string | null
+          pontuacao: number
+          proxima_acao: string
+          status: Database["public"]["Enums"]["candidato_status"]
+          telefone: string | null
+          updated_at: string
+          vaga_id: string | null
+          vaga_nome: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          etapa?: string
+          id?: string
+          linkedin?: string | null
+          nome: string
+          observacoes?: string | null
+          pontuacao?: number
+          proxima_acao?: string
+          status?: Database["public"]["Enums"]["candidato_status"]
+          telefone?: string | null
+          updated_at?: string
+          vaga_id?: string | null
+          vaga_nome?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          etapa?: string
+          id?: string
+          linkedin?: string | null
+          nome?: string
+          observacoes?: string | null
+          pontuacao?: number
+          proxima_acao?: string
+          status?: Database["public"]["Enums"]["candidato_status"]
+          telefone?: string | null
+          updated_at?: string
+          vaga_id?: string | null
+          vaga_nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidatos_vaga_id_fkey"
+            columns: ["vaga_id"]
+            isOneToOne: false
+            referencedRelation: "vagas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custos: {
+        Row: {
+          categoria: Database["public"]["Enums"]["custo_categoria"]
+          created_at: string
+          data: string
+          descricao: string
+          fornecedor: string | null
+          id: string
+          observacoes: string | null
+          status: Database["public"]["Enums"]["custo_status"]
+          tipo: Database["public"]["Enums"]["custo_tipo"]
+          updated_at: string
+          vaga_id: string | null
+          valor: number
+        }
+        Insert: {
+          categoria: Database["public"]["Enums"]["custo_categoria"]
+          created_at?: string
+          data: string
+          descricao: string
+          fornecedor?: string | null
+          id?: string
+          observacoes?: string | null
+          status?: Database["public"]["Enums"]["custo_status"]
+          tipo: Database["public"]["Enums"]["custo_tipo"]
+          updated_at?: string
+          vaga_id?: string | null
+          valor: number
+        }
+        Update: {
+          categoria?: Database["public"]["Enums"]["custo_categoria"]
+          created_at?: string
+          data?: string
+          descricao?: string
+          fornecedor?: string | null
+          id?: string
+          observacoes?: string | null
+          status?: Database["public"]["Enums"]["custo_status"]
+          tipo?: Database["public"]["Enums"]["custo_tipo"]
+          updated_at?: string
+          vaga_id?: string | null
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custos_vaga_id_fkey"
+            columns: ["vaga_id"]
+            isOneToOne: false
+            referencedRelation: "vagas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      faturas: {
+        Row: {
+          cliente: string
+          created_at: string
+          id: string
+          numero: string
+          observacoes: string | null
+          servico: string
+          status: Database["public"]["Enums"]["fatura_status"]
+          updated_at: string
+          valor: number
+          vencimento: string
+        }
+        Insert: {
+          cliente: string
+          created_at?: string
+          id?: string
+          numero?: string
+          observacoes?: string | null
+          servico: string
+          status?: Database["public"]["Enums"]["fatura_status"]
+          updated_at?: string
+          valor: number
+          vencimento: string
+        }
+        Update: {
+          cliente?: string
+          created_at?: string
+          id?: string
+          numero?: string
+          observacoes?: string | null
+          servico?: string
+          status?: Database["public"]["Enums"]["fatura_status"]
+          updated_at?: string
+          valor?: number
+          vencimento?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -38,15 +189,92 @@ export type Database = {
         }
         Relationships: []
       }
+      vagas: {
+        Row: {
+          area: string
+          briefing: Json | null
+          candidatos: number
+          cargo: string
+          contrato: Json | null
+          created_at: string
+          descricao: string | null
+          descritivo: Json | null
+          empresa: string
+          etapa: Database["public"]["Enums"]["pipeline_etapa"]
+          id: string
+          prazo: string
+          regime: Database["public"]["Enums"]["regime_trabalho"] | null
+          salario: string | null
+          status: Database["public"]["Enums"]["vaga_status"]
+          updated_at: string
+        }
+        Insert: {
+          area: string
+          briefing?: Json | null
+          candidatos?: number
+          cargo: string
+          contrato?: Json | null
+          created_at?: string
+          descricao?: string | null
+          descritivo?: Json | null
+          empresa: string
+          etapa?: Database["public"]["Enums"]["pipeline_etapa"]
+          id?: string
+          prazo: string
+          regime?: Database["public"]["Enums"]["regime_trabalho"] | null
+          salario?: string | null
+          status?: Database["public"]["Enums"]["vaga_status"]
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          briefing?: Json | null
+          candidatos?: number
+          cargo?: string
+          contrato?: Json | null
+          created_at?: string
+          descricao?: string | null
+          descritivo?: Json | null
+          empresa?: string
+          etapa?: Database["public"]["Enums"]["pipeline_etapa"]
+          id?: string
+          prazo?: string
+          regime?: Database["public"]["Enums"]["regime_trabalho"] | null
+          salario?: string | null
+          status?: Database["public"]["Enums"]["vaga_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_fatura_numero: { Args: never; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      candidato_status: "Triagem" | "Entrevista" | "Contratado" | "Reprovado"
+      custo_categoria:
+        | "Pessoal"
+        | "Software"
+        | "Marketing"
+        | "Anúncios"
+        | "Infraestrutura"
+        | "Impostos"
+        | "Operacional"
+        | "Outros"
+      custo_status: "Pago" | "Pendente" | "Atrasado"
+      custo_tipo: "Fixo" | "Variável"
+      fatura_status: "Pago" | "Pendente" | "Atrasado"
+      pipeline_etapa:
+        | "Briefing"
+        | "Contrato"
+        | "Descritivo publicado"
+        | "Candidatos em triagem"
+        | "Finalizada"
+      regime_trabalho: "CLT" | "PJ" | "Híbrido"
+      vaga_status: "Aberta" | "Em processo" | "Fechada" | "Encerrada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -173,6 +401,30 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      candidato_status: ["Triagem", "Entrevista", "Contratado", "Reprovado"],
+      custo_categoria: [
+        "Pessoal",
+        "Software",
+        "Marketing",
+        "Anúncios",
+        "Infraestrutura",
+        "Impostos",
+        "Operacional",
+        "Outros",
+      ],
+      custo_status: ["Pago", "Pendente", "Atrasado"],
+      custo_tipo: ["Fixo", "Variável"],
+      fatura_status: ["Pago", "Pendente", "Atrasado"],
+      pipeline_etapa: [
+        "Briefing",
+        "Contrato",
+        "Descritivo publicado",
+        "Candidatos em triagem",
+        "Finalizada",
+      ],
+      regime_trabalho: ["CLT", "PJ", "Híbrido"],
+      vaga_status: ["Aberta", "Em processo", "Fechada", "Encerrada"],
+    },
   },
 } as const
