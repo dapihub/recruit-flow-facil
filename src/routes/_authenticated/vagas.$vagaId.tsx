@@ -94,7 +94,7 @@ function VagaDetailPage() {
           </div>
         </div>
 
-        <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} diasAndamento={diasEmAndamento(vaga.createdAt)} totalCandidatos={vaga.candidatos} />
+        <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} diasAndamento={diasEmAndamento(vaga.createdAt, vaga.etapa === "Finalizada" ? vaga.updatedAt : undefined)} totalCandidatos={vaga.candidatos} />
       </div>
     </div>
   );
