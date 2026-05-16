@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { addVaga, deleteVaga, useVagas, VagaStatus } from "@/lib/store";
+import { addVaga, deleteVaga, updateVaga, useVagas, VagaStatus, Vaga } from "@/lib/store";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/")({
