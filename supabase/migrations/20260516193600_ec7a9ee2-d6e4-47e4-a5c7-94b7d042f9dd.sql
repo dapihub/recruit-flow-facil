@@ -1,0 +1,1 @@
+DELETE FROM public.candidatos; DELETE FROM public.faturas; DELETE FROM public.custos; DELETE FROM public.vagas;
