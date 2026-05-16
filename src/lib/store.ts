@@ -8,6 +8,7 @@ export type PipelineEtapa =
   | "Contrato"
   | "Descritivo publicado"
   | "Candidatos em triagem"
+  | "Em Garantia"
   | "Finalizada";
 
 export const PIPELINE_ETAPAS: PipelineEtapa[] = [
@@ -15,6 +16,7 @@ export const PIPELINE_ETAPAS: PipelineEtapa[] = [
   "Contrato",
   "Descritivo publicado",
   "Candidatos em triagem",
+  "Em Garantia",
   "Finalizada",
 ];
 
