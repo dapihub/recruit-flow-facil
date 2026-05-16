@@ -200,7 +200,7 @@ function FinanceiroPage() {
                 <thead className="bg-muted/40 text-muted-foreground">
                   <tr>
                     <Th>Nº</Th><Th>Cliente</Th><Th>Serviço</Th>
-                    <Th>Vencimento</Th><Th className="text-right">Valor</Th><Th>Status</Th><Th />
+                    <Th>Data de pagamento</Th><Th className="text-right">Valor</Th><Th>Status</Th><Th />
                   </tr>
                 </thead>
                 <tbody>
@@ -387,7 +387,7 @@ function NovaFaturaModal({ onClose }: { onClose: () => void }) {
         <Field label="Cliente" className="col-span-2"><Input value={form.cliente} onChange={(e) => setForm({ ...form, cliente: e.target.value })} /></Field>
         <Field label="Vaga / Serviço" className="col-span-2"><Input value={form.servico} onChange={(e) => setForm({ ...form, servico: e.target.value })} /></Field>
         <Field label="Valor (R$)"><Input type="number" value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} /></Field>
-        <Field label="Vencimento"><Input type="date" value={form.vencimento} onChange={(e) => setForm({ ...form, vencimento: e.target.value })} /></Field>
+        <Field label="Data de pagamento"><Input type="date" value={form.vencimento} onChange={(e) => setForm({ ...form, vencimento: e.target.value })} /></Field>
         <Field label="Observações" className="col-span-2"><Textarea rows={3} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></Field>
       </div>
       <DialogFooter>
@@ -430,7 +430,7 @@ function EditFaturaModal({ fatura, onClose }: { fatura: Fatura; onClose: () => v
         <Field label="Cliente" className="col-span-2"><Input value={form.cliente} onChange={(e) => setForm({ ...form, cliente: e.target.value })} /></Field>
         <Field label="Vaga / Serviço" className="col-span-2"><Input value={form.servico} onChange={(e) => setForm({ ...form, servico: e.target.value })} /></Field>
         <Field label="Valor (R$)"><Input type="number" value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} /></Field>
-        <Field label="Vencimento"><Input type="date" value={form.vencimento} onChange={(e) => setForm({ ...form, vencimento: e.target.value })} /></Field>
+        <Field label="Data de pagamento"><Input type="date" value={form.vencimento} onChange={(e) => setForm({ ...form, vencimento: e.target.value })} /></Field>
         <Field label="Status" className="col-span-2">
           <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as FaturaStatus })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
