@@ -207,6 +207,7 @@ function EditarVagaButton({ vaga }: { vaga: Vaga }) {
     quantidade: String(vaga.briefing?.quantidade ?? 1),
     prazoGarantia: String(vaga.prazoGarantia ?? 90),
     createdAt: vaga.createdAt ? vaga.createdAt.slice(0, 10) : "",
+    prazo: vaga.prazo ? vaga.prazo.slice(0, 10) : "",
   });
 
   return (
@@ -221,6 +222,7 @@ function EditarVagaButton({ vaga }: { vaga: Vaga }) {
             quantidade: String(vaga.briefing?.quantidade ?? 1),
             prazoGarantia: String(vaga.prazoGarantia ?? 90),
             createdAt: vaga.createdAt ? vaga.createdAt.slice(0, 10) : "",
+            prazo: vaga.prazo ? vaga.prazo.slice(0, 10) : "",
           });
         }
       }}
@@ -237,7 +239,8 @@ function EditarVagaButton({ vaga }: { vaga: Vaga }) {
           <Field label="Empresa" className="col-span-2"><Input value={form.empresa} onChange={(e) => setForm({ ...form, empresa: e.target.value })} /></Field>
           <Field label="Quantidade"><Input type="number" min="1" value={form.quantidade} onChange={(e) => setForm({ ...form, quantidade: e.target.value })} /></Field>
           <Field label="Prazo de garantia (dias)"><Input type="number" min="0" value={form.prazoGarantia} onChange={(e) => setForm({ ...form, prazoGarantia: e.target.value })} /></Field>
-          <Field label="Início" className="col-span-2"><Input type="date" value={form.createdAt} onChange={(e) => setForm({ ...form, createdAt: e.target.value })} /></Field>
+          <Field label="Início"><Input type="date" value={form.createdAt} onChange={(e) => setForm({ ...form, createdAt: e.target.value })} /></Field>
+          <Field label="Finalizada em"><Input type="date" value={form.prazo} onChange={(e) => setForm({ ...form, prazo: e.target.value })} /></Field>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
@@ -254,6 +257,7 @@ function EditarVagaButton({ vaga }: { vaga: Vaga }) {
                   prazoGarantia: Number(form.prazoGarantia) || 90,
                   briefing: briefingAtualizado,
                   createdAt: form.createdAt ? new Date(form.createdAt + "T12:00:00").toISOString() : vaga.createdAt,
+                  prazo: form.prazo || vaga.prazo,
                 });
                 toast.success("Vaga atualizada.");
                 setOpen(false);
