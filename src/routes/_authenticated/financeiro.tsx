@@ -577,7 +577,7 @@ function EditCustoModal({ custo, onClose }: { custo: Custo; onClose: () => void 
 }
 
 type CustoForm = {
-  descricao: string; categoria: CustoCategoria; tipo: CustoTipo; valor: string; data: string; status: CustoStatus; fornecedor: string; observacoes: string;
+  descricao: string; categoria: CustoCategoria; tipo: CustoTipo; valor: string; data: string; status: CustoStatus; fornecedor: string; observacoes: string; candidaturas?: string; visualizacoes?: string;
 };
 
 function CustoFields({ form, setForm }: { form: CustoForm; setForm: (f: CustoForm) => void }) {
