@@ -473,11 +473,23 @@ function EditFaturaModal({ fatura, onClose }: { fatura: Fatura; onClose: () => v
   );
 }
 
+const ANUNCIO_RE = /^\[Anúncios\] Candidaturas: (\d+) \| Visualizações: (\d+)\s*\n?/;
+function parseAnuncio(obs: string): { candidaturas: string; visualizacoes: string; resto: string } {
+  const m = obs?.match(ANUNCIO_RE);
+  if (!m) return { candidaturas: "", visualizacoes: "", resto: obs ?? "" };
+  return { candidaturas: m[1], visualizacoes: m[2], resto: obs.replace(ANUNCIO_RE, "") };
+}
+function buildObservacoes(form: CustoForm): string {
+  const base = form.observacoes ?? "";
+  if (form.categoria !== "Anúncios") return base;
+  const c = form.candidaturas || "0";
+  const v = form.visualizacoes || "0";
+  return `[Anúncios] Candidaturas: ${c} | Visualizações: ${v}\n${base}`;
+}
+
 function NovoCustoModal({ onClose }: { onClose: () => void }) {
-  const [form, setForm] = useState<{
-    descricao: string; categoria: CustoCategoria; tipo: CustoTipo; valor: string; data: string; status: CustoStatus; fornecedor: string; observacoes: string;
-  }>({
-    descricao: "", categoria: "Operacional", tipo: "Variável", valor: "", data: new Date().toISOString().slice(0, 10), status: "Pendente", fornecedor: "", observacoes: "",
+  const [form, setForm] = useState<CustoForm>({
+    descricao: "", categoria: "Operacional", tipo: "Variável", valor: "", data: new Date().toISOString().slice(0, 10), status: "Pendente", fornecedor: "", observacoes: "", candidaturas: "", visualizacoes: "",
   });
   const [saving, setSaving] = useState(false);
   return (
