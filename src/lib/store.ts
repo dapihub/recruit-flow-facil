@@ -393,33 +393,6 @@ async function loadAll(force = false): Promise<void> {
       if (faturasRes.error) throw faturasRes.error;
       if (custosRes.error) throw custosRes.error;
 
-      if (
-        (vagasRes.data?.length ?? 0) === 0 &&
-        (candidatosRes.data?.length ?? 0) === 0 &&
-        (faturasRes.data?.length ?? 0) === 0 &&
-        (custosRes.data?.length ?? 0) === 0
-      ) {
-        return seedDemoData().then(async () => {
-          const [seededVagas, seededCandidatos, seededFaturas, seededCustos] = await Promise.all([
-            supabase.from("vagas").select("*").order("created_at", { ascending: false }),
-            supabase.from("candidatos").select("*").order("created_at", { ascending: false }),
-            supabase.from("faturas").select("*").order("created_at", { ascending: false }),
-            supabase.from("custos").select("*").order("created_at", { ascending: false }),
-          ]);
-
-          if (seededVagas.error) throw seededVagas.error;
-          if (seededCandidatos.error) throw seededCandidatos.error;
-          if (seededFaturas.error) throw seededFaturas.error;
-          if (seededCustos.error) throw seededCustos.error;
-
-          state.vagas = (seededVagas.data ?? []).map(mapVaga);
-          state.candidatos = (seededCandidatos.data ?? []).map(mapCandidato);
-          state.faturas = (seededFaturas.data ?? []).map(mapFatura);
-          state.custos = (seededCustos.data ?? []).map(mapCusto);
-          state.loadedUserId = userId;
-        });
-      }
-
       state.vagas = (vagasRes.data ?? []).map(mapVaga);
       state.candidatos = (candidatosRes.data ?? []).map(mapCandidato);
       state.faturas = (faturasRes.data ?? []).map(mapFatura);
