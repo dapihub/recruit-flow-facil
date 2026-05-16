@@ -756,7 +756,7 @@ function FinanceiroTab({ vagaId, empresa, cargo, diasAndamento, totalCandidatos 
 
   const desvincularCusto = async (id: string) => {
     try {
-      await updateCusto(id, { vagaId: undefined });
+      await updateCusto(id, { vagaId: null as any });
       toast.success("Custo desvinculado");
     } catch (e: any) {
       toast.error(e?.message ?? "Erro ao desvincular");
