@@ -18,6 +18,7 @@ import {
   Custo,
   PIPELINE_ETAPAS,
   PipelineEtapa,
+  VagaStatus,
   updateVaga,
   updateFatura,
   updateCusto,
