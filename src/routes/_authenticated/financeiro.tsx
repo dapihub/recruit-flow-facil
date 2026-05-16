@@ -204,7 +204,7 @@ function FinanceiroPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {faturas.map((f, i) => (
+                  {[...faturas].sort((a, b) => (b.vencimento ?? "").localeCompare(a.vencimento ?? "")).map((f, i) => (
                     <tr
                       key={f.id}
                       className={`border-t transition-colors ${i % 2 ? "bg-muted/10" : ""} hover:bg-brand/5`}
@@ -278,7 +278,7 @@ function FinanceiroPage() {
                   {custos.length === 0 && (
                     <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Nenhum custo registrado.</td></tr>
                   )}
-                  {custos.map((c, i) => (
+                  {[...custos].sort((a, b) => (b.data ?? "").localeCompare(a.data ?? "")).map((c, i) => (
                     <tr
                       key={c.id}
                       className={`border-t transition-colors ${i % 2 ? "bg-muted/10" : ""} hover:bg-brand/5`}
