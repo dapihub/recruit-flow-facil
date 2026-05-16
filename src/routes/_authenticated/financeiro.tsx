@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, TrendingDown, TrendingUp } from "lucide-react";
+import { Plus, TrendingDown, TrendingUp, Pencil } from "lucide-react";
 import { PageHeader, MetricCard } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -13,12 +13,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   addFatura,
   addCusto,
+  updateFatura,
+  updateCusto,
   useFaturas,
   useCustos,
   CUSTO_CATEGORIAS,
   type CustoCategoria,
   type CustoTipo,
 } from "@/lib/store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
   head: () => ({
