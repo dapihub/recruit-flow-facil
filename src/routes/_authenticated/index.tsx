@@ -81,7 +81,6 @@ function VagasPage() {
                 {STATUS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
             <span className="ml-auto text-sm text-muted-foreground">{filtradas.length} vagas</span>
           </div>
 
@@ -89,10 +88,10 @@ function VagasPage() {
             <table className="w-full text-sm">
               <thead className="bg-muted/40 text-muted-foreground">
                 <tr>
-                  <Th>Cargo</Th><Th>Empresa</Th><Th>Área</Th>
+                  <Th>Cargo</Th><Th>Empresa</Th>
                   <Th className="text-center">Candidatos</Th>
                   <Th>Etapa</Th>
-                  <Th>Prazo</Th><Th>Status</Th><Th className="w-12"></Th>
+                  <Th>Início</Th><Th>Status</Th><Th className="w-12"></Th>
                 </tr>
               </thead>
               <tbody>
