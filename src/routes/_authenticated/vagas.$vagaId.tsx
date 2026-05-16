@@ -670,7 +670,7 @@ function ContratoTab({ vagaId, initial, empresa, cargo }: { vagaId: string; init
 }
 
 /* ---------------- FINANCEIRO ---------------- */
-function FinanceiroTab({ vagaId, empresa, cargo }: { vagaId: string; empresa: string; cargo: string }) {
+function FinanceiroTab({ vagaId, empresa, cargo, diasAndamento, totalCandidatos }: { vagaId: string; empresa: string; cargo: string; diasAndamento: number; totalCandidatos: number }) {
   const faturas = useFaturas();
   const custos = useCustos();
 
