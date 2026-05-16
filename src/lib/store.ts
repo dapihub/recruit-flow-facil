@@ -526,22 +526,55 @@ export async function addCusto(custo: Omit<Custo, "id">) {
   emit();
 }
 
-export async function addVaga(vaga: Omit<Vaga, "id" | "candidatos" | "status" | "etapa">) {
-  const payload = {
+export async function addVaga(vaga: {
+  cargo: string;
+  empresa: string;
+  quantidade?: number;
+  receita?: number;
+  area?: string;
+  prazo?: string;
+  descricao?: string;
+  salario?: string;
+  regime?: "CLT" | "PJ" | "Híbrido";
+}) {
+  const prazo = vaga.prazo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const quantidade = vaga.quantidade ?? 1;
+
+  const payload: any = {
     cargo: vaga.cargo,
     empresa: vaga.empresa,
-    area: vaga.area,
-    prazo: vaga.prazo,
+    area: vaga.area || "Geral",
+    prazo,
     descricao: vaga.descricao ?? null,
     salario: vaga.salario ?? null,
     regime: vaga.regime ?? null,
+    briefing: { quantidade } as any,
   };
 
   const { data, error } = await supabase.from("vagas").insert(payload).select().single();
   if (error) throw error;
 
-  state.vagas = [mapVaga(data), ...state.vagas];
+  const novaVaga = mapVaga(data);
+  state.vagas = [novaVaga, ...state.vagas];
   emit();
+
+  // Cria fatura automaticamente vinculada à vaga
+  if (vaga.receita && vaga.receita > 0) {
+    const valorTotal = vaga.receita * quantidade;
+    try {
+      await addFatura({
+        cliente: vaga.empresa,
+        servico: `Recrutamento — ${vaga.cargo}${quantidade > 1 ? ` (${quantidade} vagas)` : ""}`,
+        valor: valorTotal,
+        vencimento: prazo,
+        vagaId: novaVaga.id,
+      });
+    } catch (err) {
+      console.error("Erro ao criar fatura automática:", err);
+    }
+  }
+
+  return novaVaga;
 }
 
 export async function updateVaga(id: string, patch: Partial<Vaga>) {
