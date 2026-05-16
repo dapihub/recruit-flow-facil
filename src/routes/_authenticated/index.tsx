@@ -85,7 +85,7 @@ function VagasPage() {
               <SelectTrigger className="w-[180px]"><SelectValue placeholder="Área" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todas as áreas</SelectItem>
-                {areas.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                {areas.filter(Boolean).map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
               </SelectContent>
             </Select>
             <span className="ml-auto text-sm text-muted-foreground">{filtradas.length} vagas</span>
