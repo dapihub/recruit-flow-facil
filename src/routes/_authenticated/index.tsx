@@ -107,11 +107,16 @@ function VagasPage() {
                         <EditarVagaButton vaga={v} />
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent>
+                          <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                             <AlertDialogHeader>
                               <AlertDialogTitle>Excluir vaga?</AlertDialogTitle>
                               <AlertDialogDescription>
@@ -122,12 +127,14 @@ function VagasPage() {
                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
                               <AlertDialogAction
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                onClick={async () => {
+                                onClick={async (e) => {
+                                  e.stopPropagation();
                                   try {
                                     await deleteVaga(v.id);
                                     toast.success("Vaga excluída com sucesso.");
-                                  } catch {
-                                    toast.error("Não foi possível excluir a vaga.");
+                                  } catch (err: any) {
+                                    console.error("deleteVaga failed", err);
+                                    toast.error(err?.message ?? "Não foi possível excluir a vaga.");
                                   }
                                 }}
                               >Excluir</AlertDialogAction>
