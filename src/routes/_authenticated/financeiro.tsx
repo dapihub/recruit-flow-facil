@@ -608,6 +608,12 @@ function CustoFields({ form, setForm }: { form: CustoForm; setForm: (f: CustoFor
       </Field>
       <Field label="Valor (R$)"><Input type="number" value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} /></Field>
       <Field label="Data"><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></Field>
+      {form.categoria === "Anúncios" && (
+        <>
+          <Field label="Candidaturas"><Input type="number" min="0" value={form.candidaturas ?? ""} onChange={(e) => setForm({ ...form, candidaturas: e.target.value })} /></Field>
+          <Field label="Visualizações"><Input type="number" min="0" value={form.visualizacoes ?? ""} onChange={(e) => setForm({ ...form, visualizacoes: e.target.value })} /></Field>
+        </>
+      )}
       <Field label="Fornecedor" className="col-span-2"><Input value={form.fornecedor} onChange={(e) => setForm({ ...form, fornecedor: e.target.value })} /></Field>
       <Field label="Status">
         <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as CustoStatus })}>
