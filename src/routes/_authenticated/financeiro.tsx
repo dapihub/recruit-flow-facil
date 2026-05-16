@@ -473,11 +473,23 @@ function EditFaturaModal({ fatura, onClose }: { fatura: Fatura; onClose: () => v
   );
 }
 
+const ANUNCIO_RE = /^\[Anúncios\] Candidaturas: (\d+) \| Visualizações: (\d+)\s*\n?/;
+function parseAnuncio(obs: string): { candidaturas: string; visualizacoes: string; resto: string } {
+  const m = obs?.match(ANUNCIO_RE);
+  if (!m) return { candidaturas: "", visualizacoes: "", resto: obs ?? "" };
+  return { candidaturas: m[1], visualizacoes: m[2], resto: obs.replace(ANUNCIO_RE, "") };
+}
+function buildObservacoes(form: CustoForm): string {
+  const base = form.observacoes ?? "";
+  if (form.categoria !== "Anúncios") return base;
+  const c = form.candidaturas || "0";
+  const v = form.visualizacoes || "0";
+  return `[Anúncios] Candidaturas: ${c} | Visualizações: ${v}\n${base}`;
+}
+
 function NovoCustoModal({ onClose }: { onClose: () => void }) {
-  const [form, setForm] = useState<{
-    descricao: string; categoria: CustoCategoria; tipo: CustoTipo; valor: string; data: string; status: CustoStatus; fornecedor: string; observacoes: string;
-  }>({
-    descricao: "", categoria: "Operacional", tipo: "Variável", valor: "", data: new Date().toISOString().slice(0, 10), status: "Pendente", fornecedor: "", observacoes: "",
+  const [form, setForm] = useState<CustoForm>({
+    descricao: "", categoria: "Operacional", tipo: "Variável", valor: "", data: new Date().toISOString().slice(0, 10), status: "Pendente", fornecedor: "", observacoes: "", candidaturas: "", visualizacoes: "",
   });
   const [saving, setSaving] = useState(false);
   return (
@@ -500,7 +512,7 @@ function NovoCustoModal({ onClose }: { onClose: () => void }) {
                 data: form.data,
                 status: form.status,
                 fornecedor: form.fornecedor || undefined,
-                observacoes: form.observacoes || undefined,
+                observacoes: buildObservacoes(form) || undefined,
               });
               toast.success("Custo registrado");
               onClose();
@@ -517,7 +529,8 @@ function NovoCustoModal({ onClose }: { onClose: () => void }) {
 }
 
 function EditCustoModal({ custo, onClose }: { custo: Custo; onClose: () => void }) {
-  const [form, setForm] = useState({
+  const parsed = parseAnuncio(custo.observacoes ?? "");
+  const [form, setForm] = useState<CustoForm>({
     descricao: custo.descricao,
     categoria: custo.categoria,
     tipo: custo.tipo,
@@ -525,7 +538,9 @@ function EditCustoModal({ custo, onClose }: { custo: Custo; onClose: () => void 
     data: custo.data,
     status: custo.status,
     fornecedor: custo.fornecedor ?? "",
-    observacoes: custo.observacoes ?? "",
+    observacoes: parsed.resto,
+    candidaturas: parsed.candidaturas,
+    visualizacoes: parsed.visualizacoes,
   });
   const [saving, setSaving] = useState(false);
   return (
@@ -548,7 +563,7 @@ function EditCustoModal({ custo, onClose }: { custo: Custo; onClose: () => void 
                 data: form.data,
                 status: form.status,
                 fornecedor: form.fornecedor || undefined,
-                observacoes: form.observacoes || undefined,
+                observacoes: buildObservacoes(form) || undefined,
               });
               toast.success("Custo atualizado");
               onClose();
@@ -565,7 +580,7 @@ function EditCustoModal({ custo, onClose }: { custo: Custo; onClose: () => void 
 }
 
 type CustoForm = {
-  descricao: string; categoria: CustoCategoria; tipo: CustoTipo; valor: string; data: string; status: CustoStatus; fornecedor: string; observacoes: string;
+  descricao: string; categoria: CustoCategoria; tipo: CustoTipo; valor: string; data: string; status: CustoStatus; fornecedor: string; observacoes: string; candidaturas?: string; visualizacoes?: string;
 };
 
 function CustoFields({ form, setForm }: { form: CustoForm; setForm: (f: CustoForm) => void }) {
@@ -593,6 +608,12 @@ function CustoFields({ form, setForm }: { form: CustoForm; setForm: (f: CustoFor
       </Field>
       <Field label="Valor (R$)"><Input type="number" value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} /></Field>
       <Field label="Data"><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></Field>
+      {form.categoria === "Anúncios" && (
+        <>
+          <Field label="Candidaturas"><Input type="number" min="0" value={form.candidaturas ?? ""} onChange={(e) => setForm({ ...form, candidaturas: e.target.value })} /></Field>
+          <Field label="Visualizações"><Input type="number" min="0" value={form.visualizacoes ?? ""} onChange={(e) => setForm({ ...form, visualizacoes: e.target.value })} /></Field>
+        </>
+      )}
       <Field label="Fornecedor" className="col-span-2"><Input value={form.fornecedor} onChange={(e) => setForm({ ...form, fornecedor: e.target.value })} /></Field>
       <Field label="Status">
         <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as CustoStatus })}>
