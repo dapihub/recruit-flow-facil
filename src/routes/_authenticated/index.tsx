@@ -169,10 +169,41 @@ function VagasPage() {
 }
 
 function Th({ children, className = "" }: { children?: React.ReactNode; className?: string }) {
-  return <th className={`text-left font-semibold px-4 py-3 text-xs uppercase tracking-wider ${className}`}>{children}</th>;
+  return <th className={`text-left font-bold px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground ${className}`}>{children}</th>;
 }
 function Td({ children, className = "" }: { children?: React.ReactNode; className?: string }) {
-  return <td className={`px-4 py-3 text-foreground/80 ${className}`}>{children}</td>;
+  return <td className={`px-4 py-4 text-foreground/80 ${className}`}>{children}</td>;
+}
+
+const KPI_BAR: Record<string, string> = {
+  brand: "bg-brand",
+  success: "bg-success",
+  warning: "bg-warning",
+  info: "bg-info",
+};
+
+function Kpi({ label, value, hint, color }: { label: string; value: string | number; hint?: string; color: "brand" | "success" | "warning" | "info" }) {
+  return (
+    <div className="relative bg-card rounded-2xl border border-border/60 p-6 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <div className={`absolute top-0 left-0 right-0 h-1 opacity-20 ${KPI_BAR[color]}`} />
+      <div className={`absolute top-0 left-0 h-1 w-12 ${KPI_BAR[color]}`} />
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="text-3xl font-bold mt-2 text-foreground tabular-nums">{value}</p>
+      {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
+    </div>
+  );
+}
+
+const ETAPA_COLORS: Record<string, string> = {
+  "Briefing": "bg-info/15 text-info",
+  "Candidatos em triagem": "bg-brand/15 text-brand",
+  "Em Garantia": "bg-warning/20 text-warning-foreground",
+  "Finalizada": "bg-muted text-muted-foreground",
+};
+
+function EtapaBadge({ etapa }: { etapa: string }) {
+  const cls = ETAPA_COLORS[etapa] ?? "bg-muted text-muted-foreground";
+  return <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-tight ${cls}`}>{etapa}</span>;
 }
 
 function NovaVagaModal({ onClose }: { onClose: () => void }) {
