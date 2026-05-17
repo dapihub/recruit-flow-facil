@@ -31,10 +31,16 @@ function VagasPage() {
   const [open, setOpen] = useState(false);
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
 
+  const statusOrder: Record<string, number> = { "Aberta": 0, "Em processo": 1, "Fechada": 2, "Encerrada": 3 };
   const filtradas = vagas
     .filter((v) => filtroStatus === "todos" || v.status === filtroStatus)
     .slice()
-    .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+    .sort((a, b) => {
+      const sa = statusOrder[a.status] ?? 99;
+      const sb = statusOrder[b.status] ?? 99;
+      if (sa !== sb) return sa - sb;
+      return (b.createdAt ?? "").localeCompare(a.createdAt ?? "");
+    });
 
   const abertas = vagas.filter((v) => v.status === "Aberta").length;
   const emProcesso = vagas.filter((v) => v.status === "Em processo").length;
