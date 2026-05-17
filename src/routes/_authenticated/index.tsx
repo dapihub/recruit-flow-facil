@@ -113,8 +113,8 @@ function VagasPage() {
                     <Td><EtapaBadge etapa={v.etapa} /></Td>
                     <Td className="text-muted-foreground">{v.createdAt ? new Date(v.createdAt).toLocaleDateString("pt-BR") : "—"}</Td>
                     <Td><StatusBadge status={v.status} /></Td>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1">
+                    <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                         <EditarVagaButton vaga={v} />
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
