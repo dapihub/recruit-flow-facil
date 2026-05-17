@@ -92,7 +92,7 @@ function VagasPage() {
               <thead className="bg-muted/40 text-muted-foreground">
                 <tr>
                   <Th>Cargo</Th><Th>Empresa</Th>
-                  <Th className="text-center">Candidatos</Th>
+                  <Th className="text-right">Valor</Th>
                   <Th>Etapa</Th>
                   <Th>Início</Th><Th>Status</Th><Th className="w-24"></Th>
                 </tr>
