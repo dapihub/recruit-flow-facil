@@ -106,7 +106,10 @@ function VagasPage() {
                   >
                     <Td className="font-medium text-foreground">{v.cargo}</Td>
                     <Td>{v.empresa}</Td>
-                    <Td className="text-center font-semibold">{v.candidatos}</Td>
+                    <Td className="text-right font-semibold tabular-nums">{(() => {
+                      const total = faturas.filter((f) => f.vagaId === v.id).reduce((s, f) => s + (f.valor ?? 0), 0);
+                      return total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+                    })()}</Td>
                     <Td><span className="text-xs px-2 py-1 rounded-full bg-brand/10 text-brand font-medium">{v.etapa}</span></Td>
                     <Td>{v.createdAt ? new Date(v.createdAt).toLocaleDateString("pt-BR") : "—"}</Td>
                     <Td><StatusBadge status={v.status} /></Td>
