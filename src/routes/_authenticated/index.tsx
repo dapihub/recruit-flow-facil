@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Plus, ChevronRight, Trash2, Pencil } from "lucide-react";
-import { PageHeader, MetricCard } from "@/components/PageHeader";
+import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,7 +57,7 @@ function VagasPage() {
         action={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-brand hover:bg-brand/90 text-brand-foreground">
+              <Button className="bg-brand hover:bg-brand/90 text-brand-foreground rounded-xl px-5 shadow-sm">
                 <Plus className="w-4 h-4 mr-2" /> Nova Vaga
               </Button>
             </DialogTrigger>
@@ -66,55 +66,55 @@ function VagasPage() {
         }
       />
 
-      <div className="p-8 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard label="Vagas abertas" value={abertas} accent="success" hint="Recebendo candidaturas" />
-          <MetricCard label="Em processo" value={emProcesso} accent="info" hint="Entrevistas em andamento" />
-          <MetricCard label="Total de candidatos" value={totalCand} accent="brand" hint="Em todas as vagas" />
-          <MetricCard label="Taxa de preenchimento" value={`${taxa}%`} accent="warning" hint="Vagas fechadas / total" />
+      <div className="p-8 space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Kpi label="Vagas abertas" value={abertas} hint="Recebendo candidaturas" color="success" />
+          <Kpi label="Em processo" value={emProcesso} hint="Entrevistas em andamento" color="info" />
+          <Kpi label="Total de candidatos" value={totalCand} hint="Em todas as vagas" color="brand" />
+          <Kpi label="Taxa de preenchimento" value={`${taxa}%`} hint="Vagas fechadas / total" color="warning" />
         </div>
 
-        <div className="bg-card rounded-xl border shadow-sm">
-          <div className="flex flex-wrap items-center gap-3 p-4 border-b">
-            <span className="text-sm font-medium text-muted-foreground">Filtros:</span>
+        <div className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden">
+          <div className="flex flex-wrap items-center gap-3 px-6 py-4 border-b border-border/60">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Filtros</span>
             <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-              <SelectTrigger className="w-[180px]"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectTrigger className="w-[180px] h-9 rounded-lg bg-muted/40 border-border/60"><SelectValue placeholder="Status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todos os status</SelectItem>
                 {STATUS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
-            <span className="ml-auto text-sm text-muted-foreground">{filtradas.length} vagas</span>
+            <span className="ml-auto text-xs font-medium text-muted-foreground">{filtradas.length} vagas encontradas</span>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-muted-foreground">
-                <tr>
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-muted/30 text-left">
                   <Th>Cargo</Th><Th>Empresa</Th>
                   <Th className="text-right">Valor</Th>
                   <Th>Etapa</Th>
                   <Th>Início</Th><Th>Status</Th><Th className="w-24"></Th>
                 </tr>
               </thead>
-              <tbody>
-                {filtradas.map((v, i) => (
+              <tbody className="divide-y divide-border/50">
+                {filtradas.map((v) => (
                   <tr
                     key={v.id}
                     onClick={() => navigate({ to: "/vagas/$vagaId", params: { vagaId: v.id } })}
-                    className={`border-t transition-colors cursor-pointer ${i % 2 ? "bg-muted/10" : ""} hover:bg-brand/5 hover:shadow-[inset_3px_0_0_0_var(--brand)]`}
+                    className="group cursor-pointer transition-colors hover:bg-muted/30"
                   >
-                    <Td className="font-medium text-foreground">{v.cargo}</Td>
-                    <Td>{v.empresa}</Td>
-                    <Td className="text-right font-semibold tabular-nums">{(() => {
+                    <Td className="font-semibold text-foreground group-hover:text-brand transition-colors">{v.cargo}</Td>
+                    <Td className="text-muted-foreground">{v.empresa}</Td>
+                    <Td className="text-right font-semibold tabular-nums text-foreground">{(() => {
                       const total = faturas.filter((f) => f.vagaId === v.id).reduce((s, f) => s + (f.valor ?? 0), 0);
                       return total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
                     })()}</Td>
-                    <Td><span className="text-xs px-2 py-1 rounded-full bg-brand/10 text-brand font-medium">{v.etapa}</span></Td>
-                    <Td>{v.createdAt ? new Date(v.createdAt).toLocaleDateString("pt-BR") : "—"}</Td>
+                    <Td><EtapaBadge etapa={v.etapa} /></Td>
+                    <Td className="text-muted-foreground">{v.createdAt ? new Date(v.createdAt).toLocaleDateString("pt-BR") : "—"}</Td>
                     <Td><StatusBadge status={v.status} /></Td>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1">
+                    <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                         <EditarVagaButton vaga={v} />
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -169,10 +169,41 @@ function VagasPage() {
 }
 
 function Th({ children, className = "" }: { children?: React.ReactNode; className?: string }) {
-  return <th className={`text-left font-semibold px-4 py-3 text-xs uppercase tracking-wider ${className}`}>{children}</th>;
+  return <th className={`text-left font-bold px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground ${className}`}>{children}</th>;
 }
 function Td({ children, className = "" }: { children?: React.ReactNode; className?: string }) {
-  return <td className={`px-4 py-3 text-foreground/80 ${className}`}>{children}</td>;
+  return <td className={`px-4 py-4 text-foreground/80 ${className}`}>{children}</td>;
+}
+
+const KPI_BAR: Record<string, string> = {
+  brand: "bg-brand",
+  success: "bg-success",
+  warning: "bg-warning",
+  info: "bg-info",
+};
+
+function Kpi({ label, value, hint, color }: { label: string; value: string | number; hint?: string; color: "brand" | "success" | "warning" | "info" }) {
+  return (
+    <div className="relative bg-card rounded-2xl border border-border/60 p-6 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <div className={`absolute top-0 left-0 right-0 h-1 opacity-20 ${KPI_BAR[color]}`} />
+      <div className={`absolute top-0 left-0 h-1 w-12 ${KPI_BAR[color]}`} />
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="text-3xl font-bold mt-2 text-foreground tabular-nums">{value}</p>
+      {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
+    </div>
+  );
+}
+
+const ETAPA_COLORS: Record<string, string> = {
+  "Briefing": "bg-info/15 text-info",
+  "Candidatos em triagem": "bg-brand/15 text-brand",
+  "Em Garantia": "bg-warning/20 text-warning-foreground",
+  "Finalizada": "bg-muted text-muted-foreground",
+};
+
+function EtapaBadge({ etapa }: { etapa: string }) {
+  const cls = ETAPA_COLORS[etapa] ?? "bg-muted text-muted-foreground";
+  return <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-tight ${cls}`}>{etapa}</span>;
 }
 
 function NovaVagaModal({ onClose }: { onClose: () => void }) {
