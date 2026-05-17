@@ -88,30 +88,30 @@ function VagasPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-muted-foreground">
-                <tr>
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-muted/30 text-left">
                   <Th>Cargo</Th><Th>Empresa</Th>
                   <Th className="text-right">Valor</Th>
                   <Th>Etapa</Th>
                   <Th>Início</Th><Th>Status</Th><Th className="w-24"></Th>
                 </tr>
               </thead>
-              <tbody>
-                {filtradas.map((v, i) => (
+              <tbody className="divide-y divide-border/50">
+                {filtradas.map((v) => (
                   <tr
                     key={v.id}
                     onClick={() => navigate({ to: "/vagas/$vagaId", params: { vagaId: v.id } })}
-                    className={`border-t transition-colors cursor-pointer ${i % 2 ? "bg-muted/10" : ""} hover:bg-brand/5 hover:shadow-[inset_3px_0_0_0_var(--brand)]`}
+                    className="group cursor-pointer transition-colors hover:bg-muted/30"
                   >
-                    <Td className="font-medium text-foreground">{v.cargo}</Td>
-                    <Td>{v.empresa}</Td>
-                    <Td className="text-right font-semibold tabular-nums">{(() => {
+                    <Td className="font-semibold text-foreground group-hover:text-brand transition-colors">{v.cargo}</Td>
+                    <Td className="text-muted-foreground">{v.empresa}</Td>
+                    <Td className="text-right font-semibold tabular-nums text-foreground">{(() => {
                       const total = faturas.filter((f) => f.vagaId === v.id).reduce((s, f) => s + (f.valor ?? 0), 0);
                       return total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
                     })()}</Td>
-                    <Td><span className="text-xs px-2 py-1 rounded-full bg-brand/10 text-brand font-medium">{v.etapa}</span></Td>
-                    <Td>{v.createdAt ? new Date(v.createdAt).toLocaleDateString("pt-BR") : "—"}</Td>
+                    <Td><EtapaBadge etapa={v.etapa} /></Td>
+                    <Td className="text-muted-foreground">{v.createdAt ? new Date(v.createdAt).toLocaleDateString("pt-BR") : "—"}</Td>
                     <Td><StatusBadge status={v.status} /></Td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-1">
