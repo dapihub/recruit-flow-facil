@@ -27,6 +27,7 @@ const STATUS: VagaStatus[] = ["Aberta", "Em processo", "Fechada", "Encerrada"];
 
 function VagasPage() {
   const vagas = useVagas();
+  const faturas = useFaturas();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
