@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { addVaga, deleteVaga, updateVaga, useVagas, VagaStatus, Vaga } from "@/lib/store";
+import { addVaga, deleteVaga, updateVaga, useVagas, useFaturas, VagaStatus, Vaga } from "@/lib/store";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -27,6 +27,7 @@ const STATUS: VagaStatus[] = ["Aberta", "Em processo", "Fechada", "Encerrada"];
 
 function VagasPage() {
   const vagas = useVagas();
+  const faturas = useFaturas();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
@@ -91,7 +92,7 @@ function VagasPage() {
               <thead className="bg-muted/40 text-muted-foreground">
                 <tr>
                   <Th>Cargo</Th><Th>Empresa</Th>
-                  <Th className="text-center">Candidatos</Th>
+                  <Th className="text-right">Valor</Th>
                   <Th>Etapa</Th>
                   <Th>Início</Th><Th>Status</Th><Th className="w-24"></Th>
                 </tr>
@@ -105,7 +106,10 @@ function VagasPage() {
                   >
                     <Td className="font-medium text-foreground">{v.cargo}</Td>
                     <Td>{v.empresa}</Td>
-                    <Td className="text-center font-semibold">{v.candidatos}</Td>
+                    <Td className="text-right font-semibold tabular-nums">{(() => {
+                      const total = faturas.filter((f) => f.vagaId === v.id).reduce((s, f) => s + (f.valor ?? 0), 0);
+                      return total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+                    })()}</Td>
                     <Td><span className="text-xs px-2 py-1 rounded-full bg-brand/10 text-brand font-medium">{v.etapa}</span></Td>
                     <Td>{v.createdAt ? new Date(v.createdAt).toLocaleDateString("pt-BR") : "—"}</Td>
                     <Td><StatusBadge status={v.status} /></Td>
