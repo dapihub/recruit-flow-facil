@@ -57,7 +57,7 @@ function VagasPage() {
         action={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-brand hover:bg-brand/90 text-brand-foreground">
+              <Button className="bg-brand hover:bg-brand/90 text-brand-foreground rounded-xl px-5 shadow-sm">
                 <Plus className="w-4 h-4 mr-2" /> Nova Vaga
               </Button>
             </DialogTrigger>
