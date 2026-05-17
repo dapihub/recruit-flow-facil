@@ -66,25 +66,25 @@ function VagasPage() {
         }
       />
 
-      <div className="p-8 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard label="Vagas abertas" value={abertas} accent="success" hint="Recebendo candidaturas" />
-          <MetricCard label="Em processo" value={emProcesso} accent="info" hint="Entrevistas em andamento" />
-          <MetricCard label="Total de candidatos" value={totalCand} accent="brand" hint="Em todas as vagas" />
-          <MetricCard label="Taxa de preenchimento" value={`${taxa}%`} accent="warning" hint="Vagas fechadas / total" />
+      <div className="p-8 space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Kpi label="Vagas abertas" value={abertas} hint="Recebendo candidaturas" color="success" />
+          <Kpi label="Em processo" value={emProcesso} hint="Entrevistas em andamento" color="info" />
+          <Kpi label="Total de candidatos" value={totalCand} hint="Em todas as vagas" color="brand" />
+          <Kpi label="Taxa de preenchimento" value={`${taxa}%`} hint="Vagas fechadas / total" color="warning" />
         </div>
 
-        <div className="bg-card rounded-xl border shadow-sm">
-          <div className="flex flex-wrap items-center gap-3 p-4 border-b">
-            <span className="text-sm font-medium text-muted-foreground">Filtros:</span>
+        <div className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden">
+          <div className="flex flex-wrap items-center gap-3 px-6 py-4 border-b border-border/60">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Filtros</span>
             <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-              <SelectTrigger className="w-[180px]"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectTrigger className="w-[180px] h-9 rounded-lg bg-muted/40 border-border/60"><SelectValue placeholder="Status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todos os status</SelectItem>
                 {STATUS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
-            <span className="ml-auto text-sm text-muted-foreground">{filtradas.length} vagas</span>
+            <span className="ml-auto text-xs font-medium text-muted-foreground">{filtradas.length} vagas encontradas</span>
           </div>
 
           <div className="overflow-x-auto">
