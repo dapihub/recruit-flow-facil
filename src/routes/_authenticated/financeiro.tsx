@@ -53,16 +53,42 @@ export const Route = createFileRoute("/_authenticated/financeiro")({
 });
 
 const META_LUCRO_ANUAL = 500000;
+const INICIO_OPERACAO_OFICIAL = "2026-04-01";
+const INICIO_OPERACAO_LABEL = "01/04/2026";
 
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 function FinanceiroPage() {
-  const faturas = useFaturas();
-  const custos = useCustos();
+  const faturasAll = useFaturas();
+  const custosAll = useCustos();
   const [openFatura, setOpenFatura] = useState(false);
   const [openCusto, setOpenCusto] = useState(false);
   const [editFatura, setEditFatura] = useState<Fatura | null>(null);
   const [editCusto, setEditCusto] = useState<Custo | null>(null);
+  const [escopo, setEscopo] = useState<"oficial" | "historico">("oficial");
+
+  // Separa registros oficiais (>= 01/04/2026) e históricos (anteriores)
+  const faturasOficiais = useMemo(
+    () => faturasAll.filter((f) => f.vencimento >= INICIO_OPERACAO_OFICIAL),
+    [faturasAll],
+  );
+  const custosOficiais = useMemo(
+    () => custosAll.filter((c) => c.data >= INICIO_OPERACAO_OFICIAL),
+    [custosAll],
+  );
+  const faturasHistorico = useMemo(
+    () => faturasAll.filter((f) => f.vencimento < INICIO_OPERACAO_OFICIAL),
+    [faturasAll],
+  );
+  const custosHistorico = useMemo(
+    () => custosAll.filter((c) => c.data < INICIO_OPERACAO_OFICIAL),
+    [custosAll],
+  );
+
+  const isHistorico = escopo === "historico";
+  // Dataset que alimenta KPIs, gráficos, DRE e tabelas
+  const faturas = isHistorico ? faturasHistorico : faturasOficiais;
+  const custos = isHistorico ? custosHistorico : custosOficiais;
 
   const receita = faturas.filter((f) => f.status === "Pago").reduce((s, f) => s + f.valor, 0);
   const aReceber = faturas.filter((f) => f.status !== "Pago").reduce((s, f) => s + f.valor, 0);
@@ -207,7 +233,44 @@ function FinanceiroPage() {
       />
 
       <div className="p-8 space-y-6">
-        {/* KPIs do mês corrente */}
+        {/* Escopo: operação oficial vs. histórico anterior */}
+        <div className={`rounded-2xl border p-4 flex flex-wrap items-center justify-between gap-3 ${isHistorico ? "bg-warning/5 border-warning/30" : "bg-card"}`}>
+          <div className="flex items-center gap-3">
+            <span className={`p-2 rounded-lg ${isHistorico ? "bg-warning/15 text-warning" : "bg-brand/10 text-brand"}`}>
+              <Target className="w-4 h-4" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {isHistorico ? "Histórico anterior à operação oficial" : "Operação oficial"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {isHistorico
+                  ? `Registros com data anterior a ${INICIO_OPERACAO_LABEL}. Não entram nos KPIs gerenciais.`
+                  : `KPIs e gráficos consideram apenas registros a partir de ${INICIO_OPERACAO_LABEL}.`}
+              </p>
+            </div>
+          </div>
+          <div className="inline-flex rounded-lg border bg-muted/40 p-1 text-xs font-medium">
+            <button
+              type="button"
+              onClick={() => setEscopo("oficial")}
+              className={`px-3 py-1.5 rounded-md transition ${!isHistorico ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Operação oficial
+              <span className="ml-1.5 text-muted-foreground">({faturasOficiais.length + custosOficiais.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setEscopo("historico")}
+              className={`px-3 py-1.5 rounded-md transition ${isHistorico ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Histórico anterior
+              <span className="ml-1.5 text-muted-foreground">({faturasHistorico.length + custosHistorico.length})</span>
+            </button>
+          </div>
+        </div>
+
+
         <div>
           <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">
             Este mês — {hoje.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
