@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, TrendingDown, TrendingUp, Pencil, Trash2 } from "lucide-react";
+import { Plus, TrendingDown, TrendingUp, Pencil, Trash2, ArrowDownRight, ArrowUpRight, AlertTriangle, Wallet, Receipt, Target } from "lucide-react";
 import { PageHeader, MetricCard } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -75,6 +76,85 @@ function FinanceiroPage() {
   const margem = receita > 0 ? Math.round((lucro / receita) * 100) : 0;
   const progresso = Math.max(0, Math.min(100, Math.round((lucro / META_LUCRO_ANUAL) * 100)));
 
+  // ============ Métricas do mês corrente ============
+  const hoje = new Date();
+  const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const inicioMesPassado = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+  const fimMesPassado = new Date(hoje.getFullYear(), hoje.getMonth(), 0, 23, 59, 59);
+  const isoDay = (d: string) => new Date(d + "T00:00:00");
+
+  const vendidoMes = faturas
+    .filter((f) => f.status === "Pago" && isoDay(f.vencimento) >= inicioMes)
+    .reduce((s, f) => s + f.valor, 0);
+  const vendidoMesPassado = faturas
+    .filter((f) => f.status === "Pago" && isoDay(f.vencimento) >= inicioMesPassado && isoDay(f.vencimento) <= fimMesPassado)
+    .reduce((s, f) => s + f.valor, 0);
+  const variacaoVendas = vendidoMesPassado > 0
+    ? Math.round(((vendidoMes - vendidoMesPassado) / vendidoMesPassado) * 100)
+    : vendidoMes > 0 ? 100 : 0;
+
+  const faturadoMes = faturas
+    .filter((f) => isoDay(f.vencimento) >= inicioMes)
+    .reduce((s, f) => s + f.valor, 0);
+  const custoMes = custos
+    .filter((c) => isoDay(c.data) >= inicioMes)
+    .reduce((s, c) => s + c.valor, 0);
+  const lucroMes = vendidoMes - custoMes;
+
+  // ============ Faturas vencidas ============
+  const hojeIso = hoje.toISOString().slice(0, 10);
+  const faturasVencidas = faturas.filter((f) => f.status !== "Pago" && f.vencimento < hojeIso);
+  const valorVencido = faturasVencidas.reduce((s, f) => s + f.valor, 0);
+
+  // ============ Ticket médio & contagens ============
+  const faturasPagas = faturas.filter((f) => f.status === "Pago");
+  const ticketMedio = faturasPagas.length > 0 ? receita / faturasPagas.length : 0;
+
+  // ============ Evolução últimos 6 meses ============
+  const evolucao = useMemo(() => {
+    const meses: { mes: string; receita: number; custo: number; lucro: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const ref = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+      const fim = new Date(hoje.getFullYear(), hoje.getMonth() - i + 1, 0, 23, 59, 59);
+      const r = faturas
+        .filter((f) => f.status === "Pago" && isoDay(f.vencimento) >= ref && isoDay(f.vencimento) <= fim)
+        .reduce((s, f) => s + f.valor, 0);
+      const c = custos
+        .filter((c) => isoDay(c.data) >= ref && isoDay(c.data) <= fim)
+        .reduce((s, c) => s + c.valor, 0);
+      meses.push({
+        mes: ref.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""),
+        receita: r,
+        custo: c,
+        lucro: r - c,
+      });
+    }
+    return meses;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [faturas, custos]);
+
+  // ============ Top clientes ============
+  const topClientes = useMemo(() => {
+    const map = new Map<string, number>();
+    faturas.filter((f) => f.status === "Pago").forEach((f) => {
+      map.set(f.cliente, (map.get(f.cliente) ?? 0) + f.valor);
+    });
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  }, [faturas]);
+
+  // ============ Status das faturas ============
+  const statusFaturas = useMemo(() => {
+    const pagas = faturas.filter((f) => f.status === "Pago").length;
+    const pendentes = faturas.filter((f) => f.status === "Pendente" && f.vencimento >= hojeIso).length;
+    const atrasadas = faturas.filter((f) => f.status !== "Pago" && f.vencimento < hojeIso).length;
+    return [
+      { name: "Pagas", value: pagas, color: "var(--success)" },
+      { name: "Pendentes", value: pendentes, color: "var(--info)" },
+      { name: "Atrasadas", value: atrasadas, color: "var(--destructive)" },
+    ].filter((s) => s.value > 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [faturas]);
+
   const porCategoria = useMemo(() => {
     const map = new Map<CustoCategoria, number>();
     custos.forEach((c) => map.set(c.categoria, (map.get(c.categoria) ?? 0) + c.valor));
@@ -127,18 +207,66 @@ function FinanceiroPage() {
       />
 
       <div className="p-8 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard label="Receita (paga)" value={brl(receita)} accent="success" />
-          <MetricCard label="Custos" value={brl(custoTotal)} accent="warning" />
-          <MetricCard label="Lucro líquido" value={brl(lucro)} accent={lucro >= 0 ? "brand" : "warning"} />
-          <MetricCard label="Margem líquida" value={`${margem}%`} accent="info" />
+        {/* KPIs do mês corrente */}
+        <div>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+            Este mês — {hoje.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <KpiCard
+              icon={<Wallet className="w-4 h-4" />}
+              label="Vendido no mês"
+              value={brl(vendidoMes)}
+              accent="success"
+              trend={variacaoVendas}
+              hint={`vs. ${brl(vendidoMesPassado)} no mês anterior`}
+            />
+            <KpiCard
+              icon={<Receipt className="w-4 h-4" />}
+              label="Faturado no mês"
+              value={brl(faturadoMes)}
+              accent="info"
+              hint="Total emitido (pago + pendente)"
+            />
+            <KpiCard
+              icon={<TrendingDown className="w-4 h-4" />}
+              label="Custos do mês"
+              value={brl(custoMes)}
+              accent="warning"
+              hint={`Lucro do mês: ${brl(lucroMes)}`}
+            />
+            <KpiCard
+              icon={<AlertTriangle className="w-4 h-4" />}
+              label="Faturas vencidas"
+              value={brl(valorVencido)}
+              accent={faturasVencidas.length > 0 ? "destructive" : "muted"}
+              hint={`${faturasVencidas.length} ${faturasVencidas.length === 1 ? "fatura em atraso" : "faturas em atraso"}`}
+            />
+          </div>
         </div>
 
+        {/* KPIs acumulados */}
+        <div>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+            Acumulado
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard label="Receita (paga)" value={brl(receita)} accent="success" hint={`${faturasPagas.length} ${faturasPagas.length === 1 ? "fatura paga" : "faturas pagas"}`} />
+            <MetricCard label="Custos pagos" value={brl(custoPago)} accent="warning" hint={`Total registrado: ${brl(custoTotal)}`} />
+            <MetricCard label="Lucro líquido" value={brl(lucro)} accent={lucro >= 0 ? "brand" : "warning"} hint={`Margem ${margem}%`} />
+            <MetricCard label="Ticket médio" value={brl(ticketMedio)} accent="info" hint={`A receber: ${brl(aReceber)}`} />
+          </div>
+        </div>
+
+        {/* Meta anual */}
         <div className="bg-card rounded-xl border p-6">
           <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-sm font-semibold text-foreground">Meta anual de lucro</p>
-              <p className="text-xs text-muted-foreground">{brl(lucro)} de {brl(META_LUCRO_ANUAL)}</p>
+            <div className="flex items-center gap-2">
+              <Target className="w-4 h-4 text-brand" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Meta anual de lucro</p>
+                <p className="text-xs text-muted-foreground">{brl(lucro)} de {brl(META_LUCRO_ANUAL)}</p>
+              </div>
             </div>
             <span className="text-2xl font-bold text-brand">{progresso}%</span>
           </div>
@@ -147,12 +275,119 @@ function FinanceiroPage() {
           </div>
         </div>
 
-        <Tabs defaultValue="dre" className="space-y-4">
+        <Tabs defaultValue="visao" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="visao">Visão geral</TabsTrigger>
             <TabsTrigger value="dre">DRE</TabsTrigger>
             <TabsTrigger value="receitas">Receitas</TabsTrigger>
             <TabsTrigger value="custos">Custos</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="visao" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="bg-card rounded-xl border p-6 lg:col-span-2">
+                <div className="mb-4">
+                  <p className="text-sm font-semibold text-foreground">Evolução mensal</p>
+                  <p className="text-xs text-muted-foreground">Últimos 6 meses · receita, custo e lucro</p>
+                </div>
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={evolucao} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                      <XAxis dataKey="mes" tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" />
+                      <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" width={40} />
+                      <Tooltip
+                        contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
+                        formatter={(v: number) => brl(v)}
+                      />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Bar dataKey="receita" name="Receita" fill="var(--success)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="custo" name="Custo" fill="var(--warning)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="lucro" name="Lucro" fill="var(--brand)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="bg-card rounded-xl border p-6">
+                <p className="text-sm font-semibold text-foreground mb-1">Status das faturas</p>
+                <p className="text-xs text-muted-foreground mb-4">Distribuição por situação</p>
+                {statusFaturas.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Sem faturas registradas.</p>
+                ) : (
+                  <div className="h-56">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={statusFaturas} dataKey="value" nameKey="name" innerRadius={45} outerRadius={75} paddingAngle={2}>
+                          {statusFaturas.map((s) => <Cell key={s.name} fill={s.color} />)}
+                        </Pie>
+                        <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+                <div className="space-y-1.5 mt-2">
+                  {statusFaturas.map((s) => (
+                    <div key={s.name} className="flex items-center justify-between text-xs">
+                      <span className="flex items-center gap-2 text-foreground/80">
+                        <span className="w-2 h-2 rounded-full" style={{ background: s.color }} />
+                        {s.name}
+                      </span>
+                      <span className="font-semibold text-foreground">{s.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="bg-card rounded-xl border p-6">
+                <p className="text-sm font-semibold text-foreground mb-1">Top 5 clientes</p>
+                <p className="text-xs text-muted-foreground mb-4">Por receita paga acumulada</p>
+                {topClientes.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhum cliente com receita.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {topClientes.map(([cliente, val], i) => {
+                      const max = topClientes[0][1];
+                      const pct = max > 0 ? Math.round((val / max) * 100) : 0;
+                      return (
+                        <div key={cliente}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-foreground/80 truncate"><span className="text-muted-foreground mr-1.5">#{i + 1}</span>{cliente}</span>
+                            <span className="font-semibold text-foreground">{brl(val)}</span>
+                          </div>
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-brand to-info" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-card rounded-xl border p-6">
+                <p className="text-sm font-semibold text-foreground mb-1">Tendência de lucro</p>
+                <p className="text-xs text-muted-foreground mb-4">Lucro líquido nos últimos 6 meses</p>
+                <div className="h-56">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={evolucao} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                      <XAxis dataKey="mes" tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" />
+                      <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" width={40} />
+                      <Tooltip
+                        contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
+                        formatter={(v: number) => brl(v)}
+                      />
+                      <Line type="monotone" dataKey="lucro" stroke="var(--brand)" strokeWidth={2.5} dot={{ r: 4 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
 
           <TabsContent value="dre" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -355,6 +590,61 @@ function FinanceiroPage() {
       <Dialog open={!!editCusto} onOpenChange={(o) => !o && setEditCusto(null)}>
         {editCusto && <EditCustoModal custo={editCusto} onClose={() => setEditCusto(null)} />}
       </Dialog>
+    </div>
+  );
+}
+
+function KpiCard({
+  icon,
+  label,
+  value,
+  hint,
+  trend,
+  accent = "brand",
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  value: string;
+  hint?: string;
+  trend?: number;
+  accent?: "brand" | "success" | "warning" | "info" | "destructive" | "muted";
+}) {
+  const bar: Record<string, string> = {
+    brand: "bg-brand",
+    success: "bg-success",
+    warning: "bg-warning",
+    info: "bg-info",
+    destructive: "bg-destructive",
+    muted: "bg-muted-foreground/40",
+  };
+  const iconColor: Record<string, string> = {
+    brand: "text-brand bg-brand/10",
+    success: "text-success bg-success/10",
+    warning: "text-warning bg-warning/10",
+    info: "text-info bg-info/10",
+    destructive: "text-destructive bg-destructive/10",
+    muted: "text-muted-foreground bg-muted",
+  };
+  const trendPositive = (trend ?? 0) >= 0;
+  return (
+    <div className="bg-card rounded-2xl border p-5 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <div className={`absolute left-0 right-0 top-0 h-1 ${bar[accent]}`} />
+      <div className="flex items-start justify-between mb-3">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">{label}</p>
+        {icon && (
+          <span className={`p-1.5 rounded-lg ${iconColor[accent]}`}>{icon}</span>
+        )}
+      </div>
+      <p className="text-2xl font-bold text-foreground tabular-nums">{value}</p>
+      <div className="flex items-center gap-2 mt-1.5">
+        {typeof trend === "number" && (
+          <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${trendPositive ? "text-success" : "text-destructive"}`}>
+            {trendPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+            {Math.abs(trend)}%
+          </span>
+        )}
+        {hint && <p className="text-xs text-muted-foreground truncate">{hint}</p>}
+      </div>
     </div>
   );
 }
