@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, TrendingDown, TrendingUp, Pencil, Trash2 } from "lucide-react";
+import { Plus, TrendingDown, TrendingUp, Pencil, Trash2, ArrowDownRight, ArrowUpRight, AlertTriangle, Wallet, Receipt, Target } from "lucide-react";
 import { PageHeader, MetricCard } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
