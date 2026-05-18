@@ -53,8 +53,8 @@ export const Route = createFileRoute("/_authenticated/financeiro")({
 });
 
 const META_LUCRO_ANUAL = 500000;
-const INICIO_OPERACAO_OFICIAL = "2026-04-01";
-const INICIO_OPERACAO_LABEL = "01/04/2026";
+const INICIO_OPERACAO_OFICIAL = "2026-01-01";
+const INICIO_OPERACAO_LABEL = "01/01/2026";
 
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
