@@ -53,16 +53,42 @@ export const Route = createFileRoute("/_authenticated/financeiro")({
 });
 
 const META_LUCRO_ANUAL = 500000;
+const INICIO_OPERACAO_OFICIAL = "2026-04-01";
+const INICIO_OPERACAO_LABEL = "01/04/2026";
 
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 function FinanceiroPage() {
-  const faturas = useFaturas();
-  const custos = useCustos();
+  const faturasAll = useFaturas();
+  const custosAll = useCustos();
   const [openFatura, setOpenFatura] = useState(false);
   const [openCusto, setOpenCusto] = useState(false);
   const [editFatura, setEditFatura] = useState<Fatura | null>(null);
   const [editCusto, setEditCusto] = useState<Custo | null>(null);
+  const [escopo, setEscopo] = useState<"oficial" | "historico">("oficial");
+
+  // Separa registros oficiais (>= 01/04/2026) e históricos (anteriores)
+  const faturasOficiais = useMemo(
+    () => faturasAll.filter((f) => f.vencimento >= INICIO_OPERACAO_OFICIAL),
+    [faturasAll],
+  );
+  const custosOficiais = useMemo(
+    () => custosAll.filter((c) => c.data >= INICIO_OPERACAO_OFICIAL),
+    [custosAll],
+  );
+  const faturasHistorico = useMemo(
+    () => faturasAll.filter((f) => f.vencimento < INICIO_OPERACAO_OFICIAL),
+    [faturasAll],
+  );
+  const custosHistorico = useMemo(
+    () => custosAll.filter((c) => c.data < INICIO_OPERACAO_OFICIAL),
+    [custosAll],
+  );
+
+  const isHistorico = escopo === "historico";
+  // Dataset que alimenta KPIs, gráficos, DRE e tabelas
+  const faturas = isHistorico ? faturasHistorico : faturasOficiais;
+  const custos = isHistorico ? custosHistorico : custosOficiais;
 
   const receita = faturas.filter((f) => f.status === "Pago").reduce((s, f) => s + f.valor, 0);
   const aReceber = faturas.filter((f) => f.status !== "Pago").reduce((s, f) => s + f.valor, 0);
