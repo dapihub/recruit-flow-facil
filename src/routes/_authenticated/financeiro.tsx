@@ -148,9 +148,9 @@ function FinanceiroPage() {
     const pendentes = faturas.filter((f) => f.status === "Pendente" && f.vencimento >= hojeIso).length;
     const atrasadas = faturas.filter((f) => f.status !== "Pago" && f.vencimento < hojeIso).length;
     return [
-      { name: "Pagas", value: pagas, color: "hsl(var(--success))" },
-      { name: "Pendentes", value: pendentes, color: "hsl(var(--info))" },
-      { name: "Atrasadas", value: atrasadas, color: "hsl(var(--destructive))" },
+      { name: "Pagas", value: pagas, color: "var(--success)" },
+      { name: "Pendentes", value: pendentes, color: "var(--info)" },
+      { name: "Atrasadas", value: atrasadas, color: "var(--destructive)" },
     ].filter((s) => s.value > 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [faturas]);
@@ -293,17 +293,17 @@ function FinanceiroPage() {
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={evolucao} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <XAxis dataKey="mes" tickLine={false} axisLine={false} fontSize={11} stroke="hsl(var(--muted-foreground))" />
-                      <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} fontSize={11} stroke="hsl(var(--muted-foreground))" width={40} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                      <XAxis dataKey="mes" tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" />
+                      <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" width={40} />
                       <Tooltip
-                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                        contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
                         formatter={(v: number) => brl(v)}
                       />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Bar dataKey="receita" name="Receita" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="custo" name="Custo" fill="hsl(var(--warning))" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="lucro" name="Lucro" fill="hsl(var(--brand))" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="receita" name="Receita" fill="var(--success)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="custo" name="Custo" fill="var(--warning)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="lucro" name="Lucro" fill="var(--brand)" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -321,7 +321,7 @@ function FinanceiroPage() {
                         <Pie data={statusFaturas} dataKey="value" nameKey="name" innerRadius={45} outerRadius={75} paddingAngle={2}>
                           {statusFaturas.map((s) => <Cell key={s.name} fill={s.color} />)}
                         </Pie>
-                        <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
+                        <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -373,14 +373,14 @@ function FinanceiroPage() {
                 <div className="h-56">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={evolucao} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <XAxis dataKey="mes" tickLine={false} axisLine={false} fontSize={11} stroke="hsl(var(--muted-foreground))" />
-                      <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} fontSize={11} stroke="hsl(var(--muted-foreground))" width={40} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                      <XAxis dataKey="mes" tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" />
+                      <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" width={40} />
                       <Tooltip
-                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                        contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
                         formatter={(v: number) => brl(v)}
                       />
-                      <Line type="monotone" dataKey="lucro" stroke="hsl(var(--brand))" strokeWidth={2.5} dot={{ r: 4 }} />
+                      <Line type="monotone" dataKey="lucro" stroke="var(--brand)" strokeWidth={2.5} dot={{ r: 4 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
