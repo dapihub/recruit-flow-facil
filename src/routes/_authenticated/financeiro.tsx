@@ -233,7 +233,44 @@ function FinanceiroPage() {
       />
 
       <div className="p-8 space-y-6">
-        {/* KPIs do mês corrente */}
+        {/* Escopo: operação oficial vs. histórico anterior */}
+        <div className={`rounded-2xl border p-4 flex flex-wrap items-center justify-between gap-3 ${isHistorico ? "bg-warning/5 border-warning/30" : "bg-card"}`}>
+          <div className="flex items-center gap-3">
+            <span className={`p-2 rounded-lg ${isHistorico ? "bg-warning/15 text-warning" : "bg-brand/10 text-brand"}`}>
+              <Target className="w-4 h-4" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {isHistorico ? "Histórico anterior à operação oficial" : "Operação oficial"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {isHistorico
+                  ? `Registros com data anterior a ${INICIO_OPERACAO_LABEL}. Não entram nos KPIs gerenciais.`
+                  : `KPIs e gráficos consideram apenas registros a partir de ${INICIO_OPERACAO_LABEL}.`}
+              </p>
+            </div>
+          </div>
+          <div className="inline-flex rounded-lg border bg-muted/40 p-1 text-xs font-medium">
+            <button
+              type="button"
+              onClick={() => setEscopo("oficial")}
+              className={`px-3 py-1.5 rounded-md transition ${!isHistorico ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Operação oficial
+              <span className="ml-1.5 text-muted-foreground">({faturasOficiais.length + custosOficiais.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setEscopo("historico")}
+              className={`px-3 py-1.5 rounded-md transition ${isHistorico ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Histórico anterior
+              <span className="ml-1.5 text-muted-foreground">({faturasHistorico.length + custosHistorico.length})</span>
+            </button>
+          </div>
+        </div>
+
+
         <div>
           <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">
             Este mês — {hoje.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
