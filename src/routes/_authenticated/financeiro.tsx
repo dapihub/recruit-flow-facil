@@ -594,6 +594,61 @@ function FinanceiroPage() {
   );
 }
 
+function KpiCard({
+  icon,
+  label,
+  value,
+  hint,
+  trend,
+  accent = "brand",
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  value: string;
+  hint?: string;
+  trend?: number;
+  accent?: "brand" | "success" | "warning" | "info" | "destructive" | "muted";
+}) {
+  const bar: Record<string, string> = {
+    brand: "bg-brand",
+    success: "bg-success",
+    warning: "bg-warning",
+    info: "bg-info",
+    destructive: "bg-destructive",
+    muted: "bg-muted-foreground/40",
+  };
+  const iconColor: Record<string, string> = {
+    brand: "text-brand bg-brand/10",
+    success: "text-success bg-success/10",
+    warning: "text-warning bg-warning/10",
+    info: "text-info bg-info/10",
+    destructive: "text-destructive bg-destructive/10",
+    muted: "text-muted-foreground bg-muted",
+  };
+  const trendPositive = (trend ?? 0) >= 0;
+  return (
+    <div className="bg-card rounded-2xl border p-5 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <div className={`absolute left-0 right-0 top-0 h-1 ${bar[accent]}`} />
+      <div className="flex items-start justify-between mb-3">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">{label}</p>
+        {icon && (
+          <span className={`p-1.5 rounded-lg ${iconColor[accent]}`}>{icon}</span>
+        )}
+      </div>
+      <p className="text-2xl font-bold text-foreground tabular-nums">{value}</p>
+      <div className="flex items-center gap-2 mt-1.5">
+        {typeof trend === "number" && (
+          <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${trendPositive ? "text-success" : "text-destructive"}`}>
+            {trendPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+            {Math.abs(trend)}%
+          </span>
+        )}
+        {hint && <p className="text-xs text-muted-foreground truncate">{hint}</p>}
+      </div>
+    </div>
+  );
+}
+
 function DreLine({ label, value, positive, bold, muted, extra }: { label: string; value: number | null; positive?: boolean; bold?: boolean; muted?: boolean; extra?: string }) {
   return (
     <div className={`flex justify-between py-1.5 text-sm ${bold ? "font-bold text-base" : ""} ${muted ? "text-muted-foreground" : "text-foreground"}`}>
