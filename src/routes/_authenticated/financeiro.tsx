@@ -76,6 +76,85 @@ function FinanceiroPage() {
   const margem = receita > 0 ? Math.round((lucro / receita) * 100) : 0;
   const progresso = Math.max(0, Math.min(100, Math.round((lucro / META_LUCRO_ANUAL) * 100)));
 
+  // ============ Métricas do mês corrente ============
+  const hoje = new Date();
+  const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const inicioMesPassado = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+  const fimMesPassado = new Date(hoje.getFullYear(), hoje.getMonth(), 0, 23, 59, 59);
+  const isoDay = (d: string) => new Date(d + "T00:00:00");
+
+  const vendidoMes = faturas
+    .filter((f) => f.status === "Pago" && isoDay(f.vencimento) >= inicioMes)
+    .reduce((s, f) => s + f.valor, 0);
+  const vendidoMesPassado = faturas
+    .filter((f) => f.status === "Pago" && isoDay(f.vencimento) >= inicioMesPassado && isoDay(f.vencimento) <= fimMesPassado)
+    .reduce((s, f) => s + f.valor, 0);
+  const variacaoVendas = vendidoMesPassado > 0
+    ? Math.round(((vendidoMes - vendidoMesPassado) / vendidoMesPassado) * 100)
+    : vendidoMes > 0 ? 100 : 0;
+
+  const faturadoMes = faturas
+    .filter((f) => isoDay(f.vencimento) >= inicioMes)
+    .reduce((s, f) => s + f.valor, 0);
+  const custoMes = custos
+    .filter((c) => isoDay(c.data) >= inicioMes)
+    .reduce((s, c) => s + c.valor, 0);
+  const lucroMes = vendidoMes - custoMes;
+
+  // ============ Faturas vencidas ============
+  const hojeIso = hoje.toISOString().slice(0, 10);
+  const faturasVencidas = faturas.filter((f) => f.status !== "Pago" && f.vencimento < hojeIso);
+  const valorVencido = faturasVencidas.reduce((s, f) => s + f.valor, 0);
+
+  // ============ Ticket médio & contagens ============
+  const faturasPagas = faturas.filter((f) => f.status === "Pago");
+  const ticketMedio = faturasPagas.length > 0 ? receita / faturasPagas.length : 0;
+
+  // ============ Evolução últimos 6 meses ============
+  const evolucao = useMemo(() => {
+    const meses: { mes: string; receita: number; custo: number; lucro: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const ref = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+      const fim = new Date(hoje.getFullYear(), hoje.getMonth() - i + 1, 0, 23, 59, 59);
+      const r = faturas
+        .filter((f) => f.status === "Pago" && isoDay(f.vencimento) >= ref && isoDay(f.vencimento) <= fim)
+        .reduce((s, f) => s + f.valor, 0);
+      const c = custos
+        .filter((c) => isoDay(c.data) >= ref && isoDay(c.data) <= fim)
+        .reduce((s, c) => s + c.valor, 0);
+      meses.push({
+        mes: ref.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""),
+        receita: r,
+        custo: c,
+        lucro: r - c,
+      });
+    }
+    return meses;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [faturas, custos]);
+
+  // ============ Top clientes ============
+  const topClientes = useMemo(() => {
+    const map = new Map<string, number>();
+    faturas.filter((f) => f.status === "Pago").forEach((f) => {
+      map.set(f.cliente, (map.get(f.cliente) ?? 0) + f.valor);
+    });
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  }, [faturas]);
+
+  // ============ Status das faturas ============
+  const statusFaturas = useMemo(() => {
+    const pagas = faturas.filter((f) => f.status === "Pago").length;
+    const pendentes = faturas.filter((f) => f.status === "Pendente" && f.vencimento >= hojeIso).length;
+    const atrasadas = faturas.filter((f) => f.status !== "Pago" && f.vencimento < hojeIso).length;
+    return [
+      { name: "Pagas", value: pagas, color: "hsl(var(--success))" },
+      { name: "Pendentes", value: pendentes, color: "hsl(var(--info))" },
+      { name: "Atrasadas", value: atrasadas, color: "hsl(var(--destructive))" },
+    ].filter((s) => s.value > 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [faturas]);
+
   const porCategoria = useMemo(() => {
     const map = new Map<CustoCategoria, number>();
     custos.forEach((c) => map.set(c.categoria, (map.get(c.categoria) ?? 0) + c.valor));
