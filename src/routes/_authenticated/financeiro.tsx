@@ -777,6 +777,22 @@ function FinanceiroPage() {
         </Tabs>
       </div>
 
+      <KpiDetalheDialog
+        kpiId={kpiAberto}
+        onClose={() => setKpiAberto(null)}
+        ctx={{
+          faturas, custos, vagas, candidatos,
+          receitaMes, receitaMesPassado, crescimentoMensal,
+          lucro, lucroMes, margem, margemOperacional,
+          caixaAtual, receita, custoPago, custoMes, custoTotal,
+          burnRate, runway, receitaPrevista, aReceber,
+          propostasEnviadas, contratosFechados, conversao, ticketMedio, ticketPorCliente, faturasPagas,
+          receitaPorCliente, clientesAtivos,
+          vagasAbertas, vagasFechadas, vagasEncerradas, vagasEmGarantia,
+          slaMedio, taxaAprovacao, taxaReposicao, candidatosAndamento, candidatosTotal, contratados,
+          hoje, hojeIso,
+        }}
+      />
       <Dialog open={!!editFatura} onOpenChange={(o) => !o && setEditFatura(null)}>
         {editFatura && <EditFaturaModal fatura={editFatura} onClose={() => setEditFatura(null)} />}
       </Dialog>
