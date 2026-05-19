@@ -356,14 +356,14 @@ function FinanceiroPage() {
         {/* ===== KPIs EXECUTIVOS ===== */}
         <Section icon={<BarChart3 className="w-3.5 h-3.5" />} label="Executivo" sub="Visão financeira do negócio">
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
-            <MiniKpi label="Receita do mês" value={brlCompact(receitaMes)} accent="success" trend={crescimentoMensal} icon={<Wallet className="w-3.5 h-3.5" />} />
-            <MiniKpi label="Lucro líquido" value={brlCompact(lucro)} accent={lucro >= 0 ? "brand" : "destructive"} icon={<TrendingUp className="w-3.5 h-3.5" />} hint={`Margem ${margem.toFixed(0)}%`} />
-            <MiniKpi label="Margem op." value={pct(margemOperacional, 1)} accent={margemOperacional >= 20 ? "success" : margemOperacional >= 0 ? "info" : "destructive"} icon={<Activity className="w-3.5 h-3.5" />} hint="Mês corrente" />
-            <MiniKpi label="Caixa atual" value={brlCompact(caixaAtual)} accent="brand" icon={<Layers className="w-3.5 h-3.5" />} hint="Entradas − saídas pagas" />
-            <MiniKpi label="Burn rate" value={brlCompact(burnRate)} accent="warning" icon={<Flame className="w-3.5 h-3.5" />} hint="Média 3M" />
-            <MiniKpi label="Runway" value={burnRate > 0 ? `${runway.toFixed(1)} m` : "∞"} accent={runway >= 6 || burnRate === 0 ? "success" : runway >= 3 ? "warning" : "destructive"} icon={<Clock className="w-3.5 h-3.5" />} hint="Ao ritmo atual" />
-            <MiniKpi label="Receita prevista" value={brlCompact(receitaPrevista)} accent="info" icon={<Sparkles className="w-3.5 h-3.5" />} hint="Pendente futura" />
-            <MiniKpi label="Crescimento M/M" value={pct(crescimentoMensal, 1)} accent={crescimentoMensal >= 0 ? "success" : "destructive"} icon={crescimentoMensal >= 0 ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />} hint={`vs ${brlCompact(receitaMesPassado)}`} />
+            <MiniKpi onClick={() => setKpiAberto("receitaMes")} label="Receita do mês" value={brlCompact(receitaMes)} accent="success" trend={crescimentoMensal} icon={<Wallet className="w-3.5 h-3.5" />} />
+            <MiniKpi onClick={() => setKpiAberto("lucro")} label="Lucro líquido" value={brlCompact(lucro)} accent={lucro >= 0 ? "brand" : "destructive"} icon={<TrendingUp className="w-3.5 h-3.5" />} hint={`Margem ${margem.toFixed(0)}%`} />
+            <MiniKpi onClick={() => setKpiAberto("margem")} label="Margem op." value={pct(margemOperacional, 1)} accent={margemOperacional >= 20 ? "success" : margemOperacional >= 0 ? "info" : "destructive"} icon={<Activity className="w-3.5 h-3.5" />} hint="Mês corrente" />
+            <MiniKpi onClick={() => setKpiAberto("caixa")} label="Caixa atual" value={brlCompact(caixaAtual)} accent="brand" icon={<Layers className="w-3.5 h-3.5" />} hint="Entradas − saídas pagas" />
+            <MiniKpi onClick={() => setKpiAberto("burn")} label="Burn rate" value={brlCompact(burnRate)} accent="warning" icon={<Flame className="w-3.5 h-3.5" />} hint="Média 3M" />
+            <MiniKpi onClick={() => setKpiAberto("runway")} label="Runway" value={burnRate > 0 ? `${runway.toFixed(1)} m` : "∞"} accent={runway >= 6 || burnRate === 0 ? "success" : runway >= 3 ? "warning" : "destructive"} icon={<Clock className="w-3.5 h-3.5" />} hint="Ao ritmo atual" />
+            <MiniKpi onClick={() => setKpiAberto("prevista")} label="Receita prevista" value={brlCompact(receitaPrevista)} accent="info" icon={<Sparkles className="w-3.5 h-3.5" />} hint="Pendente futura" />
+            <MiniKpi onClick={() => setKpiAberto("crescimento")} label="Crescimento M/M" value={pct(crescimentoMensal, 1)} accent={crescimentoMensal >= 0 ? "success" : "destructive"} icon={crescimentoMensal >= 0 ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />} hint={`vs ${brlCompact(receitaMesPassado)}`} />
           </div>
         </Section>
 
@@ -371,23 +371,23 @@ function FinanceiroPage() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
           <Section icon={<Briefcase className="w-3.5 h-3.5" />} label="Comercial" sub="Funil, conversão e clientes">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <MiniKpi label="Propostas" value={String(propostasEnviadas)} accent="info" icon={<Receipt className="w-3.5 h-3.5" />} hint="Vagas criadas" />
-              <MiniKpi label="Contratos fechados" value={String(contratosFechados)} accent="success" icon={<Award className="w-3.5 h-3.5" />} />
-              <MiniKpi label="Conversão" value={pct(conversao, 0)} accent={conversao >= 30 ? "success" : "warning"} icon={<Zap className="w-3.5 h-3.5" />} />
-              <MiniKpi label="Ticket médio" value={brlCompact(ticketMedio)} accent="brand" icon={<Wallet className="w-3.5 h-3.5" />} hint={`${faturasPagas.length} faturas`} />
-              <MiniKpi label="Por cliente" value={brlCompact(ticketPorCliente)} accent="info" icon={<Users className="w-3.5 h-3.5" />} hint={`${clientesAtivos} ativos`} />
-              <MiniKpi label="A receber" value={brlCompact(aReceber)} accent="warning" icon={<Clock className="w-3.5 h-3.5" />} />
+              <MiniKpi onClick={() => setKpiAberto("propostas")} label="Propostas" value={String(propostasEnviadas)} accent="info" icon={<Receipt className="w-3.5 h-3.5" />} hint="Vagas criadas" />
+              <MiniKpi onClick={() => setKpiAberto("contratos")} label="Contratos fechados" value={String(contratosFechados)} accent="success" icon={<Award className="w-3.5 h-3.5" />} />
+              <MiniKpi onClick={() => setKpiAberto("conversao")} label="Conversão" value={pct(conversao, 0)} accent={conversao >= 30 ? "success" : "warning"} icon={<Zap className="w-3.5 h-3.5" />} />
+              <MiniKpi onClick={() => setKpiAberto("ticket")} label="Ticket médio" value={brlCompact(ticketMedio)} accent="brand" icon={<Wallet className="w-3.5 h-3.5" />} hint={`${faturasPagas.length} faturas`} />
+              <MiniKpi onClick={() => setKpiAberto("porCliente")} label="Por cliente" value={brlCompact(ticketPorCliente)} accent="info" icon={<Users className="w-3.5 h-3.5" />} hint={`${clientesAtivos} ativos`} />
+              <MiniKpi onClick={() => setKpiAberto("aReceber")} label="A receber" value={brlCompact(aReceber)} accent="warning" icon={<Clock className="w-3.5 h-3.5" />} />
             </div>
           </Section>
 
           <Section icon={<Activity className="w-3.5 h-3.5" />} label="Operacional" sub="Vagas, SLA e candidatos">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <MiniKpi label="Vagas abertas" value={String(vagasAbertas)} accent="info" icon={<Briefcase className="w-3.5 h-3.5" />} />
-              <MiniKpi label="Vagas fechadas" value={String(vagasFechadas)} accent="success" icon={<Award className="w-3.5 h-3.5" />} hint={`${vagasEncerradas} encerradas`} />
-              <MiniKpi label="SLA médio" value={`${slaMedio} d`} accent="brand" icon={<Clock className="w-3.5 h-3.5" />} hint="Briefing → entrega" />
-              <MiniKpi label="Aprovação" value={pct(taxaAprovacao, 0)} accent={taxaAprovacao >= 25 ? "success" : "warning"} icon={<TrendingUp className="w-3.5 h-3.5" />} hint={`${contratados}/${candidatosTotal}`} />
-              <MiniKpi label="Reposição" value={pct(taxaReposicao, 0)} accent={taxaReposicao <= 10 ? "success" : "warning"} icon={<GitBranch className="w-3.5 h-3.5" />} hint={`${vagasEmGarantia} em garantia`} />
-              <MiniKpi label="Em andamento" value={String(candidatosAndamento)} accent="info" icon={<Users className="w-3.5 h-3.5" />} hint="Candidatos ativos" />
+              <MiniKpi onClick={() => setKpiAberto("vagasAbertas")} label="Vagas abertas" value={String(vagasAbertas)} accent="info" icon={<Briefcase className="w-3.5 h-3.5" />} />
+              <MiniKpi onClick={() => setKpiAberto("vagasFechadas")} label="Vagas fechadas" value={String(vagasFechadas)} accent="success" icon={<Award className="w-3.5 h-3.5" />} hint={`${vagasEncerradas} encerradas`} />
+              <MiniKpi onClick={() => setKpiAberto("sla")} label="SLA médio" value={`${slaMedio} d`} accent="brand" icon={<Clock className="w-3.5 h-3.5" />} hint="Briefing → entrega" />
+              <MiniKpi onClick={() => setKpiAberto("aprovacao")} label="Aprovação" value={pct(taxaAprovacao, 0)} accent={taxaAprovacao >= 25 ? "success" : "warning"} icon={<TrendingUp className="w-3.5 h-3.5" />} hint={`${contratados}/${candidatosTotal}`} />
+              <MiniKpi onClick={() => setKpiAberto("reposicao")} label="Reposição" value={pct(taxaReposicao, 0)} accent={taxaReposicao <= 10 ? "success" : "warning"} icon={<GitBranch className="w-3.5 h-3.5" />} hint={`${vagasEmGarantia} em garantia`} />
+              <MiniKpi onClick={() => setKpiAberto("emAndamento")} label="Em andamento" value={String(candidatosAndamento)} accent="info" icon={<Users className="w-3.5 h-3.5" />} hint="Candidatos ativos" />
             </div>
           </Section>
         </div>
