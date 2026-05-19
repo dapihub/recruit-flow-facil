@@ -814,10 +814,11 @@ function Panel({ title, sub, children, className = "" }: { title: string; sub?: 
 }
 
 function MiniKpi({
-  label, value, hint, trend, icon, accent = "brand",
+  label, value, hint, trend, icon, accent = "brand", onClick,
 }: {
   label: string; value: string; hint?: string; trend?: number; icon?: React.ReactNode;
   accent?: "brand" | "success" | "warning" | "info" | "destructive" | "muted";
+  onClick?: () => void;
 }) {
   const bar: Record<string, string> = {
     brand: "bg-brand", success: "bg-success", warning: "bg-warning",
@@ -829,8 +830,15 @@ function MiniKpi({
     destructive: "text-destructive bg-destructive/10", muted: "text-muted-foreground bg-muted",
   };
   const trendPositive = (trend ?? 0) >= 0;
+  const clickable = typeof onClick === "function";
   return (
-    <div className="bg-card rounded-xl border p-3.5 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+    <div
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={clickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick?.(); } } : undefined}
+      className={`bg-card rounded-xl border p-3.5 relative overflow-hidden shadow-sm transition-all ${clickable ? "cursor-pointer hover:shadow-md hover:-translate-y-0.5 hover:border-foreground/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand" : "hover:shadow-md"}`}
+    >
       <div className={`absolute left-0 right-0 top-0 h-0.5 ${bar[accent]}`} />
       <div className="flex items-center justify-between mb-1.5">
         <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold truncate">{label}</p>
