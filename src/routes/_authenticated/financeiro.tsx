@@ -67,6 +67,7 @@ function FinanceiroPage() {
   const [editFatura, setEditFatura] = useState<Fatura | null>(null);
   const [editCusto, setEditCusto] = useState<Custo | null>(null);
   const [escopo, setEscopo] = useState<"oficial" | "historico">("oficial");
+  const [kpiAberto, setKpiAberto] = useState<string | null>(null);
 
   // ============ Separa oficial × histórico ============
   const isHistorico = escopo === "historico";
@@ -355,14 +356,14 @@ function FinanceiroPage() {
         {/* ===== KPIs EXECUTIVOS ===== */}
         <Section icon={<BarChart3 className="w-3.5 h-3.5" />} label="Executivo" sub="Visão financeira do negócio">
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
-            <MiniKpi label="Receita do mês" value={brlCompact(receitaMes)} accent="success" trend={crescimentoMensal} icon={<Wallet className="w-3.5 h-3.5" />} />
-            <MiniKpi label="Lucro líquido" value={brlCompact(lucro)} accent={lucro >= 0 ? "brand" : "destructive"} icon={<TrendingUp className="w-3.5 h-3.5" />} hint={`Margem ${margem.toFixed(0)}%`} />
-            <MiniKpi label="Margem op." value={pct(margemOperacional, 1)} accent={margemOperacional >= 20 ? "success" : margemOperacional >= 0 ? "info" : "destructive"} icon={<Activity className="w-3.5 h-3.5" />} hint="Mês corrente" />
-            <MiniKpi label="Caixa atual" value={brlCompact(caixaAtual)} accent="brand" icon={<Layers className="w-3.5 h-3.5" />} hint="Entradas − saídas pagas" />
-            <MiniKpi label="Burn rate" value={brlCompact(burnRate)} accent="warning" icon={<Flame className="w-3.5 h-3.5" />} hint="Média 3M" />
-            <MiniKpi label="Runway" value={burnRate > 0 ? `${runway.toFixed(1)} m` : "∞"} accent={runway >= 6 || burnRate === 0 ? "success" : runway >= 3 ? "warning" : "destructive"} icon={<Clock className="w-3.5 h-3.5" />} hint="Ao ritmo atual" />
-            <MiniKpi label="Receita prevista" value={brlCompact(receitaPrevista)} accent="info" icon={<Sparkles className="w-3.5 h-3.5" />} hint="Pendente futura" />
-            <MiniKpi label="Crescimento M/M" value={pct(crescimentoMensal, 1)} accent={crescimentoMensal >= 0 ? "success" : "destructive"} icon={crescimentoMensal >= 0 ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />} hint={`vs ${brlCompact(receitaMesPassado)}`} />
+            <MiniKpi onClick={() => setKpiAberto("receitaMes")} label="Receita do mês" value={brlCompact(receitaMes)} accent="success" trend={crescimentoMensal} icon={<Wallet className="w-3.5 h-3.5" />} />
+            <MiniKpi onClick={() => setKpiAberto("lucro")} label="Lucro líquido" value={brlCompact(lucro)} accent={lucro >= 0 ? "brand" : "destructive"} icon={<TrendingUp className="w-3.5 h-3.5" />} hint={`Margem ${margem.toFixed(0)}%`} />
+            <MiniKpi onClick={() => setKpiAberto("margem")} label="Margem op." value={pct(margemOperacional, 1)} accent={margemOperacional >= 20 ? "success" : margemOperacional >= 0 ? "info" : "destructive"} icon={<Activity className="w-3.5 h-3.5" />} hint="Mês corrente" />
+            <MiniKpi onClick={() => setKpiAberto("caixa")} label="Caixa atual" value={brlCompact(caixaAtual)} accent="brand" icon={<Layers className="w-3.5 h-3.5" />} hint="Entradas − saídas pagas" />
+            <MiniKpi onClick={() => setKpiAberto("burn")} label="Burn rate" value={brlCompact(burnRate)} accent="warning" icon={<Flame className="w-3.5 h-3.5" />} hint="Média 3M" />
+            <MiniKpi onClick={() => setKpiAberto("runway")} label="Runway" value={burnRate > 0 ? `${runway.toFixed(1)} m` : "∞"} accent={runway >= 6 || burnRate === 0 ? "success" : runway >= 3 ? "warning" : "destructive"} icon={<Clock className="w-3.5 h-3.5" />} hint="Ao ritmo atual" />
+            <MiniKpi onClick={() => setKpiAberto("prevista")} label="Receita prevista" value={brlCompact(receitaPrevista)} accent="info" icon={<Sparkles className="w-3.5 h-3.5" />} hint="Pendente futura" />
+            <MiniKpi onClick={() => setKpiAberto("crescimento")} label="Crescimento M/M" value={pct(crescimentoMensal, 1)} accent={crescimentoMensal >= 0 ? "success" : "destructive"} icon={crescimentoMensal >= 0 ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />} hint={`vs ${brlCompact(receitaMesPassado)}`} />
           </div>
         </Section>
 
@@ -370,23 +371,23 @@ function FinanceiroPage() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
           <Section icon={<Briefcase className="w-3.5 h-3.5" />} label="Comercial" sub="Funil, conversão e clientes">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <MiniKpi label="Propostas" value={String(propostasEnviadas)} accent="info" icon={<Receipt className="w-3.5 h-3.5" />} hint="Vagas criadas" />
-              <MiniKpi label="Contratos fechados" value={String(contratosFechados)} accent="success" icon={<Award className="w-3.5 h-3.5" />} />
-              <MiniKpi label="Conversão" value={pct(conversao, 0)} accent={conversao >= 30 ? "success" : "warning"} icon={<Zap className="w-3.5 h-3.5" />} />
-              <MiniKpi label="Ticket médio" value={brlCompact(ticketMedio)} accent="brand" icon={<Wallet className="w-3.5 h-3.5" />} hint={`${faturasPagas.length} faturas`} />
-              <MiniKpi label="Por cliente" value={brlCompact(ticketPorCliente)} accent="info" icon={<Users className="w-3.5 h-3.5" />} hint={`${clientesAtivos} ativos`} />
-              <MiniKpi label="A receber" value={brlCompact(aReceber)} accent="warning" icon={<Clock className="w-3.5 h-3.5" />} />
+              <MiniKpi onClick={() => setKpiAberto("propostas")} label="Propostas" value={String(propostasEnviadas)} accent="info" icon={<Receipt className="w-3.5 h-3.5" />} hint="Vagas criadas" />
+              <MiniKpi onClick={() => setKpiAberto("contratos")} label="Contratos fechados" value={String(contratosFechados)} accent="success" icon={<Award className="w-3.5 h-3.5" />} />
+              <MiniKpi onClick={() => setKpiAberto("conversao")} label="Conversão" value={pct(conversao, 0)} accent={conversao >= 30 ? "success" : "warning"} icon={<Zap className="w-3.5 h-3.5" />} />
+              <MiniKpi onClick={() => setKpiAberto("ticket")} label="Ticket médio" value={brlCompact(ticketMedio)} accent="brand" icon={<Wallet className="w-3.5 h-3.5" />} hint={`${faturasPagas.length} faturas`} />
+              <MiniKpi onClick={() => setKpiAberto("porCliente")} label="Por cliente" value={brlCompact(ticketPorCliente)} accent="info" icon={<Users className="w-3.5 h-3.5" />} hint={`${clientesAtivos} ativos`} />
+              <MiniKpi onClick={() => setKpiAberto("aReceber")} label="A receber" value={brlCompact(aReceber)} accent="warning" icon={<Clock className="w-3.5 h-3.5" />} />
             </div>
           </Section>
 
           <Section icon={<Activity className="w-3.5 h-3.5" />} label="Operacional" sub="Vagas, SLA e candidatos">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <MiniKpi label="Vagas abertas" value={String(vagasAbertas)} accent="info" icon={<Briefcase className="w-3.5 h-3.5" />} />
-              <MiniKpi label="Vagas fechadas" value={String(vagasFechadas)} accent="success" icon={<Award className="w-3.5 h-3.5" />} hint={`${vagasEncerradas} encerradas`} />
-              <MiniKpi label="SLA médio" value={`${slaMedio} d`} accent="brand" icon={<Clock className="w-3.5 h-3.5" />} hint="Briefing → entrega" />
-              <MiniKpi label="Aprovação" value={pct(taxaAprovacao, 0)} accent={taxaAprovacao >= 25 ? "success" : "warning"} icon={<TrendingUp className="w-3.5 h-3.5" />} hint={`${contratados}/${candidatosTotal}`} />
-              <MiniKpi label="Reposição" value={pct(taxaReposicao, 0)} accent={taxaReposicao <= 10 ? "success" : "warning"} icon={<GitBranch className="w-3.5 h-3.5" />} hint={`${vagasEmGarantia} em garantia`} />
-              <MiniKpi label="Em andamento" value={String(candidatosAndamento)} accent="info" icon={<Users className="w-3.5 h-3.5" />} hint="Candidatos ativos" />
+              <MiniKpi onClick={() => setKpiAberto("vagasAbertas")} label="Vagas abertas" value={String(vagasAbertas)} accent="info" icon={<Briefcase className="w-3.5 h-3.5" />} />
+              <MiniKpi onClick={() => setKpiAberto("vagasFechadas")} label="Vagas fechadas" value={String(vagasFechadas)} accent="success" icon={<Award className="w-3.5 h-3.5" />} hint={`${vagasEncerradas} encerradas`} />
+              <MiniKpi onClick={() => setKpiAberto("sla")} label="SLA médio" value={`${slaMedio} d`} accent="brand" icon={<Clock className="w-3.5 h-3.5" />} hint="Briefing → entrega" />
+              <MiniKpi onClick={() => setKpiAberto("aprovacao")} label="Aprovação" value={pct(taxaAprovacao, 0)} accent={taxaAprovacao >= 25 ? "success" : "warning"} icon={<TrendingUp className="w-3.5 h-3.5" />} hint={`${contratados}/${candidatosTotal}`} />
+              <MiniKpi onClick={() => setKpiAberto("reposicao")} label="Reposição" value={pct(taxaReposicao, 0)} accent={taxaReposicao <= 10 ? "success" : "warning"} icon={<GitBranch className="w-3.5 h-3.5" />} hint={`${vagasEmGarantia} em garantia`} />
+              <MiniKpi onClick={() => setKpiAberto("emAndamento")} label="Em andamento" value={String(candidatosAndamento)} accent="info" icon={<Users className="w-3.5 h-3.5" />} hint="Candidatos ativos" />
             </div>
           </Section>
         </div>
@@ -776,6 +777,22 @@ function FinanceiroPage() {
         </Tabs>
       </div>
 
+      <KpiDetalheDialog
+        kpiId={kpiAberto}
+        onClose={() => setKpiAberto(null)}
+        ctx={{
+          faturas, custos, vagas, candidatos,
+          receitaMes, receitaMesPassado, crescimentoMensal,
+          lucro, lucroMes, margem, margemOperacional,
+          caixaAtual, receita, custoPago, custoMes, custoTotal,
+          burnRate, runway, receitaPrevista, aReceber,
+          propostasEnviadas, contratosFechados, conversao, ticketMedio, ticketPorCliente, faturasPagas,
+          receitaPorCliente, clientesAtivos,
+          vagasAbertas, vagasFechadas, vagasEncerradas, vagasEmGarantia,
+          slaMedio, taxaAprovacao, taxaReposicao, candidatosAndamento, candidatosTotal, contratados,
+          hoje, hojeIso,
+        }}
+      />
       <Dialog open={!!editFatura} onOpenChange={(o) => !o && setEditFatura(null)}>
         {editFatura && <EditFaturaModal fatura={editFatura} onClose={() => setEditFatura(null)} />}
       </Dialog>
@@ -814,10 +831,11 @@ function Panel({ title, sub, children, className = "" }: { title: string; sub?: 
 }
 
 function MiniKpi({
-  label, value, hint, trend, icon, accent = "brand",
+  label, value, hint, trend, icon, accent = "brand", onClick,
 }: {
   label: string; value: string; hint?: string; trend?: number; icon?: React.ReactNode;
   accent?: "brand" | "success" | "warning" | "info" | "destructive" | "muted";
+  onClick?: () => void;
 }) {
   const bar: Record<string, string> = {
     brand: "bg-brand", success: "bg-success", warning: "bg-warning",
@@ -829,8 +847,15 @@ function MiniKpi({
     destructive: "text-destructive bg-destructive/10", muted: "text-muted-foreground bg-muted",
   };
   const trendPositive = (trend ?? 0) >= 0;
+  const clickable = typeof onClick === "function";
   return (
-    <div className="bg-card rounded-xl border p-3.5 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+    <div
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={clickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick?.(); } } : undefined}
+      className={`bg-card rounded-xl border p-3.5 relative overflow-hidden shadow-sm transition-all ${clickable ? "cursor-pointer hover:shadow-md hover:-translate-y-0.5 hover:border-foreground/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand" : "hover:shadow-md"}`}
+    >
       <div className={`absolute left-0 right-0 top-0 h-0.5 ${bar[accent]}`} />
       <div className="flex items-center justify-between mb-1.5">
         <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold truncate">{label}</p>
@@ -1123,4 +1148,389 @@ function CustoFields({ form, setForm }: { form: CustoForm; setForm: (f: CustoFor
 
 function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
   return <div className={`space-y-1.5 ${className}`}><Label className="text-xs">{label}</Label>{children}</div>;
+}
+
+// ============ KPI Detail Dialog ============
+type KpiCtx = {
+  faturas: Fatura[]; custos: Custo[]; vagas: any[]; candidatos: any[];
+  receitaMes: number; receitaMesPassado: number; crescimentoMensal: number;
+  lucro: number; lucroMes: number; margem: number; margemOperacional: number;
+  caixaAtual: number; receita: number; custoPago: number; custoMes: number; custoTotal: number;
+  burnRate: number; runway: number; receitaPrevista: number; aReceber: number;
+  propostasEnviadas: number; contratosFechados: number; conversao: number; ticketMedio: number;
+  ticketPorCliente: number; faturasPagas: Fatura[]; receitaPorCliente: [string, number][]; clientesAtivos: number;
+  vagasAbertas: number; vagasFechadas: number; vagasEncerradas: number; vagasEmGarantia: number;
+  slaMedio: number; taxaAprovacao: number; taxaReposicao: number;
+  candidatosAndamento: number; candidatosTotal: number; contratados: number;
+  hoje: Date; hojeIso: string;
+};
+
+const KPI_META: Record<string, { titulo: string; subtitulo: string }> = {
+  receitaMes: { titulo: "Receita do mês", subtitulo: "Faturas pagas com vencimento no mês corrente" },
+  lucro: { titulo: "Lucro líquido", subtitulo: "Receita paga − Custos pagos no período" },
+  margem: { titulo: "Margem operacional", subtitulo: "Lucro do mês ÷ Receita do mês" },
+  caixa: { titulo: "Caixa atual", subtitulo: "Entradas pagas − Saídas pagas (acumulado)" },
+  burn: { titulo: "Burn rate", subtitulo: "Média de custos pagos nos últimos 3 meses" },
+  runway: { titulo: "Runway", subtitulo: "Caixa atual ÷ Burn rate (em meses)" },
+  prevista: { titulo: "Receita prevista", subtitulo: "Faturas pendentes com vencimento futuro" },
+  crescimento: { titulo: "Crescimento mensal", subtitulo: "Receita do mês vs. mês anterior" },
+  propostas: { titulo: "Propostas enviadas", subtitulo: "Todas as vagas criadas no escopo" },
+  contratos: { titulo: "Contratos fechados", subtitulo: "Vagas Fechadas ou etapa Finalizada" },
+  conversao: { titulo: "Conversão comercial", subtitulo: "Contratos fechados ÷ Propostas" },
+  ticket: { titulo: "Ticket médio", subtitulo: "Receita paga ÷ nº de faturas pagas" },
+  porCliente: { titulo: "Ticket por cliente", subtitulo: "Receita paga ÷ clientes ativos" },
+  aReceber: { titulo: "A receber", subtitulo: "Soma das faturas não pagas" },
+  vagasAbertas: { titulo: "Vagas abertas", subtitulo: "Status Aberta ou Em processo" },
+  vagasFechadas: { titulo: "Vagas fechadas", subtitulo: "Vagas com status Fechada" },
+  sla: { titulo: "SLA médio", subtitulo: "Dias entre briefing e entrega (vagas fechadas)" },
+  aprovacao: { titulo: "Taxa de aprovação", subtitulo: "Candidatos contratados ÷ total" },
+  reposicao: { titulo: "Taxa de reposição", subtitulo: "Vagas em garantia ÷ vagas fechadas" },
+  emAndamento: { titulo: "Candidatos em andamento", subtitulo: "Status Triagem ou Entrevista" },
+};
+
+function KpiDetalheDialog({ kpiId, onClose, ctx }: { kpiId: string | null; onClose: () => void; ctx: KpiCtx }) {
+  const meta = kpiId ? KPI_META[kpiId] : null;
+  return (
+    <Dialog open={!!kpiId} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        {meta && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-xl">{meta.titulo}</DialogTitle>
+              <p className="text-xs text-muted-foreground">{meta.subtitulo}</p>
+            </DialogHeader>
+            <div className="space-y-4">
+              <KpiDetalheBody kpiId={kpiId!} ctx={ctx} />
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function StatRow({ label, value, accent }: { label: string; value: string; accent?: "success" | "destructive" | "brand" | "muted" }) {
+  const c = accent === "success" ? "text-success" : accent === "destructive" ? "text-destructive" : accent === "brand" ? "text-brand" : accent === "muted" ? "text-muted-foreground" : "text-foreground";
+  return (
+    <div className="flex justify-between items-center py-2 border-b border-border/40 last:border-0">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className={`text-sm font-semibold tabular-nums ${c}`}>{value}</span>
+    </div>
+  );
+}
+
+function StatGrid({ children }: { children: React.ReactNode }) {
+  return <div className="bg-muted/30 rounded-xl p-4 border">{children}</div>;
+}
+
+function ListaFaturas({ faturas, vazio = "Nenhuma fatura no período." }: { faturas: Fatura[]; vazio?: string }) {
+  if (faturas.length === 0) return <p className="text-sm text-muted-foreground text-center py-6">{vazio}</p>;
+  return (
+    <div className="border rounded-xl overflow-hidden">
+      <table className="w-full text-sm">
+        <thead className="bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+          <tr><th className="text-left px-3 py-2">Cliente</th><th className="text-left px-3 py-2">Vencimento</th><th className="text-left px-3 py-2">Status</th><th className="text-right px-3 py-2">Valor</th></tr>
+        </thead>
+        <tbody className="divide-y divide-border/50">
+          {faturas.slice(0, 15).map((f) => (
+            <tr key={f.id}>
+              <td className="px-3 py-2 font-medium">{f.cliente}</td>
+              <td className="px-3 py-2 text-muted-foreground">{new Date(f.vencimento + "T00:00:00").toLocaleDateString("pt-BR")}</td>
+              <td className="px-3 py-2"><StatusBadge status={f.status} /></td>
+              <td className="px-3 py-2 text-right font-semibold tabular-nums">{f.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {faturas.length > 15 && <p className="text-[11px] text-muted-foreground text-center py-2 bg-muted/20">+ {faturas.length - 15} faturas adicionais</p>}
+    </div>
+  );
+}
+
+function ListaCustos({ custos }: { custos: Custo[] }) {
+  if (custos.length === 0) return <p className="text-sm text-muted-foreground text-center py-6">Nenhum custo no período.</p>;
+  return (
+    <div className="border rounded-xl overflow-hidden">
+      <table className="w-full text-sm">
+        <thead className="bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+          <tr><th className="text-left px-3 py-2">Descrição</th><th className="text-left px-3 py-2">Categoria</th><th className="text-left px-3 py-2">Data</th><th className="text-right px-3 py-2">Valor</th></tr>
+        </thead>
+        <tbody className="divide-y divide-border/50">
+          {custos.slice(0, 15).map((c) => (
+            <tr key={c.id}>
+              <td className="px-3 py-2 font-medium">{c.descricao}</td>
+              <td className="px-3 py-2 text-muted-foreground">{c.categoria}</td>
+              <td className="px-3 py-2 text-muted-foreground">{new Date(c.data + "T00:00:00").toLocaleDateString("pt-BR")}</td>
+              <td className="px-3 py-2 text-right font-semibold tabular-nums text-destructive">{c.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {custos.length > 15 && <p className="text-[11px] text-muted-foreground text-center py-2 bg-muted/20">+ {custos.length - 15} custos adicionais</p>}
+    </div>
+  );
+}
+
+function KpiDetalheBody({ kpiId, ctx }: { kpiId: string; ctx: KpiCtx }) {
+  const inicioMes = new Date(ctx.hoje.getFullYear(), ctx.hoje.getMonth(), 1);
+  const isoDay = (d: string) => new Date(d + "T00:00:00");
+
+  switch (kpiId) {
+    case "receitaMes": {
+      const faturasMes = ctx.faturas.filter((f) => f.status === "Pago" && isoDay(f.vencimento) >= inicioMes);
+      return (
+        <>
+          <StatGrid>
+            <StatRow label="Receita realizada no mês" value={brl(ctx.receitaMes)} accent="success" />
+            <StatRow label="Mês anterior" value={brl(ctx.receitaMesPassado)} accent="muted" />
+            <StatRow label="Crescimento M/M" value={`${ctx.crescimentoMensal.toFixed(1)}%`} accent={ctx.crescimentoMensal >= 0 ? "success" : "destructive"} />
+            <StatRow label="Faturas pagas no mês" value={String(faturasMes.length)} />
+          </StatGrid>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Faturas computadas</h4>
+          <ListaFaturas faturas={faturasMes} />
+        </>
+      );
+    }
+    case "lucro": {
+      return (
+        <>
+          <StatGrid>
+            <StatRow label="(+) Receita paga acumulada" value={brl(ctx.receita)} accent="success" />
+            <StatRow label="(−) Custos pagos acumulados" value={brl(ctx.custoPago)} accent="destructive" />
+            <StatRow label="(=) Lucro líquido" value={brl(ctx.lucro)} accent={ctx.lucro >= 0 ? "brand" : "destructive"} />
+            <StatRow label="Margem sobre receita" value={`${ctx.margem.toFixed(1)}%`} />
+          </StatGrid>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Composição</h4>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-success/5 border border-success/20 rounded-xl p-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Entradas</p>
+              <p className="text-lg font-bold text-success tabular-nums">{brl(ctx.receita)}</p>
+              <p className="text-xs text-muted-foreground">{ctx.faturasPagas.length} faturas pagas</p>
+            </div>
+            <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Saídas</p>
+              <p className="text-lg font-bold text-destructive tabular-nums">{brl(ctx.custoPago)}</p>
+              <p className="text-xs text-muted-foreground">{ctx.custos.filter((c) => c.status === "Pago").length} custos pagos</p>
+            </div>
+          </div>
+        </>
+      );
+    }
+    case "margem": {
+      return (
+        <StatGrid>
+          <StatRow label="Receita do mês" value={brl(ctx.receitaMes)} accent="success" />
+          <StatRow label="Custos do mês" value={brl(ctx.custoMes)} accent="destructive" />
+          <StatRow label="Lucro do mês" value={brl(ctx.lucroMes)} accent={ctx.lucroMes >= 0 ? "brand" : "destructive"} />
+          <StatRow label="Margem operacional" value={`${ctx.margemOperacional.toFixed(2)}%`} accent={ctx.margemOperacional >= 20 ? "success" : ctx.margemOperacional >= 0 ? "brand" : "destructive"} />
+        </StatGrid>
+      );
+    }
+    case "caixa": {
+      const pagas = ctx.faturas.filter((f) => f.status === "Pago");
+      const pagos = ctx.custos.filter((c) => c.status === "Pago");
+      return (
+        <>
+          <StatGrid>
+            <StatRow label="Entradas (faturas pagas)" value={brl(ctx.receita)} accent="success" />
+            <StatRow label="Saídas (custos pagos)" value={brl(ctx.custoPago)} accent="destructive" />
+            <StatRow label="Caixa atual" value={brl(ctx.caixaAtual)} accent={ctx.caixaAtual >= 0 ? "brand" : "destructive"} />
+            <StatRow label="Movimentos contabilizados" value={`${pagas.length + pagos.length}`} />
+          </StatGrid>
+        </>
+      );
+    }
+    case "burn": {
+      const linhas: { mes: string; valor: number }[] = [];
+      for (let i = 1; i <= 3; i++) {
+        const ref = new Date(ctx.hoje.getFullYear(), ctx.hoje.getMonth() - i, 1);
+        const fim = new Date(ctx.hoje.getFullYear(), ctx.hoje.getMonth() - i + 1, 0, 23, 59, 59);
+        const total = ctx.custos.filter((c) => c.status === "Pago" && isoDay(c.data) >= ref && isoDay(c.data) <= fim).reduce((s, c) => s + c.valor, 0);
+        linhas.push({ mes: ref.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }), valor: total });
+      }
+      return (
+        <>
+          <StatGrid>
+            {linhas.map((l) => <StatRow key={l.mes} label={l.mes} value={brl(l.valor)} accent="destructive" />)}
+            <StatRow label="Burn rate (média)" value={brl(ctx.burnRate)} accent="brand" />
+          </StatGrid>
+        </>
+      );
+    }
+    case "runway": {
+      return (
+        <StatGrid>
+          <StatRow label="Caixa atual" value={brl(ctx.caixaAtual)} accent={ctx.caixaAtual >= 0 ? "success" : "destructive"} />
+          <StatRow label="Burn rate mensal" value={brl(ctx.burnRate)} accent="destructive" />
+          <StatRow label="Runway estimado" value={ctx.burnRate > 0 ? `${ctx.runway.toFixed(1)} meses` : "Infinito"} accent={ctx.runway >= 6 ? "success" : ctx.runway >= 3 ? "brand" : "destructive"} />
+        </StatGrid>
+      );
+    }
+    case "prevista": {
+      const pendentes = ctx.faturas.filter((f) => f.status !== "Pago" && f.vencimento >= ctx.hojeIso).sort((a, b) => a.vencimento.localeCompare(b.vencimento));
+      return (
+        <>
+          <StatGrid>
+            <StatRow label="Total a entrar" value={brl(ctx.receitaPrevista)} accent="brand" />
+            <StatRow label="Nº de faturas pendentes" value={String(pendentes.length)} />
+          </StatGrid>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Próximos recebimentos</h4>
+          <ListaFaturas faturas={pendentes} />
+        </>
+      );
+    }
+    case "crescimento": {
+      const diff = ctx.receitaMes - ctx.receitaMesPassado;
+      return (
+        <StatGrid>
+          <StatRow label="Receita mês atual" value={brl(ctx.receitaMes)} accent="success" />
+          <StatRow label="Receita mês anterior" value={brl(ctx.receitaMesPassado)} accent="muted" />
+          <StatRow label="Diferença absoluta" value={brl(diff)} accent={diff >= 0 ? "success" : "destructive"} />
+          <StatRow label="Variação percentual" value={`${ctx.crescimentoMensal.toFixed(2)}%`} accent={ctx.crescimentoMensal >= 0 ? "success" : "destructive"} />
+        </StatGrid>
+      );
+    }
+    case "propostas":
+    case "contratos":
+    case "conversao": {
+      return (
+        <>
+          <StatGrid>
+            <StatRow label="Propostas enviadas (vagas criadas)" value={String(ctx.propostasEnviadas)} accent="brand" />
+            <StatRow label="Contratos fechados" value={String(ctx.contratosFechados)} accent="success" />
+            <StatRow label="Taxa de conversão" value={`${ctx.conversao.toFixed(1)}%`} accent={ctx.conversao >= 30 ? "success" : "destructive"} />
+          </StatGrid>
+        </>
+      );
+    }
+    case "ticket": {
+      return (
+        <>
+          <StatGrid>
+            <StatRow label="Receita paga" value={brl(ctx.receita)} accent="success" />
+            <StatRow label="Nº faturas pagas" value={String(ctx.faturasPagas.length)} />
+            <StatRow label="Ticket médio" value={brl(ctx.ticketMedio)} accent="brand" />
+          </StatGrid>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Faturas pagas</h4>
+          <ListaFaturas faturas={ctx.faturasPagas} />
+        </>
+      );
+    }
+    case "porCliente": {
+      return (
+        <>
+          <StatGrid>
+            <StatRow label="Receita total" value={brl(ctx.receita)} accent="success" />
+            <StatRow label="Clientes ativos" value={String(ctx.clientesAtivos)} />
+            <StatRow label="Ticket por cliente" value={brl(ctx.ticketPorCliente)} accent="brand" />
+          </StatGrid>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ranking de clientes</h4>
+          <div className="border rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+                <tr><th className="text-left px-3 py-2">Cliente</th><th className="text-right px-3 py-2">Receita</th><th className="text-right px-3 py-2">Participação</th></tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {ctx.receitaPorCliente.map(([nome, valor]) => (
+                  <tr key={nome}>
+                    <td className="px-3 py-2 font-medium">{nome}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{brl(valor)}</td>
+                    <td className="px-3 py-2 text-right text-muted-foreground tabular-nums">{ctx.receita > 0 ? ((valor / ctx.receita) * 100).toFixed(1) : "0"}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      );
+    }
+    case "aReceber": {
+      const naoPagas = ctx.faturas.filter((f) => f.status !== "Pago").sort((a, b) => a.vencimento.localeCompare(b.vencimento));
+      const vencidas = naoPagas.filter((f) => f.vencimento < ctx.hojeIso);
+      const aVencer = naoPagas.filter((f) => f.vencimento >= ctx.hojeIso);
+      return (
+        <>
+          <StatGrid>
+            <StatRow label="Total a receber" value={brl(ctx.aReceber)} accent="brand" />
+            <StatRow label="Vencidas" value={`${vencidas.length} · ${brl(vencidas.reduce((s, f) => s + f.valor, 0))}`} accent="destructive" />
+            <StatRow label="A vencer" value={`${aVencer.length} · ${brl(aVencer.reduce((s, f) => s + f.valor, 0))}`} accent="muted" />
+          </StatGrid>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Faturas em aberto</h4>
+          <ListaFaturas faturas={naoPagas} />
+        </>
+      );
+    }
+    case "vagasAbertas":
+    case "vagasFechadas": {
+      const filtro = kpiId === "vagasAbertas"
+        ? ctx.vagas.filter((v) => v.status === "Aberta" || v.status === "Em processo")
+        : ctx.vagas.filter((v) => v.status === "Fechada");
+      return (
+        <>
+          <StatGrid>
+            <StatRow label="Abertas / Em processo" value={String(ctx.vagasAbertas)} accent="brand" />
+            <StatRow label="Fechadas" value={String(ctx.vagasFechadas)} accent="success" />
+            <StatRow label="Encerradas" value={String(ctx.vagasEncerradas)} accent="muted" />
+            <StatRow label="Em garantia" value={String(ctx.vagasEmGarantia)} />
+          </StatGrid>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Vagas listadas</h4>
+          <div className="border rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+                <tr><th className="text-left px-3 py-2">Cargo</th><th className="text-left px-3 py-2">Empresa</th><th className="text-left px-3 py-2">Status</th></tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {filtro.slice(0, 20).map((v) => (
+                  <tr key={v.id}>
+                    <td className="px-3 py-2 font-medium">{v.cargo}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{v.empresa}</td>
+                    <td className="px-3 py-2"><StatusBadge status={v.status} /></td>
+                  </tr>
+                ))}
+                {filtro.length === 0 && <tr><td colSpan={3} className="px-3 py-6 text-center text-muted-foreground">Nenhuma vaga.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </>
+      );
+    }
+    case "sla": {
+      return (
+        <StatGrid>
+          <StatRow label="SLA médio" value={`${ctx.slaMedio} dias`} accent="brand" />
+          <StatRow label="Vagas fechadas consideradas" value={String(ctx.vagasFechadas)} />
+        </StatGrid>
+      );
+    }
+    case "aprovacao": {
+      return (
+        <StatGrid>
+          <StatRow label="Candidatos totais" value={String(ctx.candidatosTotal)} />
+          <StatRow label="Contratados" value={String(ctx.contratados)} accent="success" />
+          <StatRow label="Em andamento" value={String(ctx.candidatosAndamento)} accent="brand" />
+          <StatRow label="Taxa de aprovação" value={`${ctx.taxaAprovacao.toFixed(1)}%`} accent={ctx.taxaAprovacao >= 25 ? "success" : "destructive"} />
+        </StatGrid>
+      );
+    }
+    case "reposicao": {
+      return (
+        <StatGrid>
+          <StatRow label="Vagas em garantia" value={String(ctx.vagasEmGarantia)} accent="brand" />
+          <StatRow label="Vagas fechadas" value={String(ctx.vagasFechadas)} accent="success" />
+          <StatRow label="Taxa de reposição" value={`${ctx.taxaReposicao.toFixed(1)}%`} accent={ctx.taxaReposicao <= 10 ? "success" : "destructive"} />
+        </StatGrid>
+      );
+    }
+    case "emAndamento": {
+      return (
+        <StatGrid>
+          <StatRow label="Candidatos em triagem/entrevista" value={String(ctx.candidatosAndamento)} accent="brand" />
+          <StatRow label="Total de candidatos" value={String(ctx.candidatosTotal)} />
+          <StatRow label="Já contratados" value={String(ctx.contratados)} accent="success" />
+        </StatGrid>
+      );
+    }
+    default:
+      return <p className="text-sm text-muted-foreground">Sem detalhes disponíveis.</p>;
+  }
 }
