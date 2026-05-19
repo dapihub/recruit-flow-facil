@@ -67,6 +67,7 @@ function FinanceiroPage() {
   const [editFatura, setEditFatura] = useState<Fatura | null>(null);
   const [editCusto, setEditCusto] = useState<Custo | null>(null);
   const [escopo, setEscopo] = useState<"oficial" | "historico">("oficial");
+  const [kpiAberto, setKpiAberto] = useState<string | null>(null);
 
   // ============ Separa oficial × histórico ============
   const isHistorico = escopo === "historico";
