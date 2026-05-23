@@ -73,8 +73,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "DAPI HUB — Gestão de Recrutamento e Seleção" },
-      { name: "description", content: "DAPI HUB · O HUB que conecta estratégia, pessoas e processos para acelerar empresas." },
+      { title: "SistemaInterno" },
+      { name: "description", content: "RecruitFlow Hub is a recruitment management system for agencies." },
+      { property: "og:title", content: "SistemaInterno" },
+      { name: "twitter:title", content: "SistemaInterno" },
+      { property: "og:description", content: "RecruitFlow Hub is a recruitment management system for agencies." },
+      { name: "twitter:description", content: "RecruitFlow Hub is a recruitment management system for agencies." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d8591736-8697-4c6b-993c-cf3452917dcb/id-preview-23a267c6--21925760-66f9-474d-a728-16e99bd28449.lovable.app-1779207579764.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d8591736-8697-4c6b-993c-cf3452917dcb/id-preview-23a267c6--21925760-66f9-474d-a728-16e99bd28449.lovable.app-1779207579764.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
