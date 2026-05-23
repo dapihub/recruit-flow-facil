@@ -28,6 +28,7 @@ export type Database = {
           status: Database["public"]["Enums"]["candidato_status"]
           telefone: string | null
           updated_at: string
+          user_id: string
           vaga_id: string | null
           vaga_nome: string
         }
@@ -44,6 +45,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["candidato_status"]
           telefone?: string | null
           updated_at?: string
+          user_id?: string
           vaga_id?: string | null
           vaga_nome?: string
         }
@@ -60,6 +62,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["candidato_status"]
           telefone?: string | null
           updated_at?: string
+          user_id?: string
           vaga_id?: string | null
           vaga_nome?: string
         }
@@ -73,6 +76,39 @@ export type Database = {
           },
         ]
       }
+      configuracoes: {
+        Row: {
+          created_at: string
+          data_inicio_operacao: string
+          id: string
+          meta_anual_lucro: number
+          moeda: string
+          nome_empresa: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_inicio_operacao?: string
+          id?: string
+          meta_anual_lucro?: number
+          moeda?: string
+          nome_empresa?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data_inicio_operacao?: string
+          id?: string
+          meta_anual_lucro?: number
+          moeda?: string
+          nome_empresa?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       custos: {
         Row: {
           categoria: Database["public"]["Enums"]["custo_categoria"]
@@ -85,6 +121,7 @@ export type Database = {
           status: Database["public"]["Enums"]["custo_status"]
           tipo: Database["public"]["Enums"]["custo_tipo"]
           updated_at: string
+          user_id: string
           vaga_id: string | null
           valor: number
         }
@@ -99,6 +136,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["custo_status"]
           tipo: Database["public"]["Enums"]["custo_tipo"]
           updated_at?: string
+          user_id?: string
           vaga_id?: string | null
           valor: number
         }
@@ -113,6 +151,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["custo_status"]
           tipo?: Database["public"]["Enums"]["custo_tipo"]
           updated_at?: string
+          user_id?: string
           vaga_id?: string | null
           valor?: number
         }
@@ -136,6 +175,7 @@ export type Database = {
           servico: string
           status: Database["public"]["Enums"]["fatura_status"]
           updated_at: string
+          user_id: string
           vaga_id: string | null
           valor: number
           vencimento: string
@@ -149,6 +189,7 @@ export type Database = {
           servico: string
           status?: Database["public"]["Enums"]["fatura_status"]
           updated_at?: string
+          user_id?: string
           vaga_id?: string | null
           valor: number
           vencimento: string
@@ -162,6 +203,7 @@ export type Database = {
           servico?: string
           status?: Database["public"]["Enums"]["fatura_status"]
           updated_at?: string
+          user_id?: string
           vaga_id?: string | null
           valor?: number
           vencimento?: string
@@ -212,6 +254,7 @@ export type Database = {
           salario: string | null
           status: Database["public"]["Enums"]["vaga_status"]
           updated_at: string
+          user_id: string
         }
         Insert: {
           area: string
@@ -232,6 +275,7 @@ export type Database = {
           salario?: string | null
           status?: Database["public"]["Enums"]["vaga_status"]
           updated_at?: string
+          user_id?: string
         }
         Update: {
           area?: string
@@ -252,6 +296,7 @@ export type Database = {
           salario?: string | null
           status?: Database["public"]["Enums"]["vaga_status"]
           updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
