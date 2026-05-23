@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Briefcase, Users, Wallet, LogOut } from "lucide-react";
+import { Briefcase, Users, Wallet, LogOut, Settings } from "lucide-react";
 import { useVagas, useCandidatos, useFaturas } from "@/lib/store";
 import { DapiLogo } from "@/components/DapiLogo";
 import { useAuth } from "@/lib/auth";
@@ -8,6 +8,10 @@ const items = [
   { to: "/", label: "Vagas", icon: Briefcase },
   { to: "/candidatos", label: "Candidatos", icon: Users },
   { to: "/financeiro", label: "Financeiro", icon: Wallet },
+];
+
+const bottomItems = [
+  { to: "/configuracoes", label: "Configurações", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -46,6 +50,25 @@ export function AppSidebar() {
             </Link>
           );
         })}
+        <div className="pt-2 border-t border-white/10 mt-2">
+          {bottomItems.map(({ to, label, icon: Icon }) => {
+            const active = path === to;
+            return (
+              <Link
+                key={to}
+                to={to}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  active
+                    ? "bg-[var(--sidebar-active)] text-white shadow"
+                    : "text-white/75 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {label}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
       <div className="p-4 border-t border-white/10 space-y-3">

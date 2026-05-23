@@ -25,6 +25,8 @@ import {
   useFaturas,
   useCustos,
   useVaga,
+  useConfiguracoes,
+  type Configuracoes,
 } from "@/lib/store";
 import dapiLogoColor from "@/assets/dapi-logo-color.png";
 import dapiSymbol from "@/assets/dapi-symbol.png";
@@ -383,36 +385,39 @@ function DescritivoTab({ vagaId, initial, briefing, cargo, empresa }: { vagaId: 
 }
 
 /* ---------------- CONTRATO ---------------- */
-const emptyContrato = (empresa = "", cargo = ""): Contrato => ({
-  contratanteRazao: empresa,
-  contratanteCnpj: "",
-  contratanteEndereco: "",
-  contratanteRepresentante: "",
-  contratadaRazao: "66.475.894 ANA CAROLINA DE CAMPOS",
-  contratadaCnpj: "66.475.894/0001-84",
-  contratadaEndereco: "Rua Figueiredo Magalhães, nº 249, Copacabana, Rio de Janeiro/RJ, CEP 22.031-011",
-  contratadaTelefone: "(48) 98870-0560",
-  contratadaEmail: "ana@dapihub.com.br",
-  contratadaRepresentante: "Ana Carolina de Campos",
-  cargo,
-  prazoExecucao: "20 (vinte) dias corridos",
-  valorTotal: "R$ 4.000,00",
-  valorTotalExtenso: "quatro mil reais",
-  parcela1: "R$ 2.000,00 (cinquenta por cento) no ato da assinatura deste contrato",
-  parcela2: "R$ 2.000,00 (cinquenta por cento) na entrega do serviço",
-  diaPagamento: "1ª quinta-feira da semana subsequente à emissão da respectiva nota fiscal",
-  chavePix: "66.475.894/0001-84",
-  prazoGarantia: "90 (noventa) dias corridos",
-  maxReposicoes: "3 (três) reposições",
-  prazoEscolha: "30 (trinta) dias",
-  foro: "Comarca da Capital do Rio de Janeiro/RJ",
-  dataAssinatura: new Date().toISOString().slice(0, 10),
-  localAssinatura: "Rio de Janeiro/RJ",
-  observacoes: "",
-});
+function makeEmptyContrato(cfg: Configuracoes, empresa = "", cargo = ""): Contrato {
+  return {
+    contratanteRazao: empresa,
+    contratanteCnpj: "",
+    contratanteEndereco: "",
+    contratanteRepresentante: "",
+    contratadaRazao: cfg.razaoSocial,
+    contratadaCnpj: cfg.cnpj,
+    contratadaEndereco: cfg.endereco,
+    contratadaTelefone: cfg.telefone,
+    contratadaEmail: cfg.email,
+    contratadaRepresentante: cfg.representante,
+    cargo,
+    prazoExecucao: "20 (vinte) dias corridos",
+    valorTotal: "R$ 4.000,00",
+    valorTotalExtenso: "quatro mil reais",
+    parcela1: "R$ 2.000,00 (cinquenta por cento) no ato da assinatura deste contrato",
+    parcela2: "R$ 2.000,00 (cinquenta por cento) na entrega do serviço",
+    diaPagamento: "1ª quinta-feira da semana subsequente à emissão da respectiva nota fiscal",
+    chavePix: cfg.chavePix,
+    prazoGarantia: cfg.prazoGarantiaPadrao,
+    maxReposicoes: cfg.maxReposicoesPadrao,
+    prazoEscolha: cfg.prazoEscolhaPadrao,
+    foro: cfg.foro,
+    dataAssinatura: new Date().toISOString().slice(0, 10),
+    localAssinatura: cfg.localAssinatura,
+    observacoes: "",
+  };
+}
 
 function ContratoTab({ vagaId, initial, empresa, cargo }: { vagaId: string; initial?: Contrato; empresa: string; cargo: string }) {
-  const [c, setC] = useState<Contrato>(initial ?? emptyContrato(empresa, cargo));
+  const cfg = useConfiguracoes();
+  const [c, setC] = useState<Contrato>(initial ?? makeEmptyContrato(cfg, empresa, cargo));
   const [generated, setGenerated] = useState(false);
   const [saved, setSaved] = useState(false);
 

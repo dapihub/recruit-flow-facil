@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedCandidatosRouteImport } from './routes/_authenticated/candidatos'
 import { Route as AuthenticatedVagasVagaIdRouteImport } from './routes/_authenticated/vagas.$vagaId'
 
@@ -35,6 +36,12 @@ const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   path: '/financeiro',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedConfiguracoesRoute =
+  AuthenticatedConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCandidatosRoute = AuthenticatedCandidatosRouteImport.update({
   id: '/candidatos',
   path: '/candidatos',
@@ -51,12 +58,14 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/candidatos': typeof AuthenticatedCandidatosRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/candidatos': typeof AuthenticatedCandidatosRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/': typeof AuthenticatedIndexRoute
   '/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
@@ -66,20 +75,34 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/candidatos': typeof AuthenticatedCandidatosRoute
+  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/candidatos' | '/financeiro' | '/vagas/$vagaId'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/candidatos'
+    | '/configuracoes'
+    | '/financeiro'
+    | '/vagas/$vagaId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/candidatos' | '/financeiro' | '/' | '/vagas/$vagaId'
+  to:
+    | '/login'
+    | '/candidatos'
+    | '/configuracoes'
+    | '/financeiro'
+    | '/'
+    | '/vagas/$vagaId'
   id:
     | '__root__'
     | '/_authenticated'
     | '/login'
     | '/_authenticated/candidatos'
+    | '/_authenticated/configuracoes'
     | '/_authenticated/financeiro'
     | '/_authenticated/'
     | '/_authenticated/vagas/$vagaId'
@@ -120,6 +143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/configuracoes': {
+      id: '/_authenticated/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/candidatos': {
       id: '/_authenticated/candidatos'
       path: '/candidatos'
@@ -139,6 +169,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedCandidatosRoute: typeof AuthenticatedCandidatosRoute
+  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedVagasVagaIdRoute: typeof AuthenticatedVagasVagaIdRoute
@@ -146,6 +177,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCandidatosRoute: AuthenticatedCandidatosRoute,
+  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedVagasVagaIdRoute: AuthenticatedVagasVagaIdRoute,
@@ -162,3 +194,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

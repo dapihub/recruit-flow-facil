@@ -164,11 +164,43 @@ export type Custo = {
   observacoes?: string;
 };
 
+export type Configuracoes = {
+  id?: string;
+  razaoSocial: string;
+  cnpj: string;
+  endereco: string;
+  telefone: string;
+  email: string;
+  representante: string;
+  chavePix: string;
+  foro: string;
+  localAssinatura: string;
+  prazoGarantiaPadrao: string;
+  maxReposicoesPadrao: string;
+  prazoEscolhaPadrao: string;
+};
+
+export const CONFIGURACOES_DEFAULT: Configuracoes = {
+  razaoSocial: "",
+  cnpj: "",
+  endereco: "",
+  telefone: "",
+  email: "",
+  representante: "",
+  chavePix: "",
+  foro: "",
+  localAssinatura: "",
+  prazoGarantiaPadrao: "90 (noventa) dias corridos",
+  maxReposicoesPadrao: "3 (três) reposições",
+  prazoEscolhaPadrao: "30 (trinta) dias",
+};
+
 type StoreState = {
   vagas: Vaga[];
   candidatos: Candidato[];
   faturas: Fatura[];
   custos: Custo[];
+  configuracoes: Configuracoes;
   loading: boolean;
   loadedUserId: string | null;
 };
@@ -178,6 +210,7 @@ const state: StoreState = {
   candidatos: [],
   faturas: [],
   custos: [],
+  configuracoes: { ...CONFIGURACOES_DEFAULT },
   loading: false,
   loadedUserId: null,
 };
@@ -195,11 +228,30 @@ const subscribe = (cb: () => void) => {
 
 const emit = () => listeners.forEach((listener) => listener());
 
+function mapConfiguracao(row: any): Configuracoes {
+  return {
+    id: row.id,
+    razaoSocial: row.razao_social ?? "",
+    cnpj: row.cnpj ?? "",
+    endereco: row.endereco ?? "",
+    telefone: row.telefone ?? "",
+    email: row.email ?? "",
+    representante: row.representante ?? "",
+    chavePix: row.chave_pix ?? "",
+    foro: row.foro ?? "",
+    localAssinatura: row.local_assinatura ?? "",
+    prazoGarantiaPadrao: row.prazo_garantia_padrao ?? "90 (noventa) dias corridos",
+    maxReposicoesPadrao: row.max_reposicoes_padrao ?? "3 (três) reposições",
+    prazoEscolhaPadrao: row.prazo_escolha_padrao ?? "30 (trinta) dias",
+  };
+}
+
 function clearState() {
   state.vagas = [];
   state.candidatos = [];
   state.faturas = [];
   state.custos = [];
+  state.configuracoes = { ...CONFIGURACOES_DEFAULT };
   state.loading = false;
   state.loadedUserId = null;
   emit();
@@ -319,8 +371,9 @@ async function loadAll(force = false): Promise<void> {
     supabase.from("candidatos").select("*").order("created_at", { ascending: false }),
     supabase.from("faturas").select("*").order("created_at", { ascending: false }),
     supabase.from("custos").select("*").order("created_at", { ascending: false }),
+    (supabase as any).from("configuracoes").select("*").limit(1).maybeSingle(),
   ])
-    .then(([vagasRes, candidatosRes, faturasRes, custosRes]) => {
+    .then(([vagasRes, candidatosRes, faturasRes, custosRes, configRes]) => {
       if (vagasRes.error) throw vagasRes.error;
       if (candidatosRes.error) throw candidatosRes.error;
       if (faturasRes.error) throw faturasRes.error;
@@ -330,6 +383,7 @@ async function loadAll(force = false): Promise<void> {
       state.candidatos = (candidatosRes.data ?? []).map(mapCandidato);
       state.faturas = (faturasRes.data ?? []).map(mapFatura);
       state.custos = (custosRes.data ?? []).map(mapCusto);
+      state.configuracoes = configRes.data ? mapConfiguracao(configRes.data) : { ...CONFIGURACOES_DEFAULT };
       state.loadedUserId = userId;
     })
     .catch((error) => {
@@ -358,6 +412,7 @@ export const useVagas = () => useStoreValue(() => state.vagas);
 export const useCandidatos = () => useStoreValue(() => state.candidatos);
 export const useFaturas = () => useStoreValue(() => state.faturas);
 export const useCustos = () => useStoreValue(() => state.custos);
+export const useConfiguracoes = () => useStoreValue(() => state.configuracoes);
 
 export function useVaga(id: string) {
   const vagas = useVagas();
@@ -423,6 +478,7 @@ export async function deleteCusto(id: string) {
 
 export async function addCusto(custo: Omit<Custo, "id">) {
   const payload = {
+    user_id: state.loadedUserId,
     descricao: custo.descricao,
     categoria: custo.categoria,
     tipo: custo.tipo,
@@ -434,7 +490,7 @@ export async function addCusto(custo: Omit<Custo, "id">) {
     observacoes: custo.observacoes ?? null,
   };
 
-  const { data, error } = await supabase.from("custos").insert(payload).select().single();
+  const { data, error } = await supabase.from("custos").insert(payload as any).select().single();
   if (error) throw error;
 
   state.custos = [mapCusto(data), ...state.custos];
@@ -457,6 +513,7 @@ export async function addVaga(vaga: {
   const quantidade = vaga.quantidade ?? 1;
 
   const payload: any = {
+    user_id: state.loadedUserId,
     cargo: vaga.cargo,
     empresa: vaga.empresa,
     area: vaga.area || "Geral",
@@ -468,7 +525,7 @@ export async function addVaga(vaga: {
     briefing: { quantidade } as any,
   };
 
-  const { data, error } = await supabase.from("vagas").insert(payload).select().single();
+  const { data, error } = await supabase.from("vagas").insert(payload as any).select().single();
   if (error) throw error;
 
   const novaVaga = mapVaga(data);
@@ -539,6 +596,7 @@ export async function addCandidato(candidato: Omit<Candidato, "id" | "etapa" | "
   const vaga = state.vagas.find((item) => item.cargo === candidato.vaga);
 
   const payload = {
+    user_id: state.loadedUserId,
     nome: candidato.nome,
     email: candidato.email,
     telefone: candidato.telefone ?? null,
@@ -548,7 +606,7 @@ export async function addCandidato(candidato: Omit<Candidato, "id" | "etapa" | "
     observacoes: candidato.observacoes ?? null,
   };
 
-  const { data, error } = await supabase.from("candidatos").insert(payload).select().single();
+  const { data, error } = await supabase.from("candidatos").insert(payload as any).select().single();
   if (error) throw error;
 
   state.candidatos = [mapCandidato(data), ...state.candidatos];
@@ -558,6 +616,7 @@ export async function addCandidato(candidato: Omit<Candidato, "id" | "etapa" | "
 
 export async function addFatura(fatura: Omit<Fatura, "id" | "numero" | "status">) {
   const payload = {
+    user_id: state.loadedUserId,
     cliente: fatura.cliente,
     servico: fatura.servico,
     valor: fatura.valor,
@@ -566,7 +625,7 @@ export async function addFatura(fatura: Omit<Fatura, "id" | "numero" | "status">
     observacoes: fatura.observacoes ?? null,
   };
 
-  const { data, error } = await supabase.from("faturas").insert(payload).select().single();
+  const { data, error } = await supabase.from("faturas").insert(payload as any).select().single();
   if (error) throw error;
 
   state.faturas = [mapFatura(data), ...state.faturas];
@@ -606,6 +665,38 @@ export async function updateCusto(id: string, patch: Partial<Custo>) {
   if (error) throw error;
 
   state.custos = state.custos.map((custo) => (custo.id === id ? mapCusto(data) : custo));
+  emit();
+}
+
+export async function saveConfiguracoes(cfg: Configuracoes): Promise<void> {
+  const payload = {
+    user_id: state.loadedUserId,
+    razao_social: cfg.razaoSocial,
+    cnpj: cfg.cnpj,
+    endereco: cfg.endereco,
+    telefone: cfg.telefone,
+    email: cfg.email,
+    representante: cfg.representante,
+    chave_pix: cfg.chavePix,
+    foro: cfg.foro,
+    local_assinatura: cfg.localAssinatura,
+    prazo_garantia_padrao: cfg.prazoGarantiaPadrao,
+    max_reposicoes_padrao: cfg.maxReposicoesPadrao,
+    prazo_escolha_padrao: cfg.prazoEscolhaPadrao,
+  };
+
+  let data: any;
+  let error: any;
+
+  const db = supabase as any;
+  if (cfg.id) {
+    ({ data, error } = await db.from("configuracoes").update(payload).eq("id", cfg.id).select().single());
+  } else {
+    ({ data, error } = await db.from("configuracoes").insert(payload).select().single());
+  }
+
+  if (error) throw error;
+  state.configuracoes = mapConfiguracao(data);
   emit();
 }
 
