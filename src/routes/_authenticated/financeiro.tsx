@@ -53,17 +53,43 @@ function FinanceiroPage() {
   const custosSorted = useMemo(() => [...custos].sort((a, b) => b.data.localeCompare(a.data)), [custos]);
 
   async function marcarPago(f: Fatura) {
-    try {
-      await updateFatura(f.id, { status: "Pago" });
-      toast.success("Marcada como paga.");
-    } catch { toast.error("Erro ao atualizar."); }
+    const toastId = toast("Fatura marcada como recebida", {
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          clearTimeout(timer);
+          toast.dismiss(toastId);
+        },
+      },
+      duration: 5000,
+    });
+    const timer = setTimeout(async () => {
+      try {
+        await updateFatura(f.id, { status: "Pago" });
+      } catch {
+        toast.error("Erro ao atualizar.");
+      }
+    }, 5000);
   }
 
   async function marcarCustoPago(c: Custo) {
-    try {
-      await updateCusto(c.id, { status: "Pago" });
-      toast.success("Marcado como pago.");
-    } catch { toast.error("Erro ao atualizar."); }
+    const toastId = toast("Custo marcado como pago", {
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          clearTimeout(timer);
+          toast.dismiss(toastId);
+        },
+      },
+      duration: 5000,
+    });
+    const timer = setTimeout(async () => {
+      try {
+        await updateCusto(c.id, { status: "Pago" });
+      } catch {
+        toast.error("Erro ao atualizar.");
+      }
+    }, 5000);
   }
 
   return (
