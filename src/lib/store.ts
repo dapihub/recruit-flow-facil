@@ -753,8 +753,7 @@ const extListeners = new Set<() => void>();
 const extEmit = () => extListeners.forEach(l => l());
 
 export const useInteracoes = () => {
-  const { useEffect: ue, useSyncExternalStore: use } = require("react") as typeof import("react");
-  return use(
+  return useSyncExternalStore(
     (cb: () => void) => { extListeners.add(cb); return () => extListeners.delete(cb); },
     () => extState.interacoes,
     () => extState.interacoes,
@@ -762,9 +761,8 @@ export const useInteracoes = () => {
 };
 
 export function useInteracoesCandidato(candidatoId: string) {
-  const { useMemo: um } = require("react") as typeof import("react");
   const all = useInteracoes();
-  return um(() => all.filter(i => i.candidatoId === candidatoId).sort((a, b) => b.data.localeCompare(a.data)), [all, candidatoId]);
+  return useMemo(() => all.filter(i => i.candidatoId === candidatoId).sort((a, b) => b.data.localeCompare(a.data)), [all, candidatoId]);
 }
 
 function mapInteracao(row: any): Interacao {
@@ -822,7 +820,7 @@ export async function updateProximaAcao(candidatoId: string, acao: string, data:
 
 // Hook para candidatos com proximaAcaoData
 export const useProximasAcoes = () => {
-  const candidatos = (require("react") as typeof import("react")).useSyncExternalStore(
+  const candidatos = useSyncExternalStore(
     subscribe,
     () => state.candidatos,
     () => state.candidatos,
@@ -835,7 +833,7 @@ export const useProximasAcoes = () => {
 
 // Garantias vencendo nos próximos 30 dias
 export const useGarantiasVencendo = () => {
-  const vagas = (require("react") as typeof import("react")).useSyncExternalStore(
+  const vagas = useSyncExternalStore(
     subscribe,
     () => state.vagas,
     () => state.vagas,
