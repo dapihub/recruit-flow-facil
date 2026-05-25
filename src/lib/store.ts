@@ -108,6 +108,7 @@ export type Candidato = {
   vagaId?: string | null;
   etapa: string;
   proximaAcao: string;
+  proximaAcaoData?: string | null;
   pontuacao: number;
   status: CandidatoStatus;
   linkedin?: string;
