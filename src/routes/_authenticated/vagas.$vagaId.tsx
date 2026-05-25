@@ -1133,13 +1133,15 @@ function DocDialog({ title, triggerLabel, icon, children }: { title: string; tri
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">{icon}{triggerLabel}</Button>
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs">{icon}{triggerLabel}</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+      <DialogContent className="w-[95vw] max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="px-6 py-4 border-b border-zinc-200 shrink-0">
+          <DialogTitle className="text-base font-medium">{title}</DialogTitle>
         </DialogHeader>
-        {children}
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          {children}
+        </div>
       </DialogContent>
     </Dialog>
   );

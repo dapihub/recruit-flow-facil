@@ -107,7 +107,7 @@ function FinanceiroPage() {
             </Dialog>
             <Dialog open={openFatura} onOpenChange={setOpenFatura}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900"><Plus className="w-3.5 h-3.5 mr-1.5" />Fatura</Button>
+                <Button size="sm" className="bg-zinc-900 hover:bg-zinc-800 text-white"><Plus className="w-3.5 h-3.5 mr-1.5" />Fatura</Button>
               </DialogTrigger>
               <FaturaModal onClose={() => setOpenFatura(false)} vagas={vagas} />
             </Dialog>
@@ -119,10 +119,10 @@ function FinanceiroPage() {
 
         {/* Alerta vencidas */}
         {faturasVencidas.length > 0 && (
-          <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-4 dark:bg-red-950/20 dark:border-red-900/40">
+          <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-4 ">
             <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-red-700 dark:text-red-400">
+              <p className="text-sm font-medium text-red-700 ">
                 {faturasVencidas.length} fatura{faturasVencidas.length > 1 ? "s" : ""} vencida{faturasVencidas.length > 1 ? "s" : ""} — {brl(valorVencido)} em atraso
               </p>
               <p className="text-xs text-red-500/80 mt-0.5">Marque como paga clicando no botão "Recebido" na linha correspondente.</p>
@@ -180,7 +180,7 @@ function FinanceiroPage() {
                               {/* Botão principal: Recebido / Pago */}
                               {!paga ? (
                                 <Button size="sm" variant="outline"
-                                  className="h-7 px-2.5 text-xs gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+                                  className="h-7 px-2.5 text-xs gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 "
                                   onClick={() => marcarPago(f)}>
                                   <Check className="w-3 h-3" /> Recebido
                                 </Button>
@@ -246,7 +246,7 @@ function FinanceiroPage() {
                             <div className="flex items-center justify-end gap-1">
                               {!pago ? (
                                 <Button size="sm" variant="outline"
-                                  className="h-7 px-2.5 text-xs gap-1.5 border-zinc-300 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400"
+                                  className="h-7 px-2.5 text-xs gap-1.5 border-zinc-300 text-zinc-600 hover:bg-zinc-50 "
                                   onClick={() => marcarCustoPago(c)}>
                                   <Check className="w-3 h-3" /> Pago
                                 </Button>
@@ -300,19 +300,19 @@ function FinanceiroPage() {
 // ── Componentes ───────────────────────────────────────────────────────
 function KpiCard({ label, value, sub, negative }: { label: string; value: string; sub?: string; negative?: boolean }) {
   return (
-    <div className="bg-card rounded-xl border border-border/60 px-5 py-4">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
-      <p className={`text-xl font-bold tabular-nums ${negative ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>{value}</p>
-      {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
+    <div className="bg-white rounded-lg border border-zinc-200 px-5 py-4">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 mb-1">{label}</p>
+      <p className={`text-xl font-semibold tabular-nums ${negative ? "text-red-600" : "text-zinc-900"}`}>{value}</p>
+      {sub && <p className="text-xs text-zinc-400 mt-0.5">{sub}</p>}
     </div>
   );
 }
 
 function StatusPill({ status }: { status: string }) {
   const map: Record<string, string> = {
-    "Pago":     "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/20 dark:border-emerald-900/30",
-    "Pendente": "text-zinc-600 bg-zinc-50 border-zinc-200 dark:text-zinc-400 dark:bg-zinc-800 dark:border-zinc-700",
-    "Atrasado": "text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-950/20 dark:border-red-900/30",
+    "Pago":     "text-zinc-700 bg-zinc-100 border-zinc-200",
+    "Pendente": "text-zinc-500 bg-zinc-50  border-zinc-200",
+    "Atrasado": "text-red-600  bg-red-50   border-red-200",
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded border text-[11px] font-medium ${map[status] ?? map["Pendente"]}`}>
@@ -371,7 +371,7 @@ function FaturaModal({ fatura, vagas, onClose }: { fatura?: Fatura; vagas: any[]
       </div>
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>Cancelar</Button>
-        <Button className="bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900" disabled={!form.cliente || !form.valor}
+        <Button className="bg-zinc-900 hover:bg-zinc-800 text-white" disabled={!form.cliente || !form.valor}
           onClick={async () => {
             try {
               const data = { cliente: form.cliente, servico: form.servico, valor: Number(form.valor), vencimento: form.vencimento, status: form.status, vagaId: form.vagaId || null, observacoes: form.observacoes };
@@ -428,7 +428,7 @@ function CustoModal({ custo, vagas, onClose }: { custo?: Custo; vagas: any[]; on
       </div>
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>Cancelar</Button>
-        <Button className="bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900" disabled={!form.descricao || !form.valor}
+        <Button className="bg-zinc-900 hover:bg-zinc-800 text-white" disabled={!form.descricao || !form.valor}
           onClick={async () => {
             try {
               const data = { descricao: form.descricao, categoria: form.categoria, tipo: form.tipo, valor: Number(form.valor), data: form.data, status: form.status, fornecedor: form.fornecedor, observacoes: form.observacoes };

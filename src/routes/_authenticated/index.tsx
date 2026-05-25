@@ -59,10 +59,10 @@ function DashboardPage() {
 
       {/* Alertas */}
       {temAlertas && (
-        <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-900/30 p-5 space-y-2.5">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 space-y-2">
           <div className="flex items-center gap-2 mb-1">
             <AlertTriangle className="w-4 h-4 text-red-500" />
-            <span className="text-sm font-semibold text-red-700 dark:text-red-400">Requer atenção</span>
+            <span className="text-sm font-medium text-red-600">Requer atenção</span>
           </div>
           {faturasVencidas.length > 0 && (
             <AlertaRow to="/financeiro" label={`${faturasVencidas.length} fatura${faturasVencidas.length > 1 ? "s" : ""} vencida${faturasVencidas.length > 1 ? "s" : ""} — ${brl(valorVencido)}`} />
@@ -82,14 +82,14 @@ function DashboardPage() {
         {/* Vagas ativas */}
         <div>
           <SectionHeader title="Vagas ativas" count={vagasAtivas.length} to="/vagas" />
-          <div className="bg-card rounded-xl border border-border/60 divide-y divide-border/40 overflow-hidden">
+          <div className="bg-white rounded-lg border border-zinc-200 divide-y divide-zinc-100 overflow-hidden">
             {vagasAtivas.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">Nenhuma vaga ativa</p>
             ) : vagasAtivas.slice(0, 5).map(v => (
               <div key={v.id} onClick={() => navigate({ to: "/vagas/$vagaId", params: { vagaId: v.id } })}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 cursor-pointer transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-950/30 flex items-center justify-center shrink-0">
-                  <Briefcase className="w-4 h-4 text-orange-500" />
+                <div className="w-8 h-8 rounded-lg bg-zinc-100 flex items-center justify-center shrink-0">
+                  <Briefcase className="w-4 h-4 text-zinc-500" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{v.cargo}</p>
@@ -104,7 +104,7 @@ function DashboardPage() {
         {/* Candidatos recentes */}
         <div>
           <SectionHeader title="Candidatos" count={candidatos.length} to="/candidatos" />
-          <div className="bg-card rounded-xl border border-border/60 divide-y divide-border/40 overflow-hidden">
+          <div className="bg-white rounded-lg border border-zinc-200 divide-y divide-zinc-100 overflow-hidden">
             {candidatosRecentes.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">Nenhum candidato</p>
             ) : candidatosRecentes.map(c => {
@@ -142,7 +142,7 @@ function DashboardPage() {
             const count = vagas.filter(v => v.etapa === etapa).length;
             return (
               <div key={etapa} onClick={() => navigate({ to: "/vagas" })}
-                className="bg-card rounded-xl border border-border/60 p-4 text-center cursor-pointer hover:border-orange-300 hover:bg-orange-50/30 dark:hover:bg-orange-950/10 transition-colors">
+                className="bg-card rounded-xl border border-border/60 p-4 text-center cursor-pointer hover:border-zinc-300 hover:bg-zinc-50 transition-colors">
                 <p className="text-2xl font-bold text-foreground">{count}</p>
                 <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{etapa}</p>
               </div>
@@ -156,10 +156,10 @@ function DashboardPage() {
 
 function KpiCard({ label, value, sub, negative }: { label: string; value: string; sub?: string; color?: string; negative?: boolean }) {
   return (
-    <div className="bg-card rounded-xl border border-border/60 px-5 py-4">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
-      <p className={`text-xl font-bold tabular-nums ${negative ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>{value}</p>
-      {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
+    <div className="bg-white rounded-lg border border-zinc-200 px-5 py-4">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 mb-1">{label}</p>
+      <p className={`text-xl font-semibold tabular-nums ${negative ? "text-red-600" : "text-zinc-900"}`}>{value}</p>
+      {sub && <p className="text-xs text-zinc-400 mt-0.5">{sub}</p>}
     </div>
   );
 }
@@ -181,7 +181,7 @@ function SectionHeader({ title, count, to }: { title: string; count?: number; to
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         {count !== undefined && <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md">{count}</span>}
       </div>
-      <Link to={to} className="text-xs text-orange-500 hover:text-orange-600 flex items-center gap-0.5">
+      <Link to={to} className="text-xs text-zinc-400 hover:text-zinc-700 flex items-center gap-0.5">
         Ver todos <ChevronRight className="w-3 h-3" />
       </Link>
     </div>
@@ -189,13 +189,5 @@ function SectionHeader({ title, count, to }: { title: string; count?: number; to
 }
 
 function EtapaPill({ etapa }: { etapa: string }) {
-  const colors: Record<string, string> = {
-    "Briefing": "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
-    "Contrato": "bg-purple-100 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400",
-    "Descritivo publicado": "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-400",
-    "Candidatos em triagem": "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400",
-    "Em Garantia": "bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400",
-    "Finalizada": "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
-  };
-  return <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${colors[etapa] ?? "bg-zinc-100 text-zinc-600"}`}>{etapa}</span>;
+  return <span className="text-[10px] font-medium px-2 py-0.5 rounded border border-zinc-200 bg-zinc-50 text-zinc-600">{etapa}</span>;
 }
