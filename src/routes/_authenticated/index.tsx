@@ -51,10 +51,10 @@ function DashboardPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Receita do mês" value={brl(receitaMes)} sub="Faturas pagas" color="emerald" />
-        <KpiCard label="A receber" value={brl(aReceber)} sub="Em aberto" color="blue" />
+        <KpiCard label="Receita do mês" value={brl(receitaMes)} sub="Faturas pagas" />
+        <KpiCard label="A receber" value={brl(aReceber)} sub="Em aberto" />
         <KpiCard label="Margem" value={margem !== null ? `${margem.toFixed(1)}%` : "—"} sub={`Custos: ${brl(custosMes)}`} color={margem !== null && margem >= 0 ? "emerald" : "red"} />
-        <KpiCard label="Vagas ativas" value={String(vagasAtivas.length)} sub="Abertas / em processo" color="amber" />
+        <KpiCard label="Vagas ativas" value={String(vagasAtivas.length)} sub="Abertas / em processo" />
       </div>
 
       {/* Alertas */}
@@ -154,14 +154,11 @@ function DashboardPage() {
   );
 }
 
-function KpiCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color: string }) {
-  const borders: Record<string, string> = { emerald: "bg-emerald-500", blue: "bg-blue-500", amber: "bg-amber-500", red: "bg-red-500" };
-  const texts: Record<string, string> = { emerald: "text-emerald-600 dark:text-emerald-400", blue: "text-blue-600 dark:text-blue-400", amber: "text-amber-600 dark:text-amber-400", red: "text-red-600 dark:text-red-400" };
+function KpiCard({ label, value, sub, negative }: { label: string; value: string; sub?: string; color?: string; negative?: boolean }) {
   return (
-    <div className="relative bg-card rounded-xl border border-border/60 px-5 py-4 overflow-hidden">
-      <div className={`absolute top-0 left-0 right-0 h-0.5 ${borders[color]}`} />
+    <div className="bg-card rounded-xl border border-border/60 px-5 py-4">
       <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
-      <p className={`text-2xl font-bold tabular-nums ${texts[color]}`}>{value}</p>
+      <p className={`text-xl font-bold tabular-nums ${negative ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>{value}</p>
       {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
     </div>
   );

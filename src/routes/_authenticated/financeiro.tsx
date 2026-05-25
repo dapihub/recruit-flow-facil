@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Trash2, Pencil, AlertTriangle, TrendingUp, TrendingDown, Calendar, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Pencil, AlertTriangle, Check } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
-import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,23 +39,32 @@ function FinanceiroPage() {
   const hojeIso = hoje.toISOString().slice(0, 10);
   const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
-  // KPIs
   const receitaMes = useMemo(() =>
-    faturas.filter(f => f.status === "Pago" && new Date(f.vencimento + "T00:00:00") >= inicioMes).reduce((s, f) => s + f.valor, 0),
-    [faturas]);
+    faturas.filter(f => f.status === "Pago" && new Date(f.vencimento + "T00:00:00") >= inicioMes).reduce((s, f) => s + f.valor, 0), [faturas]);
   const aReceber = useMemo(() => faturas.filter(f => f.status !== "Pago").reduce((s, f) => s + f.valor, 0), [faturas]);
   const custosMes = useMemo(() =>
-    custos.filter(c => new Date(c.data + "T00:00:00") >= inicioMes).reduce((s, c) => s + c.valor, 0),
-    [custos]);
+    custos.filter(c => new Date(c.data + "T00:00:00") >= inicioMes).reduce((s, c) => s + c.valor, 0), [custos]);
   const lucroMes = receitaMes - custosMes;
-  const margem = receitaMes > 0 ? (lucroMes / receitaMes * 100) : 0;
 
   const faturasVencidas = useMemo(() => faturas.filter(f => f.status !== "Pago" && f.vencimento < hojeIso), [faturas, hojeIso]);
   const valorVencido = faturasVencidas.reduce((s, f) => s + f.valor, 0);
 
-  // Sorted faturas and custos
   const faturasSorted = useMemo(() => [...faturas].sort((a, b) => b.vencimento.localeCompare(a.vencimento)), [faturas]);
   const custosSorted = useMemo(() => [...custos].sort((a, b) => b.data.localeCompare(a.data)), [custos]);
+
+  async function marcarPago(f: Fatura) {
+    try {
+      await updateFatura(f.id, { status: "Pago" });
+      toast.success("Marcada como paga.");
+    } catch { toast.error("Erro ao atualizar."); }
+  }
+
+  async function marcarCustoPago(c: Custo) {
+    try {
+      await updateCusto(c.id, { status: "Pago" });
+      toast.success("Marcado como pago.");
+    } catch { toast.error("Erro ao atualizar."); }
+  }
 
   return (
     <div>
@@ -67,13 +75,13 @@ function FinanceiroPage() {
           <div className="flex gap-2">
             <Dialog open={openCusto} onOpenChange={setOpenCusto}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1.5"><Plus className="w-3.5 h-3.5" /> Custo</Button>
+                <Button variant="outline" size="sm"><Plus className="w-3.5 h-3.5 mr-1.5" />Custo</Button>
               </DialogTrigger>
               <CustoModal onClose={() => setOpenCusto(false)} vagas={vagas} />
             </Dialog>
             <Dialog open={openFatura} onOpenChange={setOpenFatura}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white gap-1.5"><Plus className="w-3.5 h-3.5" /> Fatura</Button>
+                <Button size="sm" className="bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900"><Plus className="w-3.5 h-3.5 mr-1.5" />Fatura</Button>
               </DialogTrigger>
               <FaturaModal onClose={() => setOpenFatura(false)} vagas={vagas} />
             </Dialog>
@@ -85,37 +93,37 @@ function FinanceiroPage() {
 
         {/* Alerta vencidas */}
         {faturasVencidas.length > 0 && (
-          <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-4 dark:bg-red-950/20 dark:border-red-900/30">
-            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-red-700 dark:text-red-400">
-                {faturasVencidas.length} fatura{faturasVencidas.length > 1 ? "s" : ""} vencida{faturasVencidas.length > 1 ? "s" : ""}
+          <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-4 dark:bg-red-950/20 dark:border-red-900/40">
+            <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                {faturasVencidas.length} fatura{faturasVencidas.length > 1 ? "s" : ""} vencida{faturasVencidas.length > 1 ? "s" : ""} — {brl(valorVencido)} em atraso
               </p>
-              <p className="text-xs text-red-600/80 dark:text-red-400/70">{brl(valorVencido)} em atraso</p>
+              <p className="text-xs text-red-500/80 mt-0.5">Marque como paga clicando no botão "Recebido" na linha correspondente.</p>
             </div>
           </div>
         )}
 
-        {/* 4 KPIs */}
+        {/* KPIs — neutros, sem cor excessiva */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Kpi label="Receita do mês" value={brl(receitaMes)} color="emerald" icon={<TrendingUp className="w-4 h-4" />} />
-          <Kpi label="A receber" value={brl(aReceber)} color="blue" icon={<Calendar className="w-4 h-4" />} />
-          <Kpi label="Lucro do mês" value={brl(lucroMes)} color={lucroMes >= 0 ? "emerald" : "red"} icon={lucroMes >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />} hint={`Margem ${margem.toFixed(1)}%`} />
-          <Kpi label="Custos do mês" value={brl(custosMes)} color="amber" icon={<TrendingDown className="w-4 h-4" />} />
+          <KpiCard label="Receita do mês" value={brl(receitaMes)} sub="Faturas pagas" />
+          <KpiCard label="A receber" value={brl(aReceber)} sub="Em aberto" />
+          <KpiCard label="Lucro do mês" value={brl(lucroMes)} sub={`Receita − Custos`} negative={lucroMes < 0} />
+          <KpiCard label="Custos do mês" value={brl(custosMes)} sub="Lançados no mês" />
         </div>
 
         {/* Tabelas */}
         <Tabs defaultValue="faturas">
-          <TabsList className="bg-muted/50 p-1 rounded-xl">
-            <TabsTrigger value="faturas" className="rounded-lg text-sm">Faturas ({faturas.length})</TabsTrigger>
-            <TabsTrigger value="custos" className="rounded-lg text-sm">Custos ({custos.length})</TabsTrigger>
+          <TabsList className="h-9 bg-muted/50 p-1 rounded-lg">
+            <TabsTrigger value="faturas" className="text-sm rounded-md h-7">Faturas ({faturas.length})</TabsTrigger>
+            <TabsTrigger value="custos" className="text-sm rounded-md h-7">Custos ({custos.length})</TabsTrigger>
           </TabsList>
 
           {/* FATURAS */}
           <TabsContent value="faturas" className="mt-4">
-            <div className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+            <div className="bg-card rounded-xl border border-border/60 overflow-hidden">
               {faturasSorted.length === 0 ? (
-                <EmptyState text="Nenhuma fatura cadastrada" />
+                <p className="py-12 text-center text-sm text-muted-foreground">Nenhuma fatura cadastrada</p>
               ) : (
                 <table className="w-full text-sm">
                   <thead>
@@ -125,29 +133,40 @@ function FinanceiroPage() {
                       <Th className="text-right">Valor</Th>
                       <Th>Vencimento</Th>
                       <Th>Status</Th>
-                      <Th className="w-20" />
+                      <Th className="text-right">Ações</Th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
                     {faturasSorted.map(f => {
                       const vencida = f.status !== "Pago" && f.vencimento < hojeIso;
+                      const paga = f.status === "Pago";
                       return (
-                        <tr key={f.id} className={`group hover:bg-muted/20 transition-colors ${vencida ? "bg-red-50/50 dark:bg-red-950/10" : ""}`}>
+                        <tr key={f.id} className={`group transition-colors ${vencida ? "bg-red-50/40 dark:bg-red-950/10 hover:bg-red-50/70" : "hover:bg-muted/20"}`}>
                           <Td className="font-medium">{f.cliente}</Td>
-                          <Td className="text-muted-foreground max-w-[200px] truncate">{f.servico}</Td>
+                          <Td className="text-muted-foreground max-w-[180px] truncate text-xs">{f.servico}</Td>
                           <Td className="text-right font-semibold tabular-nums">{brl(f.valor)}</Td>
-                          <Td className={vencida ? "text-red-600 font-medium" : "text-muted-foreground"}>
+                          <Td className={`text-xs ${vencida ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
                             {new Date(f.vencimento + "T12:00:00").toLocaleDateString("pt-BR")}
                           </Td>
-                          <Td><StatusBadge status={f.status} /></Td>
+                          <Td><StatusPill status={f.status} /></Td>
                           <Td>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity justify-end">
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditFatura(f)}>
+                            <div className="flex items-center justify-end gap-1">
+                              {/* Botão principal: Recebido / Pago */}
+                              {!paga ? (
+                                <Button size="sm" variant="outline"
+                                  className="h-7 px-2.5 text-xs gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+                                  onClick={() => marcarPago(f)}>
+                                  <Check className="w-3 h-3" /> Recebido
+                                </Button>
+                              ) : (
+                                <span className="text-xs text-muted-foreground px-2">✓ Pago</span>
+                              )}
+                              <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100" onClick={() => setEditFatura(f)}>
                                 <Pencil className="w-3.5 h-3.5" />
                               </Button>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7 hover:text-destructive">
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 hover:text-destructive">
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </Button>
                                 </AlertDialogTrigger>
@@ -172,54 +191,64 @@ function FinanceiroPage() {
 
           {/* CUSTOS */}
           <TabsContent value="custos" className="mt-4">
-            <div className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+            <div className="bg-card rounded-xl border border-border/60 overflow-hidden">
               {custosSorted.length === 0 ? (
-                <EmptyState text="Nenhum custo cadastrado" />
+                <p className="py-12 text-center text-sm text-muted-foreground">Nenhum custo cadastrado</p>
               ) : (
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border/50 bg-muted/30">
                       <Th>Descrição</Th>
                       <Th>Categoria</Th>
-                      <Th>Tipo</Th>
                       <Th className="text-right">Valor</Th>
                       <Th>Data</Th>
                       <Th>Status</Th>
-                      <Th className="w-20" />
+                      <Th className="text-right">Ações</Th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
-                    {custosSorted.map(c => (
-                      <tr key={c.id} className="group hover:bg-muted/20 transition-colors">
-                        <Td className="font-medium">{c.descricao}</Td>
-                        <Td><span className="text-[11px] bg-muted px-2 py-0.5 rounded-md font-medium">{c.categoria}</span></Td>
-                        <Td className="text-muted-foreground text-xs">{c.tipo}</Td>
-                        <Td className="text-right font-semibold tabular-nums text-red-600">{brl(c.valor)}</Td>
-                        <Td className="text-muted-foreground">{new Date(c.data + "T12:00:00").toLocaleDateString("pt-BR")}</Td>
-                        <Td><StatusBadge status={c.status} /></Td>
-                        <Td>
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity justify-end">
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditCusto(c)}>
-                              <Pencil className="w-3.5 h-3.5" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 hover:text-destructive">
-                                  <Trash2 className="w-3.5 h-3.5" />
+                    {custosSorted.map(c => {
+                      const pago = c.status === "Pago";
+                      return (
+                        <tr key={c.id} className="group hover:bg-muted/20 transition-colors">
+                          <Td className="font-medium">{c.descricao}</Td>
+                          <Td><span className="text-[11px] bg-muted text-muted-foreground px-2 py-0.5 rounded font-medium">{c.categoria}</span></Td>
+                          <Td className="text-right font-semibold tabular-nums text-muted-foreground">{brl(c.valor)}</Td>
+                          <Td className="text-xs text-muted-foreground">{new Date(c.data + "T12:00:00").toLocaleDateString("pt-BR")}</Td>
+                          <Td><StatusPill status={c.status} /></Td>
+                          <Td>
+                            <div className="flex items-center justify-end gap-1">
+                              {!pago ? (
+                                <Button size="sm" variant="outline"
+                                  className="h-7 px-2.5 text-xs gap-1.5 border-zinc-300 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400"
+                                  onClick={() => marcarCustoPago(c)}>
+                                  <Check className="w-3 h-3" /> Pago
                                 </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader><AlertDialogTitle>Excluir custo?</AlertDialogTitle><AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction className="bg-destructive text-destructive-foreground" onClick={async () => { try { await deleteCusto(c.id); toast.success("Excluído."); } catch { toast.error("Erro."); } }}>Excluir</AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </Td>
-                      </tr>
-                    ))}
+                              ) : (
+                                <span className="text-xs text-muted-foreground px-2">✓ Pago</span>
+                              )}
+                              <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100" onClick={() => setEditCusto(c)}>
+                                <Pencil className="w-3.5 h-3.5" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 hover:text-destructive">
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader><AlertDialogTitle>Excluir custo?</AlertDialogTitle><AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction className="bg-destructive text-destructive-foreground" onClick={async () => { try { await deleteCusto(c.id); toast.success("Excluído."); } catch { toast.error("Erro."); } }}>Excluir</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </Td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               )}
@@ -228,7 +257,6 @@ function FinanceiroPage() {
         </Tabs>
       </div>
 
-      {/* Modais de edição */}
       {editFatura && (
         <Dialog open={!!editFatura} onOpenChange={o => !o && setEditFatura(null)}>
           <FaturaModal fatura={editFatura} vagas={vagas} onClose={() => setEditFatura(null)} />
@@ -243,27 +271,27 @@ function FinanceiroPage() {
   );
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────
-function Kpi({ label, value, hint, color, icon }: { label: string; value: string; hint?: string; color: string; icon?: React.ReactNode }) {
-  const colors: Record<string, string> = {
-    emerald: "text-emerald-600 dark:text-emerald-400",
-    blue: "text-blue-600 dark:text-blue-400",
-    amber: "text-amber-600 dark:text-amber-400",
-    red: "text-red-600 dark:text-red-400",
-  };
-  const bars: Record<string, string> = {
-    emerald: "bg-emerald-500", blue: "bg-blue-500", amber: "bg-amber-500", red: "bg-red-500",
+// ── Componentes ───────────────────────────────────────────────────────
+function KpiCard({ label, value, sub, negative }: { label: string; value: string; sub?: string; negative?: boolean }) {
+  return (
+    <div className="bg-card rounded-xl border border-border/60 px-5 py-4">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
+      <p className={`text-xl font-bold tabular-nums ${negative ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>{value}</p>
+      {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function StatusPill({ status }: { status: string }) {
+  const map: Record<string, string> = {
+    "Pago":     "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/20 dark:border-emerald-900/30",
+    "Pendente": "text-zinc-600 bg-zinc-50 border-zinc-200 dark:text-zinc-400 dark:bg-zinc-800 dark:border-zinc-700",
+    "Atrasado": "text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-950/20 dark:border-red-900/30",
   };
   return (
-    <div className="relative bg-card rounded-xl border border-border/60 px-5 py-4 overflow-hidden">
-      <div className={`absolute top-0 left-0 right-0 h-0.5 ${bars[color]}`} />
-      <div className="flex items-start justify-between mb-1">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-        <span className={`${colors[color]} opacity-50`}>{icon}</span>
-      </div>
-      <p className={`text-2xl font-bold tabular-nums ${colors[color]}`}>{value}</p>
-      {hint && <p className="text-xs text-muted-foreground mt-0.5">{hint}</p>}
-    </div>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded border text-[11px] font-medium ${map[status] ?? map["Pendente"]}`}>
+      {status}
+    </span>
   );
 }
 
@@ -271,10 +299,7 @@ function Th({ children, className = "" }: { children?: React.ReactNode; classNam
   return <th className={`text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground px-4 py-3 ${className}`}>{children}</th>;
 }
 function Td({ children, className = "" }: { children?: React.ReactNode; className?: string }) {
-  return <td className={`px-4 py-3.5 ${className}`}>{children}</td>;
-}
-function EmptyState({ text }: { text: string }) {
-  return <div className="py-12 text-center text-sm text-muted-foreground">{text}</div>;
+  return <td className={`px-4 py-3 ${className}`}>{children}</td>;
 }
 function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
   return <div className={`space-y-1.5 ${className}`}><Label className="text-xs font-medium">{label}</Label>{children}</div>;
@@ -293,10 +318,9 @@ function FaturaModal({ fatura, vagas, onClose }: { fatura?: Fatura; vagas: any[]
     vagaId: fatura?.vagaId ?? "",
     observacoes: fatura?.observacoes ?? "",
   });
-  const editing = !!fatura;
   return (
     <DialogContent className="max-w-lg">
-      <DialogHeader><DialogTitle>{editing ? "Editar Fatura" : "Nova Fatura"}</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle>{fatura ? "Editar Fatura" : "Nova Fatura"}</DialogTitle></DialogHeader>
       <div className="grid grid-cols-2 gap-4">
         <Field label="Cliente" className="col-span-2"><Input value={form.cliente} onChange={e => setForm({ ...form, cliente: e.target.value })} /></Field>
         <Field label="Serviço" className="col-span-2"><Input value={form.servico} onChange={e => setForm({ ...form, servico: e.target.value })} /></Field>
@@ -321,15 +345,15 @@ function FaturaModal({ fatura, vagas, onClose }: { fatura?: Fatura; vagas: any[]
       </div>
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>Cancelar</Button>
-        <Button className="bg-orange-500 hover:bg-orange-600 text-white" disabled={!form.cliente || !form.valor}
+        <Button className="bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900" disabled={!form.cliente || !form.valor}
           onClick={async () => {
             try {
               const data = { cliente: form.cliente, servico: form.servico, valor: Number(form.valor), vencimento: form.vencimento, status: form.status, vagaId: form.vagaId || null, observacoes: form.observacoes };
-              if (editing) { await updateFatura(fatura!.id, data); toast.success("Fatura atualizada."); }
-              else { await addFatura(data); toast.success("Fatura criada."); }
+              if (fatura) { await updateFatura(fatura.id, data); toast.success("Atualizada."); }
+              else { await addFatura(data); toast.success("Criada."); }
               onClose();
             } catch { toast.error("Erro ao salvar."); }
-          }}>{editing ? "Salvar" : "Criar"}</Button>
+          }}>{fatura ? "Salvar" : "Criar"}</Button>
       </DialogFooter>
     </DialogContent>
   );
@@ -347,13 +371,11 @@ function CustoModal({ custo, vagas, onClose }: { custo?: Custo; vagas: any[]; on
     data: custo?.data ?? new Date().toISOString().slice(0, 10),
     status: custo?.status ?? "Pendente" as CustoStatus,
     fornecedor: custo?.fornecedor ?? "",
-    vagaId: custo?.vagaId ?? "",
     observacoes: custo?.observacoes ?? "",
   });
-  const editing = !!custo;
   return (
     <DialogContent className="max-w-lg">
-      <DialogHeader><DialogTitle>{editing ? "Editar Custo" : "Novo Custo"}</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle>{custo ? "Editar Custo" : "Novo Custo"}</DialogTitle></DialogHeader>
       <div className="grid grid-cols-2 gap-4">
         <Field label="Descrição" className="col-span-2"><Input value={form.descricao} onChange={e => setForm({ ...form, descricao: e.target.value })} /></Field>
         <Field label="Categoria">
@@ -380,15 +402,15 @@ function CustoModal({ custo, vagas, onClose }: { custo?: Custo; vagas: any[]; on
       </div>
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>Cancelar</Button>
-        <Button className="bg-orange-500 hover:bg-orange-600 text-white" disabled={!form.descricao || !form.valor}
+        <Button className="bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900" disabled={!form.descricao || !form.valor}
           onClick={async () => {
             try {
-              const data = { descricao: form.descricao, categoria: form.categoria, tipo: form.tipo, valor: Number(form.valor), data: form.data, status: form.status, fornecedor: form.fornecedor, vagaId: form.vagaId || undefined, observacoes: form.observacoes };
-              if (editing) { await updateCusto(custo!.id, data); toast.success("Custo atualizado."); }
-              else { await addCusto(data); toast.success("Custo criado."); }
+              const data = { descricao: form.descricao, categoria: form.categoria, tipo: form.tipo, valor: Number(form.valor), data: form.data, status: form.status, fornecedor: form.fornecedor, observacoes: form.observacoes };
+              if (custo) { await updateCusto(custo.id, data); toast.success("Atualizado."); }
+              else { await addCusto(data); toast.success("Criado."); }
               onClose();
             } catch { toast.error("Erro ao salvar."); }
-          }}>{editing ? "Salvar" : "Criar"}</Button>
+          }}>{custo ? "Salvar" : "Criar"}</Button>
       </DialogFooter>
     </DialogContent>
   );
