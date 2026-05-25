@@ -290,6 +290,7 @@ function mapCandidato(row: any): Candidato {
     vagaId: row.vaga_id ?? null,
     etapa: row.etapa,
     proximaAcao: row.proxima_acao,
+    proximaAcaoData: row.proxima_acao_data ?? null,
     pontuacao: Number(row.pontuacao ?? 0),
     status: row.status,
     linkedin: row.linkedin ?? undefined,
@@ -700,6 +701,150 @@ export async function saveConfiguracoes(cfg: Configuracoes): Promise<void> {
   emit();
 }
 
+export async function updateCandidato(id: string, patch: Partial<Candidato>) {
+  const payload: any = {};
+  if (patch.nome !== undefined) payload.nome = patch.nome;
+  if (patch.email !== undefined) payload.email = patch.email;
+  if (patch.telefone !== undefined) payload.telefone = patch.telefone;
+  if (patch.vaga !== undefined) payload.vaga_nome = patch.vaga;
+  if (patch.vagaId !== undefined) payload.vaga_id = patch.vagaId;
+  if (patch.etapa !== undefined) payload.etapa = patch.etapa;
+  if (patch.proximaAcao !== undefined) payload.proxima_acao = patch.proximaAcao;
+  if (patch.pontuacao !== undefined) payload.pontuacao = patch.pontuacao;
+  if (patch.status !== undefined) payload.status = patch.status;
+  if (patch.linkedin !== undefined) payload.linkedin = patch.linkedin;
+  if (patch.observacoes !== undefined) payload.observacoes = patch.observacoes;
+
+  const { data, error } = await supabase.from("candidatos").update(payload).eq("id", id).select().single();
+  if (error) throw error;
+
+  state.candidatos = state.candidatos.map((c) => (c.id === id ? mapCandidato(data) : c));
+  emit();
+}
+
 export async function refreshStore() {
   await loadAll(true);
 }
+
+// ============================================================
+// SPRINT 1-4: Novos tipos e funcionalidades
+// ============================================================
+
+export type InteracaoTipo = "Ligação" | "E-mail" | "Entrevista" | "Reunião" | "Nota" | "Outro";
+export const INTERACAO_TIPOS: InteracaoTipo[] = ["Ligação", "E-mail", "Entrevista", "Reunião", "Nota", "Outro"];
+
+export type Interacao = {
+  id: string;
+  candidatoId: string;
+  tipo: InteracaoTipo;
+  data: string;
+  descricao: string;
+  createdAt?: string;
+};
+
+// --- State extensions ---
+type ExtendedState = {
+  interacoes: Interacao[];
+};
+
+const extState: ExtendedState = { interacoes: [] };
+const extListeners = new Set<() => void>();
+const extEmit = () => extListeners.forEach(l => l());
+
+export const useInteracoes = () => {
+  const { useEffect: ue, useSyncExternalStore: use } = require("react") as typeof import("react");
+  return use(
+    (cb: () => void) => { extListeners.add(cb); return () => extListeners.delete(cb); },
+    () => extState.interacoes,
+    () => extState.interacoes,
+  );
+};
+
+export function useInteracoesCandidato(candidatoId: string) {
+  const { useMemo: um } = require("react") as typeof import("react");
+  const all = useInteracoes();
+  return um(() => all.filter(i => i.candidatoId === candidatoId).sort((a, b) => b.data.localeCompare(a.data)), [all, candidatoId]);
+}
+
+function mapInteracao(row: any): Interacao {
+  return {
+    id: row.id,
+    candidatoId: row.candidato_id,
+    tipo: row.tipo,
+    data: row.data,
+    descricao: row.descricao,
+    createdAt: row.created_at ?? undefined,
+  };
+}
+
+export async function loadInteracoesCandidato(candidatoId: string) {
+  const { data, error } = await supabase
+    .from("interacoes" as any)
+    .select("*")
+    .eq("candidato_id", candidatoId)
+    .order("data", { ascending: false });
+  if (error) { console.error("Erro ao carregar interações:", error); return; }
+  const outras = extState.interacoes.filter(i => i.candidatoId !== candidatoId);
+  extState.interacoes = [...outras, ...(data ?? []).map(mapInteracao)];
+  extEmit();
+}
+
+export async function addInteracao(interacao: Omit<Interacao, "id" | "createdAt">) {
+  const payload = {
+    user_id: state.loadedUserId,
+    candidato_id: interacao.candidatoId,
+    tipo: interacao.tipo,
+    data: interacao.data,
+    descricao: interacao.descricao,
+  };
+  const { data, error } = await (supabase as any).from("interacoes").insert(payload).select().single();
+  if (error) throw error;
+  extState.interacoes = [mapInteracao(data), ...extState.interacoes];
+  extEmit();
+}
+
+export async function deleteInteracao(id: string) {
+  extState.interacoes = extState.interacoes.filter(i => i.id !== id);
+  extEmit();
+  const { error } = await (supabase as any).from("interacoes").delete().eq("id", id);
+  if (error) { await loadAll(true); throw error; }
+}
+
+// Atualiza proximaAcao e proximaAcaoData no candidato
+export async function updateProximaAcao(candidatoId: string, acao: string, data: string | null) {
+  const payload: any = { proxima_acao: acao, proxima_acao_data: data };
+  const { data: row, error } = await supabase.from("candidatos").update(payload).eq("id", candidatoId).select().single();
+  if (error) throw error;
+  state.candidatos = state.candidatos.map(c => c.id === candidatoId ? { ...mapCandidato(row), proximaAcaoData: row.proxima_acao_data ?? null } : c);
+  emit();
+}
+
+// Hook para candidatos com proximaAcaoData
+export const useProximasAcoes = () => {
+  const candidatos = (require("react") as typeof import("react")).useSyncExternalStore(
+    subscribe,
+    () => state.candidatos,
+    () => state.candidatos,
+  );
+  const hoje = new Date().toISOString().slice(0, 10);
+  return candidatos
+    .filter(c => c.proximaAcaoData && c.proximaAcaoData <= hoje && c.status !== "Contratado" && c.status !== "Reprovado")
+    .sort((a, b) => (a.proximaAcaoData ?? "").localeCompare(b.proximaAcaoData ?? ""));
+};
+
+// Garantias vencendo nos próximos 30 dias
+export const useGarantiasVencendo = () => {
+  const vagas = (require("react") as typeof import("react")).useSyncExternalStore(
+    subscribe,
+    () => state.vagas,
+    () => state.vagas,
+  );
+  const hoje = new Date();
+  const em30 = new Date(hoje.getTime() + 30 * 86400000).toISOString().slice(0, 10);
+  const hojeIso = hoje.toISOString().slice(0, 10);
+  return vagas.filter(v => {
+    if (v.etapa !== "Em Garantia" || !v.garantiaInicio || !v.prazoGarantia) return false;
+    const venc = new Date(new Date(v.garantiaInicio).getTime() + (v.prazoGarantia * 86400000)).toISOString().slice(0, 10);
+    return venc >= hojeIso && venc <= em30;
+  });
+};

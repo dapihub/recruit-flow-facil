@@ -322,37 +322,30 @@ function FinanceiroPage() {
       />
 
       <div className="p-6 lg:p-8 space-y-5">
-        {/* Escopo da operação */}
-        <div className={`rounded-2xl border p-3.5 flex flex-wrap items-center justify-between gap-3 ${isHistorico ? "bg-warning/5 border-warning/30" : "bg-card"}`}>
-          <div className="flex items-center gap-3">
-            <span className={`p-2 rounded-lg ${isHistorico ? "bg-warning/15 text-warning" : "bg-brand/10 text-brand"}`}>
-              <Calendar className="w-4 h-4" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-foreground leading-tight">
-                {isHistorico ? "Histórico anterior à operação oficial" : "Operação oficial"}
+        {/* Banner de faturas vencidas */}
+        {faturasVencidas.length > 0 && (
+          <div className="flex items-center gap-4 bg-destructive/8 border border-destructive/25 rounded-2xl px-5 py-4">
+            <AlertTriangle className="w-5 h-5 text-destructive shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-destructive">
+                {faturasVencidas.length} fatura{faturasVencidas.length > 1 ? "s" : ""} vencida{faturasVencidas.length > 1 ? "s" : ""}
               </p>
-              <p className="text-xs text-muted-foreground">
-                {isHistorico
-                  ? `Registros anteriores a ${INICIO_OPERACAO_LABEL}. Fora dos KPIs gerenciais.`
-                  : `KPIs e gráficos consideram apenas registros a partir de ${INICIO_OPERACAO_LABEL}.`}
+              <p className="text-xs text-destructive/80 mt-0.5">
+                Total em atraso: {brl(valorVencido)} · Regularize para manter o caixa saudável
               </p>
             </div>
           </div>
-          <div className="inline-flex rounded-lg border bg-muted/40 p-1 text-xs font-medium">
-            <button type="button" onClick={() => setEscopo("oficial")}
-              className={`px-3 py-1.5 rounded-md transition ${!isHistorico ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              Operação oficial
-              <span className="ml-1.5 text-muted-foreground">({faturasOficiais.length + custosOficiais.length})</span>
-            </button>
-            <button type="button" onClick={() => setEscopo("historico")}
-              className={`px-3 py-1.5 rounded-md transition ${isHistorico ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              Histórico anterior
-              <span className="ml-1.5 text-muted-foreground">({faturasHistorico.length + custosHistorico.length})</span>
-            </button>
-          </div>
-        </div>
+        )}
 
+        {/* Escopo da operação — compacto */}
+        <div className="flex items-center justify-end">
+          <button type="button"
+            onClick={() => setEscopo(escopo === "oficial" ? "historico" : "oficial")}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border/60 rounded-lg px-3 py-1.5 bg-card">
+            <Calendar className="w-3.5 h-3.5" />
+            {escopo === "oficial" ? `Desde ${INICIO_OPERACAO_LABEL}` : "Histórico completo"}
+          </button>
+        </div>
         {/* ===== KPIs EXECUTIVOS ===== */}
         <Section icon={<BarChart3 className="w-3.5 h-3.5" />} label="Executivo" sub="Visão financeira do negócio">
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">

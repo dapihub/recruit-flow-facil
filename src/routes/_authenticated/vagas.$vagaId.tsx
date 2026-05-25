@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Copy, FileDown, FileText, Briefcase, FileSignature, Check, DollarSign, TrendingUp, TrendingDown, Link2, X, Calendar, Users } from "lucide-react";
+import { ArrowLeft, Copy, FileDown, FileText, Briefcase, FileSignature, Check, DollarSign, TrendingUp, TrendingDown, Link2, X, Calendar, Users, Clock } from "lucide-react";
+import { useCandidatos } from "@/lib/store";
+import { MetricCard } from "@/components/PageHeader";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -81,12 +83,15 @@ function VagaDetailPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="outline" onClick={() => navigate({ to: "/" })}>
+            <Button variant="outline" onClick={() => navigate({ to: "/vagas" })}>
               <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
             </Button>
           </div>
         }
       />
+
+      {/* Barra de progresso do pipeline */}
+      <VagaProgressBar vaga={vaga} />
 
       <div className="p-8 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -153,6 +158,102 @@ function VagaDetailPage() {
 
         <FinanceiroTab vagaId={vaga.id} empresa={vaga.empresa} cargo={vaga.cargo} diasAndamento={diasEmAndamento(vaga.createdAt, vaga.etapa === "Finalizada" ? vaga.updatedAt : undefined)} totalCandidatos={vaga.candidatos} />
       </div>
+    </div>
+  );
+}
+
+function VagaProgressBar({ vaga }: { vaga: ReturnType<typeof useVaga> & {} }) {
+  const candidatos = useCandidatos();
+  const faturas = useFaturas();
+  const custos = useCustos();
+
+  if (!vaga) return null;
+
+  const etapaAtual = PIPELINE_ETAPAS.indexOf(vaga.etapa as PipelineEtapa);
+  const candidatosVaga = candidatos.filter((c) => c.vagaId === vaga.id).length;
+  const receitaVaga = faturas.filter((f) => f.vagaId === vaga.id).reduce((s, f) => s + f.valor, 0);
+  const diasAberto = vaga.createdAt
+    ? Math.floor((Date.now() - new Date(vaga.createdAt).getTime()) / 86400000)
+    : 0;
+
+  const briefingOk = !!(vaga.briefing?.cliente && vaga.briefing?.cargo);
+  const descritivoOk = !!(vaga.descritivo?.titulo);
+  const contratoOk = !!(vaga.contrato?.contratanteRazao);
+
+  return (
+    <>
+      {/* Barra de etapas */}
+      <div className="px-8 py-5 bg-card border-b border-border/40">
+        <div className="flex items-center">
+          {PIPELINE_ETAPAS.map((etapa, i) => {
+            const done = i < etapaAtual;
+            const current = i === etapaAtual;
+            return (
+              <div key={etapa} className="flex items-center flex-1 last:flex-none">
+                <button
+                  onClick={async () => {
+                    try {
+                      await updateVaga(vaga.id, { etapa: etapa as PipelineEtapa });
+                      toast.success("Etapa atualizada.");
+                    } catch {
+                      toast.error("Não foi possível atualizar a etapa.");
+                    }
+                  }}
+                  className="flex flex-col items-center gap-1.5 group min-w-0"
+                  title={`Marcar como ${etapa}`}
+                >
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
+                    done ? "bg-success text-success-foreground border-success"
+                    : current ? "bg-brand text-brand-foreground border-brand shadow-md ring-4 ring-brand/20"
+                    : "bg-muted text-muted-foreground border-border group-hover:border-brand/40"
+                  }`}>
+                    {done ? <Check className="w-3.5 h-3.5" /> : i + 1}
+                  </div>
+                  <span className={`text-[10px] text-center leading-tight max-w-[72px] font-medium ${
+                    current ? "text-brand" : done ? "text-success" : "text-muted-foreground/60"
+                  }`}>{etapa}</span>
+                </button>
+                {i < PIPELINE_ETAPAS.length - 1 && (
+                  <div className={`flex-1 h-0.5 mx-1 transition-colors ${i < etapaAtual ? "bg-success" : "bg-border"}`} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3 métricas rápidas + indicadores de docs */}
+      <div className="px-8 py-4 bg-muted/20 border-b border-border/40 flex flex-wrap items-center gap-4">
+        <MetricPill icon={<Users className="w-3.5 h-3.5" />} label="Candidatos" value={String(candidatosVaga)} />
+        <MetricPill icon={<DollarSign className="w-3.5 h-3.5" />} label="Receita" value={receitaVaga.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
+        <MetricPill icon={<Clock className="w-3.5 h-3.5" />} label="Dias em aberto" value={`${diasAberto}d`} />
+        <div className="ml-auto flex items-center gap-3">
+          <DocPill label="Briefing" done={briefingOk} />
+          <DocPill label="Descritivo" done={descritivoOk} />
+          <DocPill label="Contrato" done={contratoOk} />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function MetricPill({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-2 bg-card border border-border/60 rounded-lg px-3 py-1.5">
+      <span className="text-muted-foreground">{icon}</span>
+      <span className="text-xs text-muted-foreground">{label}:</span>
+      <span className="text-xs font-semibold text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function DocPill({ label, done }: { label: string; done: boolean }) {
+  return (
+    <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium border ${
+      done ? "bg-success/10 border-success/30 text-success" : "bg-muted border-border text-muted-foreground/60"
+    }`}>
+      {done ? <Check className="w-3 h-3" /> : <span className="w-3 h-3 text-center leading-none">—</span>}
+      {label}
     </div>
   );
 }
