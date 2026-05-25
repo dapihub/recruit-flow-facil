@@ -13,16 +13,11 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedVagasRouteImport } from './routes/_authenticated/vagas'
-import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
-import { Route as AuthenticatedCandidatosRouteImport } from './routes/_authenticated/candidatos'
-import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedTalentosRouteImport } from './routes/_authenticated/talentos'
-
-const AuthenticatedTalentosRoute = AuthenticatedTalentosRouteImport.update({
-  id: '/talentos',
-  path: '/talentos',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
+import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedCandidatosRouteImport } from './routes/_authenticated/candidatos'
+import { Route as AuthenticatedVagasVagaIdRouteImport } from './routes/_authenticated/vagas.$vagaId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -43,11 +38,22 @@ const AuthenticatedVagasRoute = AuthenticatedVagasRouteImport.update({
   path: '/vagas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedTalentosRoute = AuthenticatedTalentosRouteImport.update({
+  id: '/talentos',
+  path: '/talentos',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   id: '/financeiro',
   path: '/financeiro',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedConfiguracoesRoute =
+  AuthenticatedConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCandidatosRoute = AuthenticatedCandidatosRouteImport.update({
   id: '/candidatos',
   path: '/candidatos',
@@ -55,63 +61,74 @@ const AuthenticatedCandidatosRoute = AuthenticatedCandidatosRouteImport.update({
 } as any)
 const AuthenticatedVagasVagaIdRoute =
   AuthenticatedVagasVagaIdRouteImport.update({
-    id: '/vagas/$vagaId',
-    path: '/vagas/$vagaId',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedConfiguracoesRoute =
-  AuthenticatedConfiguracoesRouteImport.update({
-    id: '/configuracoes',
-    path: '/configuracoes',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/$vagaId',
+    path: '/$vagaId',
+    getParentRoute: () => AuthenticatedVagasRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
-  '/vagas': typeof AuthenticatedVagasRoute
   '/login': typeof LoginRoute
   '/candidatos': typeof AuthenticatedCandidatosRoute
-  '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/talentos': typeof AuthenticatedTalentosRoute
+  '/vagas': typeof AuthenticatedVagasRouteWithChildren
   '/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/': typeof AuthenticatedIndexRoute
-  '/vagas': typeof AuthenticatedVagasRoute
   '/candidatos': typeof AuthenticatedCandidatosRoute
-  '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/talentos': typeof AuthenticatedTalentosRoute
+  '/vagas': typeof AuthenticatedVagasRouteWithChildren
+  '/': typeof AuthenticatedIndexRoute
   '/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/_authenticated/vagas': typeof AuthenticatedVagasRoute
   '/_authenticated/candidatos': typeof AuthenticatedCandidatosRoute
-  '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/talentos': typeof AuthenticatedTalentosRoute
+  '/_authenticated/vagas': typeof AuthenticatedVagasRouteWithChildren
+  '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/vagas' | '/login' | '/candidatos' | '/financeiro' | '/configuracoes' | '/talentos' | '/vagas/$vagaId'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/candidatos'
+    | '/configuracoes'
+    | '/financeiro'
+    | '/talentos'
+    | '/vagas'
+    | '/vagas/$vagaId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/' | '/vagas' | '/candidatos' | '/financeiro' | '/configuracoes' | '/talentos' | '/vagas/$vagaId'
+  to:
+    | '/login'
+    | '/candidatos'
+    | '/configuracoes'
+    | '/financeiro'
+    | '/talentos'
+    | '/vagas'
+    | '/'
+    | '/vagas/$vagaId'
   id:
     | '__root__'
     | '/_authenticated'
     | '/login'
-    | '/_authenticated/'
-    | '/_authenticated/vagas'
     | '/_authenticated/candidatos'
-    | '/_authenticated/financeiro'
     | '/_authenticated/configuracoes'
+    | '/_authenticated/financeiro'
+    | '/_authenticated/talentos'
+    | '/_authenticated/vagas'
+    | '/_authenticated/'
     | '/_authenticated/vagas/$vagaId'
   fileRoutesById: FileRoutesById
 }
@@ -150,11 +167,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVagasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/talentos': {
+      id: '/_authenticated/talentos'
+      path: '/talentos'
+      fullPath: '/talentos'
+      preLoaderRoute: typeof AuthenticatedTalentosRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/financeiro': {
       id: '/_authenticated/financeiro'
       path: '/financeiro'
       fullPath: '/financeiro'
       preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/configuracoes': {
+      id: '/_authenticated/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/candidatos': {
@@ -166,39 +197,41 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/vagas/$vagaId': {
       id: '/_authenticated/vagas/$vagaId'
-      path: '/vagas/$vagaId'
+      path: '/$vagaId'
       fullPath: '/vagas/$vagaId'
       preLoaderRoute: typeof AuthenticatedVagasVagaIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/configuracoes': {
-      id: '/_authenticated/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/configuracoes'
-      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedVagasRoute
     }
   }
 }
 
-interface AuthenticatedRouteChildren {
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
-  AuthenticatedVagasRoute: typeof AuthenticatedVagasRoute
-  AuthenticatedCandidatosRoute: typeof AuthenticatedCandidatosRoute
-  AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
-  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
-  AuthenticatedTalentosRoute: typeof AuthenticatedTalentosRoute
+interface AuthenticatedVagasRouteChildren {
   AuthenticatedVagasVagaIdRoute: typeof AuthenticatedVagasVagaIdRoute
 }
 
-const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
-  AuthenticatedVagasRoute: AuthenticatedVagasRoute,
-  AuthenticatedCandidatosRoute: AuthenticatedCandidatosRoute,
-  AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
-  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
-  AuthenticatedTalentosRoute: AuthenticatedTalentosRoute,
+const AuthenticatedVagasRouteChildren: AuthenticatedVagasRouteChildren = {
   AuthenticatedVagasVagaIdRoute: AuthenticatedVagasVagaIdRoute,
+}
+
+const AuthenticatedVagasRouteWithChildren =
+  AuthenticatedVagasRoute._addFileChildren(AuthenticatedVagasRouteChildren)
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedCandidatosRoute: typeof AuthenticatedCandidatosRoute
+  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
+  AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
+  AuthenticatedTalentosRoute: typeof AuthenticatedTalentosRoute
+  AuthenticatedVagasRoute: typeof AuthenticatedVagasRouteWithChildren
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedCandidatosRoute: AuthenticatedCandidatosRoute,
+  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
+  AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
+  AuthenticatedTalentosRoute: AuthenticatedTalentosRoute,
+  AuthenticatedVagasRoute: AuthenticatedVagasRouteWithChildren,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
