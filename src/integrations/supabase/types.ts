@@ -25,6 +25,7 @@ export type Database = {
           observacoes: string | null
           pontuacao: number
           proxima_acao: string
+          proxima_acao_data: string | null
           status: Database["public"]["Enums"]["candidato_status"]
           telefone: string | null
           updated_at: string
@@ -42,6 +43,7 @@ export type Database = {
           observacoes?: string | null
           pontuacao?: number
           proxima_acao?: string
+          proxima_acao_data?: string | null
           status?: Database["public"]["Enums"]["candidato_status"]
           telefone?: string | null
           updated_at?: string
@@ -59,6 +61,7 @@ export type Database = {
           observacoes?: string | null
           pontuacao?: number
           proxima_acao?: string
+          proxima_acao_data?: string | null
           status?: Database["public"]["Enums"]["candidato_status"]
           telefone?: string | null
           updated_at?: string
@@ -209,6 +212,44 @@ export type Database = {
           vencimento?: string
         }
         Relationships: []
+      }
+      interacoes: {
+        Row: {
+          candidato_id: string
+          created_at: string | null
+          data: string
+          descricao: string
+          id: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          candidato_id: string
+          created_at?: string | null
+          data: string
+          descricao: string
+          id?: string
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          candidato_id?: string
+          created_at?: string | null
+          data?: string
+          descricao?: string
+          id?: string
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interacoes_candidato_id_fkey"
+            columns: ["candidato_id"]
+            isOneToOne: false
+            referencedRelation: "candidatos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
