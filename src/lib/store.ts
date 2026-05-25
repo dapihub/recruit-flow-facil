@@ -847,3 +847,4 @@ export const useGarantiasVencendo = () => {
     return venc >= hojeIso && venc <= em30;
   });
 };
+// build trigger Mon May 25 15:31:12 UTC 2026
