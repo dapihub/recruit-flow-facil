@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { AppSidebar } from "@/components/AppSidebar";
+import { GlobalSearch } from "@/components/GlobalSearch";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -33,6 +34,7 @@ function AuthenticatedLayout() {
       <main className="flex-1 min-w-0">
         <Outlet />
       </main>
+      <GlobalSearch />
     </div>
   );
 }

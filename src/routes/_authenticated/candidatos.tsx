@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Plus, Trash2, ChevronRight, ChevronLeft, Search, Briefcase, Phone, Mail, Calendar, MessageSquare, X, Clock } from "lucide-react";
 import { PageHeader, MetricCard } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,10 @@ function CandidatosPage() {
   const [filtroVaga, setFiltroVaga] = useState("todas");
   const [candidatoAtivo, setCandidatoAtivo] = useState<Candidato | null>(null);
 
+  // Drag & drop state
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<CandidatoStatus | null>(null);
+
   const hoje = new Date().toISOString().slice(0, 10);
   const total = candidatos.length;
   const entrevista = candidatos.filter(c => c.status === "Entrevista").length;
@@ -53,6 +57,42 @@ function CandidatosPage() {
       const matchVaga = filtroVaga === "todas" || c.vaga === filtroVaga;
       return matchBusca && matchVaga;
     }), [candidatos, busca, filtroVaga]);
+
+  const handleDragStart = (e: React.DragEvent, candidatoId: string) => {
+    setDraggingId(candidatoId);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", candidatoId);
+  };
+
+  const handleDragOver = (e: React.DragEvent, status: CandidatoStatus) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverCol(status);
+  };
+
+  const handleDrop = async (e: React.DragEvent, novoStatus: CandidatoStatus) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData("text/plain");
+    const candidato = candidatos.find(c => c.id === id);
+    if (!candidato || candidato.status === novoStatus) {
+      setDraggingId(null);
+      setDragOverCol(null);
+      return;
+    }
+    try {
+      await updateCandidato(id, { status: novoStatus });
+      toast.success(`${candidato.nome} movido para ${novoStatus}`);
+    } catch {
+      toast.error("Erro ao mover candidato.");
+    }
+    setDraggingId(null);
+    setDragOverCol(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingId(null);
+    setDragOverCol(null);
+  };
 
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden">
@@ -94,26 +134,58 @@ function CandidatosPage() {
             {(busca || filtroVaga !== "todas") && (
               <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => { setBusca(""); setFiltroVaga("todas"); }}>Limpar</Button>
             )}
+            <span className="ml-auto text-xs text-muted-foreground hidden sm:block">
+              💡 Arraste os cards para mover entre etapas
+            </span>
           </div>
 
-          {/* Kanban */}
+          {/* Kanban com drag & drop */}
           <div className="flex gap-4 overflow-x-auto pb-4">
             {COLUNAS.map(({ status, label, cor, corBadge }) => {
               const cards = filtrados.filter(c => c.status === status);
+              const isDropTarget = dragOverCol === status && draggingId !== null;
+              const draggingCandidato = candidatos.find(c => c.id === draggingId);
+              const isDifferentCol = draggingCandidato?.status !== status;
+
               return (
-                <div key={status} className={`flex-shrink-0 w-[280px] bg-card rounded-2xl border border-border/60 border-t-2 ${cor} shadow-sm flex flex-col`}>
+                <div
+                  key={status}
+                  onDragOver={e => handleDragOver(e, status)}
+                  onDrop={e => handleDrop(e, status)}
+                  onDragLeave={() => setDragOverCol(null)}
+                  className={`flex-shrink-0 w-[280px] bg-card rounded-2xl border border-border/60 border-t-2 ${cor} shadow-sm flex flex-col transition-all duration-150 ${
+                    isDropTarget && isDifferentCol ? "ring-2 ring-brand/40 bg-brand/5 scale-[1.01]" : ""
+                  }`}
+                >
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
                     <span className="text-sm font-semibold">{label}</span>
                     <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${corBadge}`}>{cards.length}</span>
                   </div>
+
+                  {/* Drop zone hint */}
+                  {isDropTarget && isDifferentCol && (
+                    <div className="mx-3 mt-3 rounded-xl border-2 border-dashed border-brand/40 bg-brand/5 py-4 text-center">
+                      <p className="text-xs text-brand font-medium">Soltar aqui → {label}</p>
+                    </div>
+                  )}
+
                   <div className="flex-1 p-3 space-y-2.5 overflow-y-auto max-h-[calc(100vh-420px)]">
-                    {cards.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">Nenhum candidato</p>}
+                    {cards.length === 0 && !isDropTarget && <p className="text-xs text-muted-foreground text-center py-8">Nenhum candidato</p>}
                     {cards.map(c => {
                       const idx = ORDEM_STATUS.indexOf(c.status);
                       const acaoVencida = c.proximaAcaoData && c.proximaAcaoData <= hoje;
+                      const isDragging = draggingId === c.id;
                       return (
-                        <div key={c.id} className={`bg-background rounded-xl border p-3.5 shadow-sm hover:shadow-md transition-all cursor-pointer ${acaoVencida ? "border-destructive/40" : "border-border/60"}`}
-                          onClick={() => setCandidatoAtivo(c)}>
+                        <div
+                          key={c.id}
+                          draggable
+                          onDragStart={e => handleDragStart(e, c.id)}
+                          onDragEnd={handleDragEnd}
+                          className={`bg-background rounded-xl border p-3.5 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing select-none ${
+                            isDragging ? "opacity-40 scale-95" : ""
+                          } ${acaoVencida ? "border-destructive/40" : "border-border/60"}`}
+                          onClick={() => !isDragging && setCandidatoAtivo(c)}
+                        >
                           <div className="flex items-start gap-3 mb-2.5">
                             <div className="w-8 h-8 rounded-full bg-brand text-brand-foreground flex items-center justify-center text-xs font-bold shrink-0">{iniciais(c.nome)}</div>
                             <div className="flex-1 min-w-0">
@@ -193,6 +265,9 @@ function CandidatoSidePanel({ candidato, onClose, onUpdate, hoje }: { candidato:
   const [salvandoAcao, setSalvandoAcao] = useState(false);
 
   useEffect(() => { loadInteracoesCandidato(candidato.id); }, [candidato.id]);
+  useEffect(() => {
+    setNovaAcao({ acao: candidato.proximaAcao ?? "", data: candidato.proximaAcaoData ?? "" });
+  }, [candidato.id, candidato.proximaAcao, candidato.proximaAcaoData]);
 
   const tipoIcon: Record<InteracaoTipo, React.ReactNode> = {
     "Ligação": <Phone className="w-3.5 h-3.5" />,

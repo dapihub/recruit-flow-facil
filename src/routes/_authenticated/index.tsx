@@ -1,8 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { AlertTriangle, Briefcase, Users, TrendingUp, Clock, ChevronRight } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
-import { useVagas, useCandidatos, useFaturas, useCustos, PIPELINE_ETAPAS, useProximasAcoes, useGarantiasVencendo } from "@/lib/store";
+import { OnboardingChecklist } from "@/components/OnboardingChecklist";
+import { ConfigIncompleta } from "@/components/ConfigIncompleta";
+import { useVagas, useCandidatos, useFaturas, useCustos, PIPELINE_ETAPAS, useProximasAcoes, useGarantiasVencendo, type Candidato } from "@/lib/store";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Dashboard — DAPI HUB" }] }),
@@ -20,6 +22,9 @@ function DashboardPage() {
   const proximasAcoes = useProximasAcoes();
   const garantiasVencendo = useGarantiasVencendo();
   const navigate = useNavigate();
+
+  // Controle do painel lateral de candidato direto do dashboard
+  const [candidatoAtivo, setCandidatoAtivo] = useState<Candidato | null>(null);
 
   const hoje = new Date();
   const hojeIso = hoje.toISOString().slice(0, 10);
@@ -40,20 +45,29 @@ function DashboardPage() {
   const temAlertas = faturasVencidas.length > 0 || proximasAcoes.length > 0 || garantiasVencendo.length > 0;
   const dataFmt = hoje.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 
+  const hora = hoje.getHours();
+  const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
+
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-8 space-y-6">
 
       {/* Saudação */}
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Bom dia 👋</h1>
+        <h1 className="text-2xl font-semibold text-foreground">{saudacao} 👋</h1>
         <p className="text-muted-foreground text-sm mt-0.5 capitalize">{dataFmt}</p>
       </div>
+
+      {/* Onboarding checklist — aparece somente se necessário */}
+      <OnboardingChecklist />
+
+      {/* Alerta configuração incompleta */}
+      <ConfigIncompleta />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Receita do mês" value={brl(receitaMes)} sub="Faturas pagas" />
         <KpiCard label="A receber" value={brl(aReceber)} sub="Em aberto" />
-        <KpiCard label="Margem" value={margem !== null ? `${margem.toFixed(1)}%` : "—"} sub={`Custos: ${brl(custosMes)}`} color={margem !== null && margem >= 0 ? "emerald" : "red"} />
+        <KpiCard label="Margem" value={margem !== null ? `${margem.toFixed(1)}%` : "—"} sub={`Custos: ${brl(custosMes)}`} negative={margem !== null && margem < 0} />
         <KpiCard label="Vagas ativas" value={String(vagasAtivas.length)} sub="Abertas / em processo" />
       </div>
 
@@ -84,7 +98,10 @@ function DashboardPage() {
           <SectionHeader title="Vagas ativas" count={vagasAtivas.length} to="/vagas" />
           <div className="bg-white rounded-lg border border-zinc-200 divide-y divide-zinc-100 overflow-hidden">
             {vagasAtivas.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Nenhuma vaga ativa</p>
+              <div className="text-center py-10">
+                <p className="text-sm text-muted-foreground mb-2">Nenhuma vaga ativa</p>
+                <Link to="/vagas" className="text-xs text-blue-600 hover:underline">Criar primeira vaga →</Link>
+              </div>
             ) : vagasAtivas.slice(0, 5).map(v => (
               <div key={v.id} onClick={() => navigate({ to: "/vagas/$vagaId", params: { vagaId: v.id } })}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 cursor-pointer transition-colors">
@@ -101,16 +118,20 @@ function DashboardPage() {
           </div>
         </div>
 
-        {/* Candidatos recentes */}
+        {/* Candidatos recentes — agora abre painel lateral diretamente */}
         <div>
           <SectionHeader title="Candidatos" count={candidatos.length} to="/candidatos" />
           <div className="bg-white rounded-lg border border-zinc-200 divide-y divide-zinc-100 overflow-hidden">
             {candidatosRecentes.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Nenhum candidato</p>
+              <div className="text-center py-10">
+                <p className="text-sm text-muted-foreground mb-2">Nenhum candidato ainda</p>
+                <Link to="/candidatos" className="text-xs text-blue-600 hover:underline">Adicionar candidato →</Link>
+              </div>
             ) : candidatosRecentes.map(c => {
               const acaoVencida = c.proximaAcaoData && c.proximaAcaoData <= hojeIso;
               return (
-                <div key={c.id} onClick={() => navigate({ to: "/candidatos" })}
+                <div key={c.id}
+                  onClick={() => navigate({ to: "/candidatos" })}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 cursor-pointer transition-colors">
                   <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-600 dark:text-zinc-300 shrink-0">
                     {iniciais(c.nome)}
@@ -154,7 +175,7 @@ function DashboardPage() {
   );
 }
 
-function KpiCard({ label, value, sub, negative }: { label: string; value: string; sub?: string; color?: string; negative?: boolean }) {
+function KpiCard({ label, value, sub, negative }: { label: string; value: string; sub?: string; negative?: boolean }) {
   return (
     <div className="bg-white rounded-lg border border-zinc-200 px-5 py-4">
       <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 mb-1">{label}</p>

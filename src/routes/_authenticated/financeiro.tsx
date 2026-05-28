@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Trash2, Pencil, AlertTriangle, Check } from "lucide-react";
+import { Plus, Trash2, Pencil, AlertTriangle, Check, TrendingUp, Download } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,6 +100,9 @@ function FinanceiroPage() {
         subtitle={hoje.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
         action={
           <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => exportarCSV(faturasSorted, custosSorted)}>
+              <Download className="w-3.5 h-3.5 mr-1.5" />Exportar CSV
+            </Button>
             <Dialog open={openCusto} onOpenChange={setOpenCusto}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm"><Plus className="w-3.5 h-3.5 mr-1.5" />Custo</Button>
@@ -137,6 +141,9 @@ function FinanceiroPage() {
           <KpiCard label="Lucro do mês" value={brl(lucroMes)} sub={`Receita − Custos`} negative={lucroMes < 0} />
           <KpiCard label="Custos do mês" value={brl(custosMes)} sub="Lançados no mês" />
         </div>
+
+        {/* Gráfico receita × custos (últimos 6 meses) */}
+        <GraficoFinanceiro faturas={faturas} custos={custos} />
 
         {/* Tabelas */}
         <Tabs defaultValue="faturas">
@@ -292,6 +299,72 @@ function FinanceiroPage() {
         <Dialog open={!!editCusto} onOpenChange={o => !o && setEditCusto(null)}>
           <CustoModal custo={editCusto} vagas={vagas} onClose={() => setEditCusto(null)} />
         </Dialog>
+      )}
+    </div>
+  );
+}
+
+// ── Exportação CSV ────────────────────────────────────────────────────
+function exportarCSV(faturas: any[], custos: any[]) {
+  const linhasFaturas = [
+    ["Tipo", "Cliente/Descrição", "Serviço/Categoria", "Valor", "Data", "Status"],
+    ...faturas.map(f => ["Fatura", f.cliente, f.servico ?? "", f.valor.toFixed(2), f.vencimento, f.status]),
+    ...custos.map(c => ["Custo", c.descricao, c.categoria, c.valor.toFixed(2), c.data, c.status]),
+  ];
+  const csv = linhasFaturas.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `financeiro_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Gráfico ───────────────────────────────────────────────────────────
+function GraficoFinanceiro({ faturas, custos }: { faturas: any[]; custos: any[] }) {
+  const dados = useMemo(() => {
+    const hoje = new Date();
+    return Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(hoje.getFullYear(), hoje.getMonth() - (5 - i), 1);
+      const mesIso = d.toISOString().slice(0, 7);
+      const label = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
+      const receita = faturas
+        .filter(f => f.status === "Pago" && f.vencimento.startsWith(mesIso))
+        .reduce((s: number, f: any) => s + f.valor, 0);
+      const custo = custos
+        .filter((c: any) => c.data.startsWith(mesIso))
+        .reduce((s: number, c: any) => s + c.valor, 0);
+      return { mes: label, Receita: Math.round(receita), Custos: Math.round(custo) };
+    });
+  }, [faturas, custos]);
+
+  const temDados = dados.some(d => d.Receita > 0 || d.Custos > 0);
+
+  return (
+    <div className="bg-card rounded-xl border border-border/60 p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <TrendingUp className="w-4 h-4 text-muted-foreground" />
+        <span className="text-sm font-semibold">Receita × Custos — últimos 6 meses</span>
+      </div>
+      {!temDados ? (
+        <p className="text-sm text-muted-foreground text-center py-8">Nenhum dado financeiro para exibir ainda</p>
+      ) : (
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={dados} barGap={4} barCategoryGap="30%">
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
+            <XAxis dataKey="mes" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false}
+              tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
+            <Tooltip
+              formatter={(v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }}
+            />
+            <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+            <Bar dataKey="Receita" fill="#22c55e" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Custos" fill="#f87171" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
       )}
     </div>
   );
