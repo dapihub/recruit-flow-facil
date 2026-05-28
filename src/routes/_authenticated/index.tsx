@@ -1,10 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { AlertTriangle, Briefcase, Users, TrendingUp, Clock, ChevronRight } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
-import { OnboardingChecklist } from "@/components/OnboardingChecklist";
-import { ConfigIncompleta } from "@/components/ConfigIncompleta";
-import { useVagas, useCandidatos, useFaturas, useCustos, PIPELINE_ETAPAS, useProximasAcoes, useGarantiasVencendo, type Candidato } from "@/lib/store";
+import { useVagas, useCandidatos, useFaturas, useCustos, PIPELINE_ETAPAS, useProximasAcoes, useGarantiasVencendo } from "@/lib/store";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Dashboard — DAPI HUB" }] }),
@@ -22,9 +20,6 @@ function DashboardPage() {
   const proximasAcoes = useProximasAcoes();
   const garantiasVencendo = useGarantiasVencendo();
   const navigate = useNavigate();
-
-  // Controle do painel lateral de candidato direto do dashboard
-  const [candidatoAtivo, setCandidatoAtivo] = useState<Candidato | null>(null);
 
   const hoje = new Date();
   const hojeIso = hoje.toISOString().slice(0, 10);
@@ -45,38 +40,29 @@ function DashboardPage() {
   const temAlertas = faturasVencidas.length > 0 || proximasAcoes.length > 0 || garantiasVencendo.length > 0;
   const dataFmt = hoje.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 
-  const hora = hoje.getHours();
-  const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
-
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-8">
 
       {/* Saudação */}
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">{saudacao} 👋</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Bom dia 👋</h1>
         <p className="text-muted-foreground text-sm mt-0.5 capitalize">{dataFmt}</p>
       </div>
 
-      {/* Onboarding checklist — aparece somente se necessário */}
-      <OnboardingChecklist />
-
-      {/* Alerta configuração incompleta */}
-      <ConfigIncompleta />
-
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Receita do mês" value={brl(receitaMes)} sub="Faturas pagas" />
-        <KpiCard label="A receber" value={brl(aReceber)} sub="Em aberto" />
-        <KpiCard label="Margem" value={margem !== null ? `${margem.toFixed(1)}%` : "—"} sub={`Custos: ${brl(custosMes)}`} negative={margem !== null && margem < 0} />
-        <KpiCard label="Vagas ativas" value={String(vagasAtivas.length)} sub="Abertas / em processo" />
+        <KpiCard label="Receita do mês" value={brl(receitaMes)} sub="Faturas pagas" color="emerald" />
+        <KpiCard label="A receber" value={brl(aReceber)} sub="Em aberto" color="blue" />
+        <KpiCard label="Margem" value={margem !== null ? `${margem.toFixed(1)}%` : "—"} sub={`Custos: ${brl(custosMes)}`} color={margem !== null && margem >= 0 ? "emerald" : "red"} />
+        <KpiCard label="Vagas ativas" value={String(vagasAtivas.length)} sub="Abertas / em processo" color="amber" />
       </div>
 
       {/* Alertas */}
       {temAlertas && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 space-y-2">
+        <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-900/30 p-5 space-y-2.5">
           <div className="flex items-center gap-2 mb-1">
             <AlertTriangle className="w-4 h-4 text-red-500" />
-            <span className="text-sm font-medium text-red-600">Requer atenção</span>
+            <span className="text-sm font-semibold text-red-700 dark:text-red-400">Requer atenção</span>
           </div>
           {faturasVencidas.length > 0 && (
             <AlertaRow to="/financeiro" label={`${faturasVencidas.length} fatura${faturasVencidas.length > 1 ? "s" : ""} vencida${faturasVencidas.length > 1 ? "s" : ""} — ${brl(valorVencido)}`} />
@@ -96,17 +82,14 @@ function DashboardPage() {
         {/* Vagas ativas */}
         <div>
           <SectionHeader title="Vagas ativas" count={vagasAtivas.length} to="/vagas" />
-          <div className="bg-white rounded-lg border border-zinc-200 divide-y divide-zinc-100 overflow-hidden">
+          <div className="bg-card rounded-xl border border-border/60 divide-y divide-border/40 overflow-hidden">
             {vagasAtivas.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-sm text-muted-foreground mb-2">Nenhuma vaga ativa</p>
-                <Link to="/vagas" className="text-xs text-blue-600 hover:underline">Criar primeira vaga →</Link>
-              </div>
+              <p className="text-sm text-muted-foreground text-center py-8">Nenhuma vaga ativa</p>
             ) : vagasAtivas.slice(0, 5).map(v => (
               <div key={v.id} onClick={() => navigate({ to: "/vagas/$vagaId", params: { vagaId: v.id } })}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 cursor-pointer transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-zinc-100 flex items-center justify-center shrink-0">
-                  <Briefcase className="w-4 h-4 text-zinc-500" />
+                <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-950/30 flex items-center justify-center shrink-0">
+                  <Briefcase className="w-4 h-4 text-orange-500" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{v.cargo}</p>
@@ -118,20 +101,16 @@ function DashboardPage() {
           </div>
         </div>
 
-        {/* Candidatos recentes — agora abre painel lateral diretamente */}
+        {/* Candidatos recentes */}
         <div>
           <SectionHeader title="Candidatos" count={candidatos.length} to="/candidatos" />
-          <div className="bg-white rounded-lg border border-zinc-200 divide-y divide-zinc-100 overflow-hidden">
+          <div className="bg-card rounded-xl border border-border/60 divide-y divide-border/40 overflow-hidden">
             {candidatosRecentes.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-sm text-muted-foreground mb-2">Nenhum candidato ainda</p>
-                <Link to="/candidatos" className="text-xs text-blue-600 hover:underline">Adicionar candidato →</Link>
-              </div>
+              <p className="text-sm text-muted-foreground text-center py-8">Nenhum candidato</p>
             ) : candidatosRecentes.map(c => {
               const acaoVencida = c.proximaAcaoData && c.proximaAcaoData <= hojeIso;
               return (
-                <div key={c.id}
-                  onClick={() => navigate({ to: "/candidatos" })}
+                <div key={c.id} onClick={() => navigate({ to: "/candidatos" })}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 cursor-pointer transition-colors">
                   <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-600 dark:text-zinc-300 shrink-0">
                     {iniciais(c.nome)}
@@ -163,7 +142,7 @@ function DashboardPage() {
             const count = vagas.filter(v => v.etapa === etapa).length;
             return (
               <div key={etapa} onClick={() => navigate({ to: "/vagas" })}
-                className="bg-card rounded-xl border border-border/60 p-4 text-center cursor-pointer hover:border-zinc-300 hover:bg-zinc-50 transition-colors">
+                className="bg-card rounded-xl border border-border/60 p-4 text-center cursor-pointer hover:border-orange-300 hover:bg-orange-50/30 dark:hover:bg-orange-950/10 transition-colors">
                 <p className="text-2xl font-bold text-foreground">{count}</p>
                 <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{etapa}</p>
               </div>
@@ -175,12 +154,15 @@ function DashboardPage() {
   );
 }
 
-function KpiCard({ label, value, sub, negative }: { label: string; value: string; sub?: string; negative?: boolean }) {
+function KpiCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color: string }) {
+  const borders: Record<string, string> = { emerald: "bg-emerald-500", blue: "bg-blue-500", amber: "bg-amber-500", red: "bg-red-500" };
+  const texts: Record<string, string> = { emerald: "text-emerald-600 dark:text-emerald-400", blue: "text-blue-600 dark:text-blue-400", amber: "text-amber-600 dark:text-amber-400", red: "text-red-600 dark:text-red-400" };
   return (
-    <div className="bg-white rounded-lg border border-zinc-200 px-5 py-4">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 mb-1">{label}</p>
-      <p className={`text-xl font-semibold tabular-nums ${negative ? "text-red-600" : "text-zinc-900"}`}>{value}</p>
-      {sub && <p className="text-xs text-zinc-400 mt-0.5">{sub}</p>}
+    <div className="relative bg-card rounded-xl border border-border/60 px-5 py-4 overflow-hidden">
+      <div className={`absolute top-0 left-0 right-0 h-0.5 ${borders[color]}`} />
+      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
+      <p className={`text-2xl font-bold tabular-nums ${texts[color]}`}>{value}</p>
+      {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
     </div>
   );
 }
@@ -202,7 +184,7 @@ function SectionHeader({ title, count, to }: { title: string; count?: number; to
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         {count !== undefined && <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md">{count}</span>}
       </div>
-      <Link to={to} className="text-xs text-zinc-400 hover:text-zinc-700 flex items-center gap-0.5">
+      <Link to={to} className="text-xs text-orange-500 hover:text-orange-600 flex items-center gap-0.5">
         Ver todos <ChevronRight className="w-3 h-3" />
       </Link>
     </div>
@@ -210,5 +192,13 @@ function SectionHeader({ title, count, to }: { title: string; count?: number; to
 }
 
 function EtapaPill({ etapa }: { etapa: string }) {
-  return <span className="text-[10px] font-medium px-2 py-0.5 rounded border border-zinc-200 bg-zinc-50 text-zinc-600">{etapa}</span>;
+  const colors: Record<string, string> = {
+    "Briefing": "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
+    "Contrato": "bg-purple-100 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400",
+    "Descritivo publicado": "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-400",
+    "Candidatos em triagem": "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400",
+    "Em Garantia": "bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400",
+    "Finalizada": "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+  };
+  return <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${colors[etapa] ?? "bg-zinc-100 text-zinc-600"}`}>{etapa}</span>;
 }
