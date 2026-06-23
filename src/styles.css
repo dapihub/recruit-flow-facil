@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+/* ─── Sidebar (always dark) ─── */
+:root {
+  --sidebar-bg: #0d1117;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-fg: #94a3b8;
+  --sidebar-fg-active: #f1f5f9;
+  --sidebar-active-bg: rgba(99, 102, 241, 0.18);
+  --sidebar-active-border: #6366f1;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-group-label: #475569;
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 60px;
+  --header-h: 56px;
+}
+
+/* ─── Light theme ─── */
+.light, :root {
+  --bg: #f8fafc;
+  --bg-card: #ffffff;
+  --fg: #0f172a;
+  --fg-muted: #64748b;
+  --border: #e2e8f0;
+  --input-bg: #ffffff;
+  --ring: #6366f1;
+  --accent: #6366f1;
+  --accent-fg: #ffffff;
+  --destructive: #ef4444;
+  --success: #10b981;
+  --warning: #f59e0b;
+}
+
+/* ─── Dark theme ─── */
+.dark {
+  --bg: #0f172a;
+  --bg-card: #1e293b;
+  --fg: #f1f5f9;
+  --fg-muted: #94a3b8;
+  --border: #1e293b;
+  --input-bg: #1e293b;
+  --ring: #818cf8;
+  --accent: #818cf8;
+  --accent-fg: #ffffff;
+  --destructive: #f87171;
+  --success: #34d399;
+  --warning: #fbbf24;
+}
+
+/* ─── Base ─── */
+* { box-sizing: border-box; }
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
+
+/* ─── Focus ring ─── */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}

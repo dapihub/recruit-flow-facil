@@ -1,0 +1,37 @@
+﻿src/components/layout/Sidebar.tsx(289,8): error TS2741: Property 'search' is missing in type '{ children: (false | Element)[]; to: string; title: string | undefined; className: string; style: { background: string; color: "var(--sidebar-fg-active)"; borderLeft: string | undefined; paddingLeft: string | undefined; } | { ...; }; }' but required in type 'MakeRequiredSearchParams<RouterCore<Route<Register, any, "/", "/", string, "__root__", undefined, {}, {}, AnyContext, AnyContext, {}, undefined, readonly [Route<Register, ... 16 more ..., undefined>, Route<...>, Route<...>, Route<...>, Route<...>], unknown, unknown, unknown, undefined>, "never", false, RouterHistory...'.
+src/routes/_authenticated.tsx(6,38): error TS2345: Argument of type '"/_authenticated"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated.tsx(16,29): error TS2322: Type '"/login"' is not assignable to type '"." | ".."'.
+src/routes/_authenticated.tsx(18,18): error TS2322: Type '"/onboarding"' is not assignable to type '"." | ".."'.
+src/routes/_authenticated/agenda.tsx(5,38): error TS2345: Argument of type '"/_authenticated/agenda"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/chat.tsx(5,38): error TS2345: Argument of type '"/_authenticated/chat"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/clientes.tsx(6,38): error TS2345: Argument of type '"/_authenticated/clientes"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/configuracoes.tsx(5,38): error TS2345: Argument of type '"/_authenticated/configuracoes"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/contatos.tsx(6,38): error TS2345: Argument of type '"/_authenticated/contatos"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/crm.tsx(8,38): error TS2345: Argument of type '"/_authenticated/crm"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/dashboard.tsx(10,38): error TS2345: Argument of type '"/_authenticated/dashboard"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/financeiro.tsx(8,38): error TS2345: Argument of type '"/_authenticated/financeiro"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/ranking.tsx(5,38): error TS2345: Argument of type '"/_authenticated/ranking"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/relatorios.tsx(5,38): error TS2345: Argument of type '"/_authenticated/relatorios"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/reunioes.tsx(6,38): error TS2345: Argument of type '"/_authenticated/reunioes"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/tarefas.tsx(27,38): error TS2345: Argument of type '"/_authenticated/tarefas"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/tarefas.tsx(226,27): error TS2322: Type '"/vagas/$vagaId"' is not assignable to type '"." | ".."'.
+src/routes/_authenticated/tarefas.tsx(227,37): error TS2353: Object literal may only specify known properties, and 'vagaId' does not exist in type 'ParamsReducerFn<RouterCore<Route<Register, any, "/", "/", string, "__root__", undefined, {}, {}, AnyContext, AnyContext, {}, undefined, readonly [Route<Register, ... 16 more ..., undefined>, Route<...>, Route<...>, Route<...>, Route<...>], unknown, unknown, unknown, undefined>, "never", false, RouterHistory, Record<...'.
+src/routes/_authenticated/vagas/$vagaId.tsx(33,38): error TS2345: Argument of type '"/_authenticated/vagas/$vagaId"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/vagas/$vagaId.tsx(79,13): error TS2322: Type '"/vagas"' is not assignable to type '"." | ".."'.
+src/routes/_authenticated/vagas/$vagaId.tsx(115,11): error TS2322: Type '"/vagas"' is not assignable to type '"." | ".."'.
+src/routes/_authenticated/vagas/index.tsx(15,38): error TS2345: Argument of type '"/_authenticated/vagas/"' is not assignable to parameter of type 'undefined'.
+src/routes/_authenticated/vagas/index.tsx(43,16): error TS2322: Type '"/vagas/$vagaId"' is not assignable to type '"." | ".."'.
+src/routes/_authenticated/vagas/index.tsx(43,48): error TS2353: Object literal may only specify known properties, and 'vagaId' does not exist in type 'ParamsReducerFn<RouterCore<Route<Register, any, "/", "/", string, "__root__", undefined, {}, {}, AnyContext, AnyContext, {}, undefined, readonly [Route<Register, ... 16 more ..., undefined>, Route<...>, Route<...>, Route<...>, Route<...>], unknown, unknown, unknown, undefined>, "never", false, RouterHistory, Record<...'.
+src/routes/index.tsx(3,38): error TS2345: Argument of type '"/"' is not assignable to parameter of type 'undefined'.
+src/routes/index.tsx(4,40): error TS2322: Type '"/dashboard"' is not assignable to type '"." | ".."'.
+src/routes/login.tsx(6,38): error TS2345: Argument of type '"/login"' is not assignable to parameter of type 'undefined'.
+src/routes/login.tsx(21,38): error TS2322: Type '"/dashboard"' is not assignable to type '"." | ".."'.
+src/routes/login.tsx(41,21): error TS2322: Type '"/dashboard"' is not assignable to type '"." | ".."'.
+src/routes/login.tsx(145,17): error TS2322: Type '"/signup"' is not assignable to type '"." | ".."'.
+src/routes/onboarding.tsx(6,38): error TS2345: Argument of type '"/onboarding"' is not assignable to parameter of type 'undefined'.
+src/routes/onboarding.tsx(19,39): error TS2322: Type '"/login"' is not assignable to type '"." | ".."'.
+src/routes/onboarding.tsx(21,53): error TS2322: Type '"/dashboard"' is not assignable to type '"." | ".."'.
+src/routes/onboarding.tsx(71,16): error TS2322: Type '"/dashboard"' is not assignable to type '"." | ".."'.
+src/routes/signup.tsx(5,38): error TS2345: Argument of type '"/signup"' is not assignable to parameter of type 'undefined'.
+src/routes/signup.tsx(20,38): error TS2322: Type '"/onboarding"' is not assignable to type '"." | ".."'.
+src/routes/signup.tsx(122,17): error TS2322: Type '"/login"' is not assignable to type '"." | ".."'.
