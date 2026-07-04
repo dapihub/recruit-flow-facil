@@ -28,7 +28,7 @@ export function Modal({
           style={{ background: "rgba(0,0,0,0.55)" }}
         />
         <Dialog.Content
-          className="fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl shadow-2xl flex flex-col"
+          className="fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-2xl shadow-2xl flex flex-col animate-fade-in"
           style={{
             background: "var(--bg-card)",
             border: "1px solid var(--border)",

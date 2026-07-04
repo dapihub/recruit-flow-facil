@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   CheckSquare,
@@ -43,6 +43,8 @@ const KANBAN_COLUMNS: { status: TaskStatus; label: string; color: string }[] = [
 function TarefasPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "">("");
+  const [assigneeFilter, setAssigneeFilter] = useState("");
+  const [jobFilter, setJobFilter] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("lista");
   const [formOpen, setFormOpen] = useState(false);
   const [editTask, setEditTask] = useState<TaskWithJoins | null>(null);
@@ -56,15 +58,43 @@ function TarefasPage() {
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
 
+  const uniqueAssignees = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const t of tasks) {
+      if (t.assignee) map.set(t.assignee.id, t.assignee.name);
+    }
+    return [...map.entries()];
+  }, [tasks]);
+
+  const uniqueJobs = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const t of tasks) {
+      if (t.job) map.set(t.job.id, t.job.title);
+    }
+    return [...map.entries()];
+  }, [tasks]);
+
+  const displayTasks = useMemo(() =>
+    tasks.filter((t) => {
+      if (assigneeFilter && t.assignee?.id !== assigneeFilter) return false;
+      if (jobFilter && t.job?.id !== jobFilter) return false;
+      return true;
+    }),
+  [tasks, assigneeFilter, jobFilter]);
+
   const now = new Date();
-  const total = tasks.length;
-  const notStarted = tasks.filter((t) => t.status === "not_started").length;
-  const inProgress = tasks.filter((t) => t.status === "in_progress").length;
-  const inReview = tasks.filter((t) => t.status === "in_review").length;
-  const done = tasks.filter((t) => t.status === "done").length;
-  const overdue = tasks.filter(
+  const total = displayTasks.length;
+  const notStarted = displayTasks.filter((t) => t.status === "not_started").length;
+  const inProgress = displayTasks.filter((t) => t.status === "in_progress").length;
+  const inReview = displayTasks.filter((t) => t.status === "in_review").length;
+  const done = displayTasks.filter((t) => t.status === "done").length;
+  const overdue = displayTasks.filter(
     (t) => t.due_date && new Date(t.due_date) < now && t.status !== "done"
   ).length;
+
+  function handleMoveTask(taskId: string, newStatus: TaskStatus) {
+    updateTask.mutate({ id: taskId, status: newStatus });
+  }
 
   function openCreate(status?: TaskStatus) {
     setEditTask(null);
@@ -139,10 +169,10 @@ function TarefasPage() {
       <PageKpis>
         <KpiItem label="Total" value={String(total)} />
         <KpiItem label="Não Iniciadas" value={String(notStarted)} />
-        <KpiItem label="Em Andamento" value={String(inProgress)} accent />
+        <KpiItem label="Em Andamento" value={String(inProgress)} accent={inProgress > 0} />
         <KpiItem label="Em Revisão" value={String(inReview)} />
         <KpiItem label="Finalizadas" value={String(done)} />
-        <KpiItem label="Atrasadas" value={String(overdue)} />
+        <KpiItem label="Atrasadas" value={String(overdue)} danger={overdue > 0} />
       </PageKpis>
 
       {/* Filtros */}
@@ -171,11 +201,7 @@ function TarefasPage() {
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as TaskStatus | "")}
           className="px-3 py-1.5 rounded-lg text-sm focus:outline-none"
-          style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border)",
-            color: "var(--fg)",
-          }}
+          style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--fg)" }}
         >
           <option value="">Todos os status</option>
           <option value="not_started">Não Iniciada</option>
@@ -183,6 +209,34 @@ function TarefasPage() {
           <option value="in_review">Em Revisão</option>
           <option value="done">Finalizada</option>
         </select>
+
+        {uniqueAssignees.length > 0 && (
+          <select
+            value={assigneeFilter}
+            onChange={(e) => setAssigneeFilter(e.target.value)}
+            className="px-3 py-1.5 rounded-lg text-sm focus:outline-none"
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--fg)" }}
+          >
+            <option value="">Todos os responsáveis</option>
+            {uniqueAssignees.map(([id, name]) => (
+              <option key={id} value={id}>{name}</option>
+            ))}
+          </select>
+        )}
+
+        {uniqueJobs.length > 0 && (
+          <select
+            value={jobFilter}
+            onChange={(e) => setJobFilter(e.target.value)}
+            className="px-3 py-1.5 rounded-lg text-sm focus:outline-none"
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--fg)" }}
+          >
+            <option value="">Todas as vagas</option>
+            {uniqueJobs.map(([id, title]) => (
+              <option key={id} value={id}>{title}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Content */}
@@ -192,18 +246,18 @@ function TarefasPage() {
             <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: "var(--border)" }} />
           ))}
         </div>
-      ) : tasks.length === 0 ? (
+      ) : displayTasks.length === 0 ? (
         <div className="flex-1 px-6 py-4">
           <EmptyState
             icon={CheckSquare}
-            title={search || statusFilter ? "Nenhuma tarefa encontrada" : "Nenhuma tarefa cadastrada"}
+            title={search || statusFilter || assigneeFilter || jobFilter ? "Nenhuma tarefa encontrada" : "Nenhuma tarefa cadastrada"}
             description={
-              search || statusFilter
+              search || statusFilter || assigneeFilter || jobFilter
                 ? "Tente ajustar os filtros."
                 : "Crie tarefas para acompanhar atividades da operação e vinculá-las a vagas."
             }
             action={
-              !search && !statusFilter ? (
+              !search && !statusFilter && !assigneeFilter && !jobFilter ? (
                 <button
                   onClick={() => openCreate()}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
@@ -218,7 +272,7 @@ function TarefasPage() {
       ) : viewMode === "lista" ? (
         <div className="flex-1 px-6 py-4">
           <div className="space-y-2 max-w-4xl">
-            {tasks.map((task) => (
+            {displayTasks.map((task) => (
               <ListaCard
                 key={task.id}
                 task={task}
@@ -233,7 +287,7 @@ function TarefasPage() {
       ) : viewMode === "tabela" ? (
         <div className="flex-1 px-6 py-4 overflow-x-auto">
           <TabelaView
-            tasks={tasks}
+            tasks={displayTasks}
             now={now}
             onEdit={openEdit}
             onDelete={handleDelete}
@@ -243,12 +297,13 @@ function TarefasPage() {
       ) : (
         <div className="flex-1 px-6 py-4 overflow-x-auto">
           <KanbanView
-            tasks={tasks}
+            tasks={displayTasks}
             now={now}
             onEdit={openEdit}
             onDelete={handleDelete}
             onToggleDone={toggleDone}
             onAddCard={openCreate}
+            onMoveTask={handleMoveTask}
           />
         </div>
       )}
@@ -267,7 +322,7 @@ function TarefasPage() {
   );
 }
 
-// ─── Lista Card ───────────────────────────────────────────────
+// —————— Lista Card ——————————————————————————————————————————————————————————————————————————————————————————————
 
 function ListaCard({
   task,
@@ -287,7 +342,7 @@ function ListaCard({
 
   return (
     <div
-      className="flex items-center gap-3 px-4 py-3 rounded-xl group"
+      className="flex items-center gap-3 px-4 py-3 rounded-xl group hover:shadow-sm hover:-translate-y-px transition-all duration-150 cursor-pointer"
       style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
     >
       <button
@@ -358,7 +413,7 @@ function ListaCard({
   );
 }
 
-// ─── Tabela View ──────────────────────────────────────────────
+// —————— Tabela View ————————————————————————————————————————————————————————————————————————————————————————————
 
 function TabelaView({
   tasks,
@@ -374,7 +429,7 @@ function TabelaView({
   onToggleDone: (t: TaskWithJoins) => void;
 }) {
   return (
-    <table className="w-full min-w-[700px] text-sm">
+    <table className="w-full min-w-[700px] text-sm data-table">
       <thead>
         <tr style={{ borderBottom: "1px solid var(--border)" }}>
           {["Título", "Status", "Prioridade", "Responsável", "Vaga", "Prazo", ""].map((h) => (
@@ -451,7 +506,7 @@ function TabelaView({
               <td className="py-2.5 px-3 text-xs" style={{ color: isOverdue ? "#ef4444" : "var(--fg-muted)" }}>
                 {task.due_date ? (
                   <>
-                    {isOverdue && "⚠ "}
+                    {isOverdue && "—a— "}
                     {format(new Date(task.due_date), "dd/MM/yyyy")}
                   </>
                 ) : "—"}
@@ -485,7 +540,7 @@ function TabelaView({
   );
 }
 
-// ─── Kanban View ──────────────────────────────────────────────
+// —————— Kanban View ————————————————————————————————————————————————————————————————————————————————————————————
 
 function KanbanView({
   tasks,
@@ -494,6 +549,7 @@ function KanbanView({
   onDelete,
   onToggleDone,
   onAddCard,
+  onMoveTask,
 }: {
   tasks: TaskWithJoins[];
   now: Date;
@@ -501,13 +557,34 @@ function KanbanView({
   onDelete: (id: string) => void;
   onToggleDone: (t: TaskWithJoins) => void;
   onAddCard: (status: TaskStatus) => void;
+  onMoveTask: (taskId: string, status: TaskStatus) => void;
 }) {
+  const [dragTaskId, setDragTaskId] = useState<string | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<TaskStatus | null>(null);
+
   return (
     <div className="flex gap-4 min-w-max pb-4" style={{ minHeight: 400 }}>
       {KANBAN_COLUMNS.map((col) => {
         const colTasks = tasks.filter((t) => t.status === col.status);
+        const isOver = dragOverCol === col.status;
         return (
-          <div key={col.status} className="min-w-[260px] w-[272px] shrink-0 flex flex-col">
+          <div
+            key={col.status}
+            className="min-w-[260px] w-[272px] shrink-0 flex flex-col"
+            onDragOver={(e) => { e.preventDefault(); setDragOverCol(col.status); }}
+            onDragLeave={() => setDragOverCol(null)}
+            onDrop={(e) => {
+              e.preventDefault();
+              if (dragTaskId) {
+                const task = tasks.find((t) => t.id === dragTaskId);
+                if (task && task.status !== col.status) {
+                  onMoveTask(dragTaskId, col.status);
+                }
+              }
+              setDragTaskId(null);
+              setDragOverCol(null);
+            }}
+          >
             {/* Column header */}
             <div className="flex items-center gap-2 mb-3 px-1">
               <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: col.color }} />
@@ -524,10 +601,10 @@ function KanbanView({
 
             {/* Cards */}
             <div
-              className="flex-1 rounded-xl p-2 space-y-2"
+              className="flex-1 rounded-xl p-2 space-y-2 transition-colors"
               style={{
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
+                background: isOver ? col.color + "12" : "var(--bg-card)",
+                border: isOver ? `2px solid ${col.color}` : "1px solid var(--border)",
                 borderTop: `3px solid ${col.color}`,
                 minHeight: 120,
               }}
@@ -540,12 +617,15 @@ function KanbanView({
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onToggleDone={onToggleDone}
+                  isDragging={dragTaskId === task.id}
+                  onDragStart={() => setDragTaskId(task.id)}
+                  onDragEnd={() => { setDragTaskId(null); setDragOverCol(null); }}
                 />
               ))}
               {colTasks.length === 0 && (
                 <div className="flex items-center justify-center py-6 rounded-lg">
                   <p className="text-xs" style={{ color: "var(--fg-muted)" }}>
-                    Nenhuma tarefa
+                    {isOver ? "Soltar aqui" : "Nenhuma tarefa"}
                   </p>
                 </div>
               )}
@@ -572,20 +652,33 @@ function KanbanCard({
   onEdit,
   onDelete,
   onToggleDone,
+  isDragging,
+  onDragStart,
+  onDragEnd,
 }: {
   task: TaskWithJoins;
   now: Date;
   onEdit: (t: TaskWithJoins) => void;
   onDelete: (id: string) => void;
   onToggleDone: (t: TaskWithJoins) => void;
+  isDragging?: boolean;
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
 }) {
   const isDone = task.status === "done";
   const isOverdue = task.due_date && new Date(task.due_date) < now && !isDone;
 
   return (
     <div
-      className="rounded-xl p-3 cursor-pointer select-none group/card transition-shadow hover:shadow-md"
-      style={{ background: "var(--bg)", border: "1px solid var(--border)" }}
+      draggable
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      className="rounded-xl p-3 cursor-grab active:cursor-grabbing select-none group/card transition-shadow hover:shadow-md"
+      style={{
+        background: "var(--bg)",
+        border: "1px solid var(--border)",
+        opacity: isDragging ? 0.4 : 1,
+      }}
       onClick={() => onEdit(task)}
     >
       <div className="flex items-start gap-2 mb-2">
@@ -608,26 +701,25 @@ function KanbanCard({
         <PriorityBadge priority={task.priority} />
         {task.due_date && (
           <span className="text-xs" style={{ color: isOverdue ? "#ef4444" : "var(--fg-muted)" }}>
-            {isOverdue ? "⚠ " : ""}{format(new Date(task.due_date), "dd/MM")}
+            {isOverdue ? "—a— " : ""}{format(new Date(task.due_date), "dd/MM")}
           </span>
         )}
       </div>
 
-      {(task.assignee || task.job) && (
-        <div className="flex items-center justify-between mt-2 pt-2" style={{ borderTop: "1px solid var(--border)" }}>
-          <span className="text-xs truncate" style={{ color: "var(--fg-muted)" }}>
-            {task.assignee?.name ?? ""}
-          </span>
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
-            className="p-1 rounded opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500/10"
-            title="Remover"
-            style={{ color: "#ef4444" }}
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
-        </div>
-      )}
+      <div className="flex items-center justify-between mt-2 pt-2" style={{ borderTop: "1px solid var(--border)" }}>
+        <span className="text-xs truncate" style={{ color: "var(--fg-muted)" }}>
+          {task.assignee?.name ?? ""}
+        </span>
+        <button
+          onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
+          className="p-1 rounded opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500/10"
+          title="Remover"
+          style={{ color: "#ef4444" }}
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
+      </div>
     </div>
   );
 }
+

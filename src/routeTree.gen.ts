@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
+import { Route as AuthenticatedSeedRouteImport } from './routes/_authenticated/seed'
 import { Route as AuthenticatedReunioesRouteImport } from './routes/_authenticated/reunioes'
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
 import { Route as AuthenticatedRankingRouteImport } from './routes/_authenticated/ranking'
@@ -56,6 +57,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedTarefasRoute = AuthenticatedTarefasRouteImport.update({
   id: '/tarefas',
   path: '/tarefas',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSeedRoute = AuthenticatedSeedRouteImport.update({
+  id: '/seed',
+  path: '/seed',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedReunioesRoute = AuthenticatedReunioesRouteImport.update({
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/ranking': typeof AuthenticatedRankingRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/reunioes': typeof AuthenticatedReunioesRoute
+  '/seed': typeof AuthenticatedSeedRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
   '/vagas/': typeof AuthenticatedVagasIndexRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/ranking': typeof AuthenticatedRankingRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/reunioes': typeof AuthenticatedReunioesRoute
+  '/seed': typeof AuthenticatedSeedRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
   '/vagas': typeof AuthenticatedVagasIndexRoute
@@ -184,6 +192,7 @@ export interface FileRoutesById {
   '/_authenticated/ranking': typeof AuthenticatedRankingRoute
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/_authenticated/reunioes': typeof AuthenticatedReunioesRoute
+  '/_authenticated/seed': typeof AuthenticatedSeedRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
   '/_authenticated/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
   '/_authenticated/vagas/': typeof AuthenticatedVagasIndexRoute
@@ -206,6 +215,7 @@ export interface FileRouteTypes {
     | '/ranking'
     | '/relatorios'
     | '/reunioes'
+    | '/seed'
     | '/tarefas'
     | '/vagas/$vagaId'
     | '/vagas/'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/ranking'
     | '/relatorios'
     | '/reunioes'
+    | '/seed'
     | '/tarefas'
     | '/vagas/$vagaId'
     | '/vagas'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ranking'
     | '/_authenticated/relatorios'
     | '/_authenticated/reunioes'
+    | '/_authenticated/seed'
     | '/_authenticated/tarefas'
     | '/_authenticated/vagas/$vagaId'
     | '/_authenticated/vagas/'
@@ -302,6 +314,13 @@ declare module '@tanstack/react-router' {
       path: '/tarefas'
       fullPath: '/tarefas'
       preLoaderRoute: typeof AuthenticatedTarefasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/seed': {
+      id: '/_authenticated/seed'
+      path: '/seed'
+      fullPath: '/seed'
+      preLoaderRoute: typeof AuthenticatedSeedRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/reunioes': {
@@ -410,6 +429,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRankingRoute: typeof AuthenticatedRankingRoute
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedReunioesRoute: typeof AuthenticatedReunioesRoute
+  AuthenticatedSeedRoute: typeof AuthenticatedSeedRoute
   AuthenticatedTarefasRoute: typeof AuthenticatedTarefasRoute
   AuthenticatedVagasVagaIdRoute: typeof AuthenticatedVagasVagaIdRoute
   AuthenticatedVagasIndexRoute: typeof AuthenticatedVagasIndexRoute
@@ -427,6 +447,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRankingRoute: AuthenticatedRankingRoute,
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedReunioesRoute: AuthenticatedReunioesRoute,
+  AuthenticatedSeedRoute: AuthenticatedSeedRoute,
   AuthenticatedTarefasRoute: AuthenticatedTarefasRoute,
   AuthenticatedVagasVagaIdRoute: AuthenticatedVagasVagaIdRoute,
   AuthenticatedVagasIndexRoute: AuthenticatedVagasIndexRoute,

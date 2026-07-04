@@ -64,10 +64,11 @@ export function useUpdateProfile() {
   const { profile } = useAuth();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: { name?: string }) => {
+    mutationFn: async (payload: { name?: string; phone?: string; job_title?: string }) => {
       const { data, error } = await supabase
         .from("profiles")
-        .update(payload)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .update(payload as any)
         .eq("id", profile!.id)
         .select()
         .single();
@@ -76,9 +77,37 @@ export function useUpdateProfile() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["profiles"] });
-      toast.success("Perfil atualizado — recarregue a página para ver as mudanças");
+      toast.success("Perfil atualizado");
     },
     onError: () => toast.error("Erro ao atualizar perfil"),
+  });
+}
+
+export function useInviteMember() {
+  const { profile } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { email: string; role: string }) => {
+      const token = crypto.randomUUID();
+      const expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { error } = await supabase
+        .from("invites")
+        .insert({
+          company_id: profile!.company_id!,
+          email: payload.email,
+          role: payload.role as "admin" | "recruiter" | "financial" | "viewer",
+          token,
+          invited_by: profile!.id,
+          expires_at,
+        });
+      if (error) throw error;
+      return { token };
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["team", profile?.company_id] });
+      toast.success("Convite enviado com sucesso");
+    },
+    onError: () => toast.error("Erro ao enviar convite"),
   });
 }
 

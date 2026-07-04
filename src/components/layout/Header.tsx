@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sun, Moon, Eye, EyeOff, Bell, Search, Megaphone } from "lucide-react";
+import { Sun, Moon, Eye, EyeOff, Bell, Search, Megaphone, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTheme } from "@/hooks/useTheme";
@@ -85,7 +85,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
     >
       {/* Title */}
       <div className="flex-1 min-w-0">
-        <h1 className="text-base font-semibold truncate" style={{ color: "var(--fg)" }}>
+        <h1 className="text-lg font-bold truncate" style={{ color: "var(--fg)" }}>
           {title}
         </h1>
         {subtitle && (
@@ -104,10 +104,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
         <button
           onClick={() => setSearchOpen(true)}
           title="Buscar (⌘K)"
-          className={cn(
-            "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors border",
-            "hover:opacity-80"
-          )}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors border hover:opacity-80"
           style={{
             background: "var(--bg)",
             borderColor: "var(--border)",
@@ -115,9 +112,9 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
           }}
         >
           <Search className="w-3.5 h-3.5" />
-          <span>Buscar</span>
+          <span className="hidden sm:inline">Buscar</span>
           <kbd
-            className="ml-1 px-1 py-0.5 rounded text-[10px] font-mono"
+            className="ml-1 px-1 py-0.5 rounded text-[10px] font-mono hidden sm:inline"
             style={{ background: "var(--border)", color: "var(--fg-muted)" }}
           >
             ⌘K
@@ -129,11 +126,10 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
           <button
             onClick={openNotif}
             title="Notificações"
-            className="p-2 rounded-lg transition-colors hover:bg-[var(--border)]"
+            className="p-2 rounded-lg transition-all duration-150 hover:bg-[var(--border)] hover:scale-105"
             style={{ color: "var(--fg-muted)" }}
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500" />
           </button>
 
           {notifOpen && (
@@ -146,9 +142,12 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
                 <div className="px-4 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
                   <p className="text-sm font-semibold" style={{ color: "var(--fg)" }}>Notificações</p>
                 </div>
-                <div className="p-8 text-center">
-                  <Bell className="w-8 h-8 mx-auto mb-2 opacity-20" style={{ color: "var(--fg-muted)" }} />
-                  <p className="text-sm" style={{ color: "var(--fg-muted)" }}>Nenhuma notificação</p>
+                <div className="p-8 text-center flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "#10b98118" }}>
+                    <CheckCircle2 className="w-6 h-6" style={{ color: "#10b981" }} />
+                  </div>
+                  <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>Tudo em dia</p>
+                  <p className="text-xs" style={{ color: "var(--fg-muted)" }}>Nenhuma notificação no momento</p>
                 </div>
               </div>
             </>
@@ -160,12 +159,12 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
           <button
             onClick={openNovidades}
             title="Novidades"
-            className="relative p-2 rounded-lg transition-colors hover:bg-[var(--border)]"
+            className="relative p-2 rounded-lg transition-all duration-150 hover:bg-[var(--border)] hover:scale-105"
             style={{ color: novidadesOpen ? "var(--accent)" : "var(--fg-muted)" }}
           >
             <Megaphone className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+              <span className="absolute top-1 right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none animate-bounce">
                 {unreadCount}
               </span>
             )}
@@ -203,7 +202,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
         <button
           onClick={toggleHide}
           title={hidden ? "Mostrar valores" : "Ocultar valores"}
-          className="p-2 rounded-lg transition-colors hover:bg-[var(--border)]"
+          className="p-2 rounded-lg transition-all duration-150 hover:bg-[var(--border)] hover:scale-105"
           style={{ color: hidden ? "var(--accent)" : "var(--fg-muted)" }}
         >
           {hidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -213,7 +212,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
         <button
           onClick={toggleTheme}
           title={theme === "dark" ? "Modo claro" : "Modo escuro"}
-          className="p-2 rounded-lg transition-colors hover:bg-[var(--border)]"
+          className="p-2 rounded-lg transition-all duration-150 hover:bg-[var(--border)] hover:scale-105"
           style={{ color: "var(--fg-muted)" }}
         >
           {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}

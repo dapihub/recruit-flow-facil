@@ -62,6 +62,17 @@ function F({ label, error, children }: { label: string; error?: string; children
   );
 }
 
+function Sec({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2 pt-1">
+      <p className="text-[10px] font-semibold uppercase tracking-widest shrink-0" style={{ color: "var(--fg-muted)" }}>
+        {label}
+      </p>
+      <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+    </div>
+  );
+}
+
 export function VagaForm({ open, onClose, defaultValues }: VagaFormProps) {
   const isEdit = !!defaultValues?.id;
   const { data: clients = [] } = useClients();
@@ -169,7 +180,7 @@ export function VagaForm({ open, onClose, defaultValues }: VagaFormProps) {
         <F label="Cargo *" error={errors.title?.message}>
           <input
             {...register("title")}
-            placeholder="ex: Gerente de Marketing Senior"
+            placeholder="ex: Gerente de Marketing Sênior"
             className={INPUT}
             style={{
               ...inputStyle,
@@ -184,9 +195,7 @@ export function VagaForm({ open, onClose, defaultValues }: VagaFormProps) {
             <select {...register("client_id")} className={SELECT} style={inputStyle}>
               <option value="">Selecionar cliente</option>
               {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
+                <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
           </F>
@@ -194,13 +203,13 @@ export function VagaForm({ open, onClose, defaultValues }: VagaFormProps) {
             <select {...register("recruiter_id")} className={SELECT} style={inputStyle}>
               <option value="">Selecionar recrutador</option>
               {profiles.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
+                <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
           </F>
         </div>
+
+        <Sec label="Pipeline" />
 
         {/* Status + Prioridade */}
         <div className="grid grid-cols-2 gap-4">
@@ -261,47 +270,22 @@ export function VagaForm({ open, onClose, defaultValues }: VagaFormProps) {
         {/* Headcount + Prazo */}
         <div className="grid grid-cols-2 gap-4">
           <F label="Headcount" error={errors.headcount?.message}>
-            <input
-              type="number"
-              min={1}
-              {...register("headcount")}
-              className={INPUT}
-              style={inputStyle}
-            />
+            <input type="number" min={1} {...register("headcount")} className={INPUT} style={inputStyle} />
           </F>
           <F label="Prazo">
-            <input
-              type="date"
-              {...register("deadline")}
-              className={INPUT}
-              style={inputStyle}
-            />
+            <input type="date" {...register("deadline")} className={INPUT} style={inputStyle} />
           </F>
         </div>
+
+        <Sec label="Remuneração" />
 
         {/* Faixa Salarial */}
         <div className="grid grid-cols-2 gap-4">
           <F label="Salário Mínimo (R$)">
-            <input
-              type="number"
-              min={0}
-              step={100}
-              placeholder="0,00"
-              {...register("salary_min")}
-              className={INPUT}
-              style={inputStyle}
-            />
+            <input type="number" min={0} step={100} placeholder="0,00" {...register("salary_min")} className={INPUT} style={inputStyle} />
           </F>
           <F label="Salário Máximo (R$)">
-            <input
-              type="number"
-              min={0}
-              step={100}
-              placeholder="0,00"
-              {...register("salary_max")}
-              className={INPUT}
-              style={inputStyle}
-            />
+            <input type="number" min={0} step={100} placeholder="0,00" {...register("salary_max")} className={INPUT} style={inputStyle} />
           </F>
         </div>
 
@@ -316,35 +300,27 @@ export function VagaForm({ open, onClose, defaultValues }: VagaFormProps) {
             </select>
           </F>
           <F label="Valor do Fee">
-            <input
-              type="number"
-              min={0}
-              step={0.01}
-              placeholder="0,00"
-              {...register("fee_value")}
-              className={INPUT}
-              style={inputStyle}
-            />
+            <input type="number" min={0} step={0.01} placeholder="0,00" {...register("fee_value")} className={INPUT} style={inputStyle} />
           </F>
         </div>
 
-        {/* Descrição */}
+        <Sec label="Detalhes" />
+
         <F label="Descrição / Briefing">
           <textarea
             {...register("description")}
-            rows={4}
+            rows={3}
             placeholder="Descreva o contexto e detalhes da vaga..."
             className={INPUT + " resize-none"}
             style={inputStyle}
           />
         </F>
 
-        {/* Skills */}
         <F label="Habilidades Necessárias">
           <textarea
             {...register("required_skills")}
             rows={2}
-            placeholder="ex: React, TypeScript, Node.js — uma por linha ou separadas por vírgula"
+            placeholder="ex: React, TypeScript, Node.js — separadas por vírgula"
             className={INPUT + " resize-none"}
             style={inputStyle}
           />

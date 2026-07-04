@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ChevronLeft,
@@ -17,6 +18,15 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
+  StickyNote,
+  Receipt,
+  MessageCircle,
+  Zap,
+  Send,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle,
+  UserPlus,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -25,8 +35,10 @@ import { JobStatusBadge, PriorityBadge, TaskStatusBadge } from "@/components/ui/
 import { EmptyState } from "@/components/ui/EmptyState";
 import { VagaForm } from "@/components/vagas/VagaForm";
 import { TarefaForm } from "@/components/tarefas/TarefaForm";
+import { useAuth } from "@/lib/auth";
 import { useJob } from "@/hooks/useJobs";
 import { useJobTasks, useUpdateTask, useDeleteTask } from "@/hooks/useTasks";
+import { useContatos } from "@/hooks/useContatos";
 import { useTransactions } from "@/hooks/useFinanceiro";
 import {
   useMeetings,
@@ -52,8 +64,13 @@ export const Route = createFileRoute("/_authenticated/vagas/$vagaId")({
 const TABS = [
   { id: "overview", label: "Visão Geral" },
   { id: "tasks", label: "Tarefas" },
+  { id: "notas", label: "Notas" },
   { id: "financial", label: "Financeiro" },
+  { id: "contatos", label: "Contatos" },
   { id: "meetings", label: "Reuniões" },
+  { id: "nf", label: "NF" },
+  { id: "chat", label: "Chat" },
+  { id: "automacoes", label: "Automações" },
   { id: "activities", label: "Atividades" },
 ] as const;
 
@@ -68,6 +85,7 @@ function VagaDetailPage() {
   const [editTask, setEditTask] = useState<TaskWithJoins | null>(null);
 
   const { data: job, isLoading } = useJob(vagaId);
+  const { data: jobTasks = [] } = useJobTasks(vagaId);
 
   if (isLoading) {
     return (
@@ -133,18 +151,15 @@ function VagaDetailPage() {
         >
           <ChevronLeft className="w-3.5 h-3.5" /> Vagas
         </Link>
-        <div className="flex gap-0">
+        <div className="flex gap-0 overflow-x-auto whitespace-nowrap">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="px-4 py-2 text-sm font-medium transition-colors -mb-px"
+              className={`px-4 py-2 text-sm font-medium transition-colors -mb-px ${activeTab !== tab.id ? "hover:text-[var(--fg)]" : ""}`}
               style={
                 activeTab === tab.id
-                  ? {
-                      borderBottom: "2px solid var(--accent)",
-                      color: "var(--accent)",
-                    }
+                  ? { borderBottom: "2px solid var(--accent)", color: "var(--accent)" }
                   : { color: "var(--fg-muted)" }
               }
             >
@@ -154,33 +169,27 @@ function VagaDetailPage() {
         </div>
       </div>
 
+      {/* Performance banner + KPI cards */}
+      <PerformanceSection job={job} tasks={jobTasks} hidden={hidden} />
+
       {/* Tab content */}
       <div className="flex-1 p-6 overflow-y-auto">
-        {activeTab === "overview" && (
-          <OverviewTab job={job} hidden={hidden} />
-        )}
+        {activeTab === "overview" && <OverviewTab job={job} hidden={hidden} />}
         {activeTab === "tasks" && (
           <TasksTab
             vagaId={vagaId}
-            onNewTask={() => {
-              setEditTask(null);
-              setTaskFormOpen(true);
-            }}
-            onEditTask={(t) => {
-              setEditTask(t);
-              setTaskFormOpen(true);
-            }}
+            onNewTask={() => { setEditTask(null); setTaskFormOpen(true); }}
+            onEditTask={(t) => { setEditTask(t); setTaskFormOpen(true); }}
           />
         )}
-        {activeTab === "financial" && (
-          <FinanceiroVagaTab job={job} hidden={hidden} />
-        )}
-        {activeTab === "meetings" && (
-          <ReunioesVagaTab job={job} />
-        )}
-        {activeTab === "activities" && (
-          <AtividadesVagaTab job={job} />
-        )}
+        {activeTab === "notas" && <NotasTab vagaId={vagaId} />}
+        {activeTab === "financial" && <FinanceiroVagaTab job={job} hidden={hidden} />}
+        {activeTab === "contatos" && <ContatosVagaTab job={job} />}
+        {activeTab === "meetings" && <ReunioesVagaTab job={job} />}
+        {activeTab === "nf" && <NfTab job={job} />}
+        {activeTab === "chat" && <ChatVagaTab vagaId={vagaId} jobTitle={job.title} />}
+        {activeTab === "automacoes" && <AutomacoesVagaTab vagaId={vagaId} />}
+        {activeTab === "activities" && <AtividadesVagaTab job={job} />}
       </div>
 
       <VagaForm
@@ -559,7 +568,7 @@ function FinanceiroVagaTab({ job, hidden }: { job: JobData; hidden: boolean }) {
                     <span
                       className="text-xs px-2 py-0.5 rounded-full font-medium"
                       style={{
-                        background: t.type === "income" ? "#10b98122" : "#ef444422",
+                        background: t.type === "income" ? "color-mix(in srgb, #10b981 12%, transparent)" : "color-mix(in srgb, #ef4444 12%, transparent)",
                         color: t.type === "income" ? "#10b981" : "#ef4444",
                       }}
                     >
@@ -570,7 +579,7 @@ function FinanceiroVagaTab({ job, hidden }: { job: JobData; hidden: boolean }) {
                     <span
                       className="text-xs px-2 py-0.5 rounded-full font-medium"
                       style={{
-                        background: (TX_STATUS_COLORS[t.status] ?? "#6b7280") + "22",
+                        background: `color-mix(in srgb, ${TX_STATUS_COLORS[t.status] ?? "#6b7280"} 12%, transparent)`,
                         color: TX_STATUS_COLORS[t.status] ?? "#6b7280",
                       }}
                     >
@@ -641,7 +650,7 @@ function ReunioesVagaTab({ job }: { job: JobData }) {
             <div className="flex items-center gap-3 px-4 py-3" style={{ background: "var(--bg-card)" }}>
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: "var(--accent)22", color: "var(--accent)" }}
+                style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}
               >
                 <Icon className="w-4 h-4" />
               </div>
@@ -650,7 +659,7 @@ function ReunioesVagaTab({ job }: { job: JobData }) {
                   <span className="text-sm font-medium" style={{ color: "var(--fg)" }}>{m.title}</span>
                   <span
                     className="text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{ background: MEETING_STATUS_COLORS[m.status] + "22", color: MEETING_STATUS_COLORS[m.status] }}
+                    style={{ background: `color-mix(in srgb, ${MEETING_STATUS_COLORS[m.status]} 12%, transparent)`, color: MEETING_STATUS_COLORS[m.status] }}
                   >
                     {MEETING_STATUS_LABELS[m.status]}
                   </span>
@@ -745,32 +754,572 @@ function AtividadesVagaTab({ job }: { job: JobData }) {
   );
 }
 
-// ─── Coming Soon ─────────────────────────────────────────────
+// ─── Performance Banner + KPIs ───────────────────────────────
 
-function ComingSoonTab({
-  icon: Icon,
-  title,
-  desc,
+function PerformanceSection({
+  job,
+  tasks,
+  hidden,
 }: {
-  icon: React.FC<{ className?: string; style?: React.CSSProperties }>;
-  title: string;
-  desc: string;
+  job: JobData;
+  tasks: TaskWithJoins[];
+  hidden: boolean;
 }) {
+  const total = tasks.length;
+  const done = tasks.filter((t) => t.status === "done").length;
+  const progress = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  const now = new Date();
+  const isOverdue = job.deadline && new Date(job.deadline) < now;
+  const daysLeft = job.deadline
+    ? Math.ceil((new Date(job.deadline).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  const score =
+    progress >= 80 && !isOverdue ? "Bom"
+    : progress >= 50 ? "Atenção"
+    : "Crítico";
+
+  const scoreColor =
+    score === "Bom" ? "#10b981"
+    : score === "Atenção" ? "#f59e0b"
+    : "#ef4444";
+
+  const ScoreIcon =
+    score === "Bom" ? CheckCircle
+    : score === "Atenção" ? AlertTriangle
+    : AlertCircle;
+
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <Icon
-        className="w-10 h-10 mb-4 opacity-20"
-        style={{ color: "var(--fg-muted)" }}
-      />
-      <h3
-        className="text-base font-semibold mb-2"
-        style={{ color: "var(--fg)" }}
+    <div
+      className="px-6 py-3 shrink-0 space-y-3"
+      style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-card)" }}
+    >
+      {/* Performance banner */}
+      <div
+        className="flex items-center justify-between rounded-xl px-4 py-2.5"
+        style={{ background: scoreColor + "14", border: `1px solid ${scoreColor}44` }}
       >
-        {title}
-      </h3>
-      <p className="text-sm max-w-xs" style={{ color: "var(--fg-muted)" }}>
-        {desc}
+        <div className="flex items-center gap-2.5">
+          <ScoreIcon className="w-4 h-4 shrink-0" style={{ color: scoreColor }} />
+          <div>
+            <span className="text-sm font-semibold" style={{ color: scoreColor }}>
+              Performance: {score}
+            </span>
+            <span className="text-xs ml-2" style={{ color: "var(--fg-muted)" }}>
+              {total === 0 ? "Nenhuma tarefa" : `${done}/${total} tarefas concluídas`}
+              {daysLeft !== null && ` · ${daysLeft > 0 ? `${daysLeft}d restantes` : "Prazo vencido"}`}
+            </span>
+          </div>
+        </div>
+        <span
+          className="text-2xl font-bold tabular-nums"
+          style={{ color: scoreColor }}
+        >
+          {progress}%
+        </span>
+      </div>
+
+      {/* KPI cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: "Progresso", value: `${progress}%`, sub: `${done}/${total} tarefas` },
+          {
+            label: "Valor do Fee",
+            value: job.fee_value ? fmtBRL(job.fee_value, hidden) : "—",
+            sub: job.fee_model ?? "—",
+          },
+          {
+            label: "Data de Início",
+            value: job.opened_at ? format(new Date(job.opened_at), "dd/MM/yyyy") : "—",
+            sub: "Abertura da vaga",
+          },
+          {
+            label: "Prazo",
+            value: job.deadline ? format(new Date(job.deadline), "dd/MM/yyyy") : "—",
+            sub: isOverdue ? "Vencido" : daysLeft !== null ? `${daysLeft}d restantes` : "Sem prazo",
+            color: isOverdue ? "#ef4444" : undefined,
+          },
+        ].map((kpi) => (
+          <div
+            key={kpi.label}
+            className="rounded-lg px-3 py-2"
+            style={{ background: "var(--bg)", border: "1px solid var(--border)" }}
+          >
+            <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "var(--fg-muted)" }}>
+              {kpi.label}
+            </p>
+            <p className="text-sm font-bold" style={{ color: kpi.color ?? "var(--fg)" }}>
+              {kpi.value}
+            </p>
+            <p className="text-[10px] mt-0.5" style={{ color: "var(--fg-muted)" }}>{kpi.sub}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Notas ───────────────────────────────────────────────────
+
+function NotasTab({ vagaId }: { vagaId: string }) {
+  const key = `themis:notas:${vagaId}`;
+  const [content, setContent] = useState(() => localStorage.getItem(key) ?? "");
+  const [saved, setSaved] = useState(true);
+
+  function handleChange(v: string) {
+    setContent(v);
+    setSaved(false);
+  }
+
+  function handleSave() {
+    localStorage.setItem(key, content);
+    setSaved(true);
+  }
+
+  return (
+    <div className="max-w-3xl space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <StickyNote className="w-4 h-4" style={{ color: "var(--fg-muted)" }} />
+          <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>Notas da Vaga</p>
+        </div>
+        <button
+          onClick={handleSave}
+          disabled={saved}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-opacity"
+          style={{ background: "var(--accent)", color: "#fff", opacity: saved ? 0.5 : 1 }}
+        >
+          {saved ? "Salvo" : "Salvar"}
+        </button>
+      </div>
+      <textarea
+        value={content}
+        onChange={(e) => handleChange(e.target.value)}
+        placeholder="Escreva notas sobre esta vaga... briefing, observações do cliente, pontos de atenção..."
+        className="w-full min-h-[360px] px-4 py-3 rounded-xl text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+        style={{
+          background: "var(--bg-card)",
+          border: "1px solid var(--border)",
+          color: "var(--fg)",
+        }}
+      />
+      <p className="text-xs" style={{ color: "var(--fg-muted)" }}>
+        {content.length} caracteres · Salvo localmente
       </p>
+    </div>
+  );
+}
+
+// ─── Contatos da Vaga ─────────────────────────────────────────
+
+function ContatosVagaTab({ job }: { job: JobData }) {
+  const { data: contatos = [], isLoading } = useContatos(
+    job.client_id ? { client_id: job.client_id } : undefined
+  );
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: "var(--border)" }} />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl space-y-4">
+      {job.client && (
+        <div
+          className="rounded-xl p-4"
+          style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
+        >
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--fg-muted)" }}>
+            Cliente do Projeto
+          </p>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"
+              style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}
+            >
+              {job.client.name.charAt(0)}
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: "var(--fg)" }}>{job.client.name}</p>
+              <p className="text-xs" style={{ color: "var(--fg-muted)" }}>Cliente</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ border: "1px solid var(--border)" }}
+      >
+        <div
+          className="flex items-center justify-between px-4 py-3"
+          style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-card)" }}
+        >
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4" style={{ color: "var(--fg-muted)" }} />
+            <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>Contatos vinculados</p>
+            <span
+              className="text-[10px] px-1.5 py-0.5 rounded-full"
+              style={{ background: "var(--border)", color: "var(--fg-muted)" }}
+            >
+              {contatos.length}
+            </span>
+          </div>
+          <Link
+            to="/contatos"
+            className="flex items-center gap-1 text-xs"
+            style={{ color: "var(--accent)" }}
+          >
+            <UserPlus className="w-3.5 h-3.5" /> Gerenciar
+          </Link>
+        </div>
+
+        {contatos.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 text-center px-4">
+            <Users className="w-8 h-8 mb-3 opacity-20" style={{ color: "var(--fg-muted)" }} />
+            <p className="text-sm" style={{ color: "var(--fg-muted)" }}>
+              Nenhum contato vinculado a este cliente
+            </p>
+            <Link
+              to="/contatos"
+              className="mt-3 text-xs px-3 py-1.5 rounded-lg"
+              style={{ background: "var(--accent)", color: "#fff" }}
+            >
+              Adicionar contato
+            </Link>
+          </div>
+        ) : (
+          <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+            {contatos.map((c) => (
+              <div key={c.id} className="flex items-center gap-3 px-4 py-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                  style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}
+                >
+                  {c.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>{c.name}</p>
+                  <p className="text-xs" style={{ color: "var(--fg-muted)" }}>
+                    {[c.role, c.email, c.phone].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── NF ──────────────────────────────────────────────────────
+
+function NfTab({ job }: { job: JobData }) {
+  const key = `themis:nf:${job.id}`;
+  const [form, setForm] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(key) ?? "{}");
+    } catch {
+      return {};
+    }
+  });
+
+  const set = (field: string, value: string) => setForm((p: any) => ({ ...p, [field]: value }));
+
+  function handleSave() {
+    localStorage.setItem(key, JSON.stringify(form));
+    toast.success("Configuração de NF salva");
+  }
+
+  const INPUT_STYLE = {
+    background: "var(--bg)",
+    border: "1px solid var(--border)",
+    color: "var(--fg)",
+  };
+  const INPUT_CLASS = "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+
+  const Section2 = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <div className="rounded-xl p-5 space-y-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--fg-muted)" }}>{title}</p>
+      {children}
+    </div>
+  );
+
+  return (
+    <div className="max-w-2xl space-y-5">
+      <Section2 title="Dados do Tomador">
+        {[
+          { key: "tomador_nome", label: "Nome / Razão Social" },
+          { key: "tomador_cnpj", label: "CNPJ / CPF" },
+          { key: "tomador_email", label: "Email" },
+          { key: "tomador_endereco", label: "Endereço" },
+        ].map(({ key: k, label }) => (
+          <div key={k}>
+            <label className="text-xs font-medium block mb-1" style={{ color: "var(--fg-muted)" }}>{label}</label>
+            <input value={form[k] ?? ""} onChange={(e) => set(k, e.target.value)} className={INPUT_CLASS} style={INPUT_STYLE} />
+          </div>
+        ))}
+      </Section2>
+
+      <Section2 title="Dados do Serviço">
+        {[
+          { key: "servico_descricao", label: "Descrição do Serviço" },
+          { key: "servico_codigo", label: "Código do Serviço (CNAE)" },
+          { key: "servico_aliquota", label: "Alíquota ISS (%)" },
+        ].map(({ key: k, label }) => (
+          <div key={k}>
+            <label className="text-xs font-medium block mb-1" style={{ color: "var(--fg-muted)" }}>{label}</label>
+            <input value={form[k] ?? ""} onChange={(e) => set(k, e.target.value)} className={INPUT_CLASS} style={INPUT_STYLE} />
+          </div>
+        ))}
+      </Section2>
+
+      <Section2 title="Configuração de E-mail">
+        {[
+          { key: "email_para", label: "Enviar NF para" },
+          { key: "email_cc", label: "CC" },
+          { key: "email_assunto", label: "Assunto" },
+        ].map(({ key: k, label }) => (
+          <div key={k}>
+            <label className="text-xs font-medium block mb-1" style={{ color: "var(--fg-muted)" }}>{label}</label>
+            <input value={form[k] ?? ""} onChange={(e) => set(k, e.target.value)} className={INPUT_CLASS} style={INPUT_STYLE} />
+          </div>
+        ))}
+      </Section2>
+
+      <button
+        onClick={handleSave}
+        className="px-4 py-2 rounded-lg text-sm font-medium"
+        style={{ background: "var(--accent)", color: "#fff" }}
+      >
+        Salvar configuração
+      </button>
+    </div>
+  );
+}
+
+// ─── Chat da Vaga ─────────────────────────────────────────────
+
+type ChatMessage = { id: string; text: string; sender: string; at: string };
+
+function ChatVagaTab({ vagaId, jobTitle }: { vagaId: string; jobTitle: string }) {
+  const key = `themis:chat:${vagaId}`;
+  const { profile } = useAuth();
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    try { return JSON.parse(localStorage.getItem(key) ?? "[]"); } catch { return []; }
+  });
+  const [text, setText] = useState("");
+  const endRef = useRef<HTMLDivElement>(null);
+
+  function send() {
+    if (!text.trim()) return;
+    const msg: ChatMessage = {
+      id: crypto.randomUUID(),
+      text: text.trim(),
+      sender: profile?.name ?? "Eu",
+      at: new Date().toISOString(),
+    };
+    const next = [...messages, msg];
+    setMessages(next);
+    localStorage.setItem(key, JSON.stringify(next));
+    setText("");
+    setTimeout(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+  }
+
+  return (
+    <div className="flex flex-col max-w-3xl h-[520px]" style={{ border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+      <div className="px-4 py-3 flex items-center gap-2 shrink-0" style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
+        <MessageCircle className="w-4 h-4" style={{ color: "var(--accent)" }} />
+        <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>{jobTitle}</p>
+        <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--border)", color: "var(--fg-muted)" }}>
+          Chat da Vaga
+        </span>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3" style={{ background: "var(--bg)" }}>
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center animate-fade-in">
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+              style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)" }}
+            >
+              <MessageCircle className="w-5 h-5" style={{ color: "var(--accent)", opacity: 0.8 }} />
+            </div>
+            <p className="text-sm font-semibold mb-1" style={{ color: "var(--fg)" }}>Nenhuma mensagem ainda</p>
+            <p className="text-xs" style={{ color: "var(--fg-muted)" }}>Inicie uma conversa sobre esta vaga</p>
+          </div>
+        )}
+        {messages.map((msg) => (
+          <div key={msg.id} className="flex items-start gap-2">
+            <div
+              className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5"
+              style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}
+            >
+              {msg.sender.charAt(0)}
+            </div>
+            <div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xs font-semibold" style={{ color: "var(--fg)" }}>{msg.sender}</span>
+                <span className="text-[10px]" style={{ color: "var(--fg-muted)" }}>
+                  {format(new Date(msg.at), "HH:mm dd/MM")}
+                </span>
+              </div>
+              <p
+                className="text-sm mt-0.5 px-3 py-2 rounded-xl inline-block"
+                style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--fg)" }}
+              >
+                {msg.text}
+              </p>
+            </div>
+          </div>
+        ))}
+        <div ref={endRef} />
+      </div>
+
+      <div
+        className="flex items-center gap-2 px-3 py-3 shrink-0"
+        style={{ background: "var(--bg-card)", borderTop: "1px solid var(--border)" }}
+      >
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), send())}
+          placeholder="Escreva uma mensagem..."
+          className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+          style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--fg)" }}
+        />
+        <button
+          onClick={send}
+          disabled={!text.trim()}
+          className="p-2 rounded-lg transition-opacity disabled:opacity-40"
+          style={{ background: "var(--accent)", color: "#fff" }}
+        >
+          <Send className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Automações da Vaga ───────────────────────────────────────
+
+function AutomacoesVagaTab({ vagaId }: { vagaId: string }) {
+  const key = `themis:automacoes:${vagaId}`;
+  const [automations, setAutomations] = useState<any[]>(() => {
+    try { return JSON.parse(localStorage.getItem(key) ?? "[]"); } catch { return []; }
+  });
+  const [adding, setAdding] = useState(false);
+  const [trigger, setTrigger] = useState("Candidato movido de etapa");
+  const [action, setAction] = useState("Criar tarefa automática");
+  const [name, setName] = useState("");
+
+  function saveAll(updated: any[]) {
+    setAutomations(updated);
+    localStorage.setItem(key, JSON.stringify(updated));
+  }
+
+  function add() {
+    if (!name.trim()) return;
+    saveAll([...automations, { id: crypto.randomUUID(), name: name.trim(), trigger, action, active: true }]);
+    setAdding(false);
+    setName("");
+  }
+
+  const TRIGGERS = ["Candidato movido de etapa", "Tarefa concluída", "Vaga atualizada", "Reunião agendada"];
+  const ACTIONS = ["Criar tarefa automática", "Notificar responsável", "Enviar email", "Atualizar status"];
+
+  return (
+    <div className="max-w-3xl space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Zap className="w-4 h-4" style={{ color: "var(--accent)" }} />
+          <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>Automações desta vaga</p>
+        </div>
+        <button
+          onClick={() => setAdding(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium"
+          style={{ background: "var(--accent)", color: "#fff" }}
+        >
+          <Plus className="w-3.5 h-3.5" /> Nova Automação
+        </button>
+      </div>
+
+      {adding && (
+        <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+          <div>
+            <label className="text-xs font-medium block mb-1" style={{ color: "var(--fg-muted)" }}>Nome</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none" style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--fg)" }} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium block mb-1" style={{ color: "var(--fg-muted)" }}>Gatilho</label>
+              <select value={trigger} onChange={(e) => setTrigger(e.target.value)} className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--fg)" }}>
+                {TRIGGERS.map((t) => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1" style={{ color: "var(--fg-muted)" }}>Ação</label>
+              <select value={action} onChange={(e) => setAction(e.target.value)} className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--fg)" }}>
+                {ACTIONS.map((a) => <option key={a}>{a}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={add} className="px-4 py-1.5 rounded-lg text-sm font-medium" style={{ background: "var(--accent)", color: "#fff" }}>Salvar</button>
+            <button onClick={() => setAdding(false)} className="px-4 py-1.5 rounded-lg text-sm font-medium" style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--fg)" }}>Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {automations.length === 0 && !adding ? (
+        <EmptyState
+          icon={Zap}
+          title="Nenhuma automação"
+          description="Configure automações para agilizar o acompanhamento desta vaga."
+          action={
+            <button
+              onClick={() => setAdding(true)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
+              style={{ background: "var(--accent)", color: "#fff" }}
+            >
+              <Plus className="w-4 h-4" /> Nova Automação
+            </button>
+          }
+        />
+      ) : (
+        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+          {automations.map((a: any, i: number) => (
+            <div
+              key={a.id}
+              className="flex items-center gap-3 px-4 py-3"
+              style={{
+                background: i % 2 === 0 ? "var(--bg)" : "var(--bg-card)",
+                borderBottom: i < automations.length - 1 ? "1px solid var(--border)" : undefined,
+              }}
+            >
+              <Zap className="w-4 h-4 shrink-0" style={{ color: "var(--accent)" }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>{a.name}</p>
+                <p className="text-xs" style={{ color: "var(--fg-muted)" }}>{a.trigger} → {a.action}</p>
+              </div>
+              <button
+                onClick={() => saveAll(automations.filter((_: any, j: number) => j !== i))}
+                className="p-1 hover:opacity-80"
+                style={{ color: "#ef4444" }}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

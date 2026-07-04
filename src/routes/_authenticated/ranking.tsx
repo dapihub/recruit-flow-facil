@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Star, Plus, Pencil, Trash2, Award, Building2 } from "lucide-react";
+import { Star, Plus, Pencil, Trash2, Award, Building2, Search } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { PageKpis, KpiItem } from "@/components/layout/PageKpis";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -22,6 +22,8 @@ const CRITERIA_LABELS = {
 
 function RankingPage() {
   const [formOpen, setFormOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [ratingFilter, setRatingFilter] = useState<"all" | "rated" | "unrated">("all");
   const [selectedClient, setSelectedClient] = useState<{
     id: string;
     name: string;
@@ -60,6 +62,13 @@ function RankingPage() {
       });
   }, [clients, latestRatingByClient]);
 
+  const displayRows = useMemo(() => rows.filter((r) => {
+    if (search && !r.client.name.toLowerCase().includes(search.toLowerCase())) return false;
+    if (ratingFilter === "rated" && !r.rating) return false;
+    if (ratingFilter === "unrated" && r.rating) return false;
+    return true;
+  }), [rows, search, ratingFilter]);
+
   const ratedCount = rows.filter((r) => r.rating).length;
   const avgScore =
     ratedCount > 0
@@ -89,7 +98,7 @@ function RankingPage() {
       />
 
       <PageKpis>
-        <KpiItem label="Clientes Avaliados" value={`${ratedCount} / ${clients.length}`} accent />
+        <KpiItem label="Clientes Avaliados" value={`${ratedCount} / ${clients.length}`} accent={ratedCount > 0} />
         <KpiItem label="Score Médio" value={ratedCount > 0 ? avgScore.toFixed(1) : "—"} />
         <KpiItem
           label="Melhor Avaliado"
@@ -97,22 +106,42 @@ function RankingPage() {
         />
       </PageKpis>
 
-      <div className="flex-1 px-6 pb-6">
+      {/* Search + filter */}
+      <div className="flex items-center gap-3 px-6 pb-4 pt-2">
+        <div className="relative max-w-xs flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "var(--fg-muted)" }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar cliente..."
+            className="w-full pl-9 pr-3 py-1.5 rounded-lg text-sm focus:outline-none"
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--fg)" }}
+          />
+        </div>
+        <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+          {([["all", "Todos"], ["rated", "Avaliados"], ["unrated", "Não avaliados"]] as const).map(([v, l]) => (
+            <button key={v} onClick={() => setRatingFilter(v)}
+              className="px-3 py-1.5 text-xs font-medium transition-colors"
+              style={ratingFilter === v ? { background: "var(--accent)", color: "#fff" } : { background: "var(--bg-card)", color: "var(--fg-muted)" }}
+            >{l}</button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 px-6 pb-6 flex flex-col">
         {isLoading ? (
           <TableSkeleton />
-        ) : rows.length === 0 ? (
+        ) : displayRows.length === 0 ? (
           <EmptyState
             icon={Building2}
-            title="Nenhum cliente para avaliar"
-            description="Cadastre clientes primeiro. Depois você pode atribuir notas de 1 a 10 em pontualidade, clareza de briefing, agilidade de feedback e potencial de indicação."
+            title={search || ratingFilter !== "all" ? "Nenhum cliente encontrado" : "Nenhum cliente para avaliar"}
+            description={search || ratingFilter !== "all" ? "Tente ajustar os filtros." : "Cadastre clientes primeiro. Depois você pode atribuir notas de 1 a 10 em pontualidade, clareza de briefing, agilidade de feedback e potencial de indicação."}
             action={
-              <Link
-                to="/clientes"
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
-                style={{ background: "var(--accent)", color: "#fff" }}
-              >
-                <Plus className="w-4 h-4" /> Cadastrar clientes
-              </Link>
+              !search && ratingFilter === "all" ? (
+                <Link to="/clientes" className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium" style={{ background: "var(--accent)", color: "#fff" }}>
+                  <Plus className="w-4 h-4" /> Cadastrar clientes
+                </Link>
+              ) : undefined
             }
           />
         ) : (
@@ -120,7 +149,7 @@ function RankingPage() {
             className="rounded-xl overflow-hidden"
             style={{ border: "1px solid var(--border)" }}
           >
-            <table className="w-full text-sm">
+            <table className="w-full text-sm data-table">
               <thead>
                 <tr
                   style={{
@@ -159,7 +188,7 @@ function RankingPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map(({ client, rating }, i) => {
+                {displayRows.map(({ client, rating }, i) => {
                   const rank = i + 1;
                   const scoreColor = rating
                     ? rating.overall_score >= 8
@@ -185,10 +214,10 @@ function RankingPage() {
                             style={{
                               background:
                                 rank === 1
-                                  ? "#f59e0b22"
+                                  ? "color-mix(in srgb, #f59e0b 12%, transparent)"
                                   : rank === 2
-                                  ? "#6b728022"
-                                  : "#92400e22",
+                                  ? "color-mix(in srgb, #6b7280 12%, transparent)"
+                                  : "color-mix(in srgb, #92400e 12%, transparent)",
                               color:
                                 rank === 1
                                   ? "#f59e0b"
@@ -213,7 +242,7 @@ function RankingPage() {
                           <div
                             className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
                             style={{
-                              background: "var(--accent)22",
+                              background: "color-mix(in srgb, var(--accent) 12%, transparent)",
                               color: "var(--accent)",
                             }}
                           >
@@ -324,7 +353,7 @@ function RankingPage() {
   );
 }
 
-// ─── Helpers ──────────────────────────────────────────────────
+// —————— Helpers ————————————————————————————————————————————————————————————————————————————————————————————————————
 
 function ScorePip({ value }: { value: number }) {
   const color =
@@ -381,3 +410,4 @@ function TableSkeleton() {
     </div>
   );
 }
+

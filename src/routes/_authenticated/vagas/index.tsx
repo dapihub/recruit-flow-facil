@@ -77,7 +77,7 @@ function SlaBadge({ deadline }: { deadline: string }) {
   const days = differenceInDays(new Date(deadline), new Date());
   const color =
     days > 14 ? "#10b981" : days >= 7 ? "#f59e0b" : "#ef4444";
-  const bg = days > 14 ? "#10b98122" : days >= 7 ? "#f59e0b22" : "#ef444422";
+  const bg = days > 14 ? "color-mix(in srgb, #10b981 12%, transparent)" : days >= 7 ? "color-mix(in srgb, #f59e0b 12%, transparent)" : "color-mix(in srgb, #ef4444 12%, transparent)";
   return (
     <span
       className="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
@@ -95,7 +95,7 @@ function RecruiterAvatar({ name }: { name: string }) {
     <div className="flex items-center gap-1.5">
       <div
         className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
-        style={{ background: "var(--accent)22", color: "var(--accent)" }}
+        style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}
       >
         {name.charAt(0).toUpperCase()}
       </div>
@@ -247,7 +247,7 @@ function VagasPage() {
 
       <PageKpis>
         <KpiItem label="Total" value={String(total)} />
-        <KpiItem label="Abertas" value={String(open)} accent />
+        <KpiItem label="Abertas" value={String(open)} accent={open > 0} />
         <KpiItem label="Em Processo" value={String(inProcess)} />
         <KpiItem label="Fechadas" value={String(closed)} />
         <KpiItem label="Fees Totais" value={fmtBRL(totalFees, hidden)} />
@@ -255,75 +255,78 @@ function VagasPage() {
 
       {/* Filtros */}
       <div
-        className="flex flex-wrap items-center gap-2 px-6 py-3 shrink-0"
+        className="px-6 py-3 space-y-2 shrink-0"
         style={{ borderBottom: "1px solid var(--border)" }}
       >
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "var(--fg-muted)" }} />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar vaga..."
-            className="pl-9 pr-3 py-1.5 rounded-lg text-sm focus:outline-none w-44"
-            style={SEL_STYLE}
-          />
-        </div>
+        {/* Linha 1: busca + filtros principais */}
+        <div className="flex items-center gap-8 flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "var(--fg-muted)" }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar vaga..."
+              className="pl-9 pr-3 py-1.5 rounded-lg text-sm focus:outline-none w-56"
+              style={SEL_STYLE}
+            />
+          </div>
 
-        {/* Status */}
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as JobStatus | "")} className="px-2 py-1.5 rounded-lg text-sm focus:outline-none" style={SEL_STYLE}>
-          <option value="">Todos os status</option>
-          <option value="open">Aberta</option>
-          <option value="screening">Triagem</option>
-          <option value="interviewing">Entrevistas</option>
-          <option value="proposal">Proposta</option>
-          <option value="closed">Fechada</option>
-          <option value="cancelled">Cancelada</option>
-          <option value="paused">Pausada</option>
-        </select>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as JobStatus | "")} className="px-2 py-1.5 rounded-lg text-sm focus:outline-none" style={SEL_STYLE}>
+            <option value="">Todos os status</option>
+            <option value="open">Aberta</option>
+            <option value="screening">Triagem</option>
+            <option value="interviewing">Entrevistas</option>
+            <option value="proposal">Proposta</option>
+            <option value="closed">Fechada</option>
+            <option value="cancelled">Cancelada</option>
+            <option value="paused">Pausada</option>
+          </select>
 
-        {/* Cliente */}
-        <select value={clientFilter} onChange={(e) => setClientFilter(e.target.value)} className="px-2 py-1.5 rounded-lg text-sm focus:outline-none" style={SEL_STYLE}>
-          <option value="">Todos os clientes</option>
-          {uniqueClients.map(([id, name]) => (
-            <option key={id} value={id}>{name}</option>
-          ))}
-        </select>
+          <select value={clientFilter} onChange={(e) => setClientFilter(e.target.value)} className="px-2 py-1.5 rounded-lg text-sm focus:outline-none" style={SEL_STYLE}>
+            <option value="">Todos os clientes</option>
+            {uniqueClients.map(([id, name]) => (
+              <option key={id} value={id}>{name}</option>
+            ))}
+          </select>
 
-        {/* Senioridade */}
-        <select value={seniorityFilter} onChange={(e) => setSeniorityFilter(e.target.value)} className="px-2 py-1.5 rounded-lg text-sm focus:outline-none" style={SEL_STYLE}>
-          <option value="">Todas as senioridades</option>
-          {Object.entries(SENIORITY_LABELS).map(([v, l]) => (
-            <option key={v} value={v}>{l}</option>
-          ))}
-        </select>
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs"
+              style={{ border: "1px solid var(--border)", color: "var(--fg-muted)" }}
+            >
+              <X className="w-3 h-3" /> Limpar
+            </button>
+          )}
 
-        {/* Ordenação */}
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortOption)} className="px-2 py-1.5 rounded-lg text-sm focus:outline-none" style={SEL_STYLE}>
-          <option value="recent">Mais recentes</option>
-          <option value="deadline">Prazo mais próximo</option>
-          <option value="fee">Maior fee</option>
-        </select>
-
-        {/* Limpar filtros */}
-        {hasActiveFilters && (
           <button
-            onClick={clearFilters}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs"
+            onClick={() => exportToCSV(filteredJobs)}
+            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm"
             style={{ border: "1px solid var(--border)", color: "var(--fg-muted)" }}
           >
-            <X className="w-3 h-3" /> Limpar
+            <Download className="w-3.5 h-3.5" /> Exportar CSV
           </button>
-        )}
+        </div>
 
-        {/* Export */}
-        <button
-          onClick={() => exportToCSV(filteredJobs)}
-          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm"
-          style={{ border: "1px solid var(--border)", color: "var(--fg-muted)" }}
-        >
-          <Download className="w-3.5 h-3.5" /> Exportar CSV
-        </button>
+        {/* Linha 2: filtros secundários */}
+        <div className="flex items-center gap-8">
+          <select value={seniorityFilter} onChange={(e) => setSeniorityFilter(e.target.value)} className="px-2 py-1.5 rounded-lg text-sm focus:outline-none" style={SEL_STYLE}>
+            <option value="">Todas as senioridades</option>
+            {Object.entries(SENIORITY_LABELS).map(([v, l]) => (
+              <option key={v} value={v}>{l}</option>
+            ))}
+          </select>
+
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortOption)} className="px-2 py-1.5 rounded-lg text-sm focus:outline-none" style={SEL_STYLE}>
+            <option value="recent">Mais recentes</option>
+            <option value="deadline">Prazo mais próximo</option>
+            <option value="fee">Maior fee</option>
+          </select>
+
+          <p className="text-xs ml-1" style={{ color: "var(--fg-muted)" }}>
+            {filteredJobs.length} vaga{filteredJobs.length !== 1 ? "s" : ""}
+          </p>
+        </div>
       </div>
 
       {/* Conteúdo */}
@@ -403,7 +406,7 @@ function VagasPage() {
                       )}
                     </td>
                     <td className="py-3 px-3 text-sm font-medium" style={{ color: "var(--fg)" }}>
-                      {job.fee_value ? fmtBRL(job.fee_value, false) : "—"}
+                      {job.fee_value ? fmtBRL(job.fee_value, hidden) : "—"}
                     </td>
                     <td className="py-3 px-3">
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -443,7 +446,7 @@ function KanbanView({
   onRowClick: (id: string) => void;
 }) {
   return (
-    <div className="flex gap-3 overflow-x-auto px-6 py-4 h-full" style={{ minHeight: 0 }}>
+    <div className="flex gap-8 overflow-x-auto px-6 py-4 h-full" style={{ minHeight: 0 }}>
       {KANBAN_COLUMNS.map((col) => {
         const colJobs = jobs.filter((j) => j.status === col.status);
         return (
@@ -470,7 +473,7 @@ function KanbanView({
                 <div className="flex items-center justify-between">
                   {job.recruiter ? (
                     <div className="flex items-center gap-1">
-                      <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: "var(--accent)22", color: "var(--accent)" }}>
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}>
                         {job.recruiter.name.charAt(0).toUpperCase()}
                       </div>
                       <span className="text-xs" style={{ color: "var(--fg-muted)" }}>{job.recruiter.name.split(" ")[0]}</span>
@@ -492,7 +495,7 @@ function KanbanView({
 function TableSkeleton() {
   return (
     <div className="space-y-2 mt-2">
-      {Array.from({ length: 5 }).map((_, i) => (
+      {Array.from({ length: 3 }).map((_, i) => (
         <div key={i} className="h-14 rounded-lg animate-pulse" style={{ background: "var(--border)" }} />
       ))}
     </div>

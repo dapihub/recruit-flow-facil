@@ -32,7 +32,7 @@ async function search(term: string): Promise<Result[]> {
   const results: Result[] = [];
 
   (jobs.data ?? []).forEach((j: any) =>
-    results.push({ id: j.id, label: j.title, sub: j.status, category: "vagas", href: "/vagas" })
+    results.push({ id: j.id, label: j.title, sub: j.status, category: "vagas", href: `/vagas/${j.id}` })
   );
   (clients.data ?? []).forEach((c: any) =>
     results.push({ id: c.id, label: c.name, sub: c.person_type === "pj" ? "Pessoa Jurídica" : "Pessoa Física", category: "clientes", href: "/clientes" })
@@ -133,9 +133,23 @@ export function GlobalSearch({ open, onClose }: Props) {
           {/* Body */}
           <div className="max-h-80 overflow-y-auto">
             {!query && (
-              <p className="text-sm text-center py-10" style={{ color: "var(--fg-muted)" }}>
-                Digite para buscar...
-              </p>
+              <div className="py-8 text-center space-y-4">
+                <p className="text-sm" style={{ color: "var(--fg-muted)" }}>
+                  Busque vagas, clientes, contatos e tarefas
+                </p>
+                <div className="flex items-center justify-center gap-3">
+                  {[
+                    { key: "↑↓", desc: "navegar" },
+                    { key: "↵", desc: "abrir" },
+                    { key: "Esc", desc: "fechar" },
+                  ].map(({ key, desc }) => (
+                    <div key={key} className="flex items-center gap-1.5">
+                      <kbd className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: "var(--border)", color: "var(--fg-muted)" }}>{key}</kbd>
+                      <span className="text-[11px]" style={{ color: "var(--fg-muted)" }}>{desc}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
             {query && loading && (
               <p className="text-sm text-center py-10" style={{ color: "var(--fg-muted)" }}>

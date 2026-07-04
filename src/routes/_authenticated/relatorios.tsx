@@ -47,7 +47,7 @@ export const Route = createFileRoute("/_authenticated/relatorios")({
   component: RelatoriosPage,
 });
 
-// ─── Report registry ─────────────────────────────────────────
+// —————— Report registry ——————————————————————————————————————————————————————————————————————————————————
 
 type ReportId =
   | "dre"
@@ -59,6 +59,9 @@ type ReportId =
   | "inadimplencia"
   | "fluxo-projetado"
   | "performance-vagas"
+  | "tempo-fechamento"
+  | "conversao-comercial"
+  | "faturamento-recrutador"
   | "coming-soon";
 
 const CATEGORIES: {
@@ -80,26 +83,26 @@ const CATEGORIES: {
       { id: "vagas-andamento", label: "Vagas em Andamento", desc: "Distribuição por status" },
       { id: "performance-recrutador", label: "Performance por Recrutador", desc: "Vagas e tarefas por pessoa" },
       { id: "performance-vagas", label: "Saúde das Vagas", desc: "Semáforo de risco por vaga: Saudável / Atenção / Em Risco / Crítico" },
-      { id: "coming-soon", label: "Tempo Médio de Fechamento", desc: "SLA por etapa" },
+      { id: "tempo-fechamento", label: "Tempo Médio de Fechamento", desc: "SLA por recrutador e status" },
     ],
   },
   {
     label: "CRM & Vendas",
     reports: [
       { id: "funil-vendas", label: "Funil de Vendas", desc: "Oportunidades por etapa e valor" },
-      { id: "coming-soon", label: "Conversão Comercial", desc: "Taxa de fechamento de propostas" },
+      { id: "conversao-comercial", label: "Conversão Comercial", desc: "Taxa de fechamento de propostas" },
     ],
   },
   {
     label: "Gerencial",
     reports: [
       { id: "visao-executiva", label: "Visão Executiva", desc: "Resumo dos KPIs do escritório" },
-      { id: "coming-soon", label: "Faturamento por Recrutador", desc: "Fee gerado por pessoa" },
+      { id: "faturamento-recrutador", label: "Faturamento por Recrutador", desc: "Fee gerado por pessoa" },
     ],
   },
 ];
 
-// ─── Page ─────────────────────────────────────────────────────
+// —————— Page ——————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 function RelatoriosPage() {
   const [selectedReport, setSelectedReport] = useState<ReportId | null>(null);
@@ -176,7 +179,7 @@ function RelatoriosPage() {
               <button
                 onClick={handlePrint}
                 title="Imprimir / PDF"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-80"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 hover:bg-[var(--border)] hover:text-[var(--fg)]"
                 style={{ border: "1px solid var(--border)", color: "var(--fg-muted)" }}
               >
                 <Printer className="w-4 h-4" />
@@ -185,7 +188,7 @@ function RelatoriosPage() {
               <button
                 onClick={handleExportCSV}
                 title="Exportar CSV"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-80"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 hover:bg-[var(--border)] hover:text-[var(--fg)]"
                 style={{ border: "1px solid var(--border)", color: "var(--fg-muted)" }}
               >
                 <FileDown className="w-4 h-4" />
@@ -193,7 +196,7 @@ function RelatoriosPage() {
               </button>
               <button
                 onClick={() => setSelectedReport(null)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 hover:bg-[var(--border)]"
                 style={{ border: "1px solid var(--border)", color: "var(--fg)" }}
               >
                 <ChevronLeft className="w-4 h-4" /> Relatórios
@@ -227,22 +230,34 @@ function RelatoriosPage() {
                   <button
                     key={report.label}
                     onClick={() => isLive && setSelectedReport(report.id)}
-                    className="flex flex-col gap-1 p-4 rounded-xl text-left transition-all"
+                    className={`flex flex-col gap-1 p-4 rounded-xl text-left transition-all duration-150 ${isLive ? "hover:-translate-y-0.5 hover:shadow-md" : ""}`}
                     style={{
                       background: "var(--bg-card)",
                       border: "1px solid var(--border)",
                       cursor: isLive ? "pointer" : "default",
-                      opacity: isLive ? 1 : 0.6,
+                      opacity: isLive ? 1 : 0.5,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isLive) return;
+                      (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in srgb, var(--accent) 40%, var(--border))";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = "";
                     }}
                   >
                     <div className="flex items-start justify-between">
-                      <BarChart2
-                        className="w-4 h-4 shrink-0 mt-0.5"
-                        style={{ color: isLive ? "var(--accent)" : "var(--fg-muted)" }}
-                      />
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center mb-1"
+                        style={{ background: isLive ? "color-mix(in srgb, var(--accent) 12%, transparent)" : "var(--border)" }}
+                      >
+                        <BarChart2
+                          className="w-4 h-4 shrink-0"
+                          style={{ color: isLive ? "var(--accent)" : "var(--fg-muted)" }}
+                        />
+                      </div>
                       {!isLive && (
                         <span
-                          className="text-[10px] px-1.5 py-0.5 rounded-full"
+                          className="text-[10px] px-1.5 py-0.5 rounded-full self-start"
                           style={{
                             background: "var(--border)",
                             color: "var(--fg-muted)",
@@ -272,7 +287,7 @@ function RelatoriosPage() {
   );
 }
 
-// ─── Report content router ────────────────────────────────────
+// —————— Report content router ————————————————————————————————————————————————————————————————————————
 
 function ReportContent({ id, hidden }: { id: ReportId; hidden: boolean }) {
   switch (id) {
@@ -294,12 +309,18 @@ function ReportContent({ id, hidden }: { id: ReportId; hidden: boolean }) {
       return <FluxoProjetadoPage hidden={hidden} />;
     case "performance-vagas":
       return <PerformanceVagasPage />;
+    case "tempo-fechamento":
+      return <TempoFechamentoPage hidden={hidden} />;
+    case "conversao-comercial":
+      return <ConversaoComercialPage hidden={hidden} />;
+    case "faturamento-recrutador":
+      return <FaturamentoRecrutadorPage hidden={hidden} />;
     default:
       return null;
   }
 }
 
-// ─── DRE ─────────────────────────────────────────────────────
+// —————— DRE ——————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 function DrePage({ hidden }: { hidden: boolean }) {
   const { data: transactions = [] } = useTransactions();
@@ -383,7 +404,7 @@ function DrePage({ hidden }: { hidden: boolean }) {
       </div>
       {/* Table */}
       <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm data-table">
           <thead>
             <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
               {["Mês", "Receitas", "Despesas", "Resultado", "Margem"].map((h) => (
@@ -411,7 +432,7 @@ function DrePage({ hidden }: { hidden: boolean }) {
   );
 }
 
-// ─── Vagas em Andamento ───────────────────────────────────────
+// —————— Vagas em Andamento ——————————————————————————————————————————————————————————————————————————————
 
 const PIE_COLORS = ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#6b7280", "#ef4444", "#eab308"];
 
@@ -445,7 +466,7 @@ function VagasAndamentoPage({ hidden: _hidden }: { hidden: boolean }) {
           </ResponsiveContainer>
         </div>
         <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-          <table className="w-full text-sm">
+          <table className="w-full text-sm data-table">
             <thead>
               <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
                 <th className="px-4 py-3 text-left text-xs font-medium" style={{ color: "var(--fg-muted)" }}>Status</th>
@@ -478,7 +499,7 @@ function VagasAndamentoPage({ hidden: _hidden }: { hidden: boolean }) {
   );
 }
 
-// ─── Performance por Recrutador ───────────────────────────────
+// —————— Performance por Recrutador ——————————————————————————————————————————————————————————————
 
 function PerformanceRecrutadorPage({ hidden: _hidden }: { hidden: boolean }) {
   const { data: jobs = [] } = useJobs();
@@ -514,7 +535,7 @@ function PerformanceRecrutadorPage({ hidden: _hidden }: { hidden: boolean }) {
         </ResponsiveContainer>
       </div>
       <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm data-table">
           <thead>
             <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
               {["Recrutador", "Vagas Ativas", "Vagas Fechadas", "Tarefas Concluídas", "Tarefas Pendentes"].map((h) => (
@@ -539,7 +560,7 @@ function PerformanceRecrutadorPage({ hidden: _hidden }: { hidden: boolean }) {
   );
 }
 
-// ─── Funil de Vendas ─────────────────────────────────────────
+// —————— Funil de Vendas ——————————————————————————————————————————————————————————————————————————————————
 
 function FunilVendasPage({ hidden }: { hidden: boolean }) {
   const { data: opps = [] } = useCrmOpportunities();
@@ -578,7 +599,7 @@ function FunilVendasPage({ hidden }: { hidden: boolean }) {
         </ResponsiveContainer>
       </div>
       <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm data-table">
           <thead>
             <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
               {["Etapa", "Qtd", "Valor Total", "Forecast"].map((h) => (
@@ -607,7 +628,7 @@ function FunilVendasPage({ hidden }: { hidden: boolean }) {
   );
 }
 
-// ─── Visão Executiva ─────────────────────────────────────────
+// —————— Visão Executiva ——————————————————————————————————————————————————————————————————————————————————
 
 function VisaoExecutivaPage({ hidden }: { hidden: boolean }) {
   const { data: transactions = [] } = useTransactions();
@@ -656,7 +677,7 @@ function VisaoExecutivaPage({ hidden }: { hidden: boolean }) {
   );
 }
 
-// ─── Faturamento por Cliente ──────────────────────────────────
+// —————— Faturamento por Cliente ————————————————————————————————————————————————————————————————————
 
 function FaturamentoClientePage({ hidden }: { hidden: boolean }) {
   const { data: transactions = [] } = useTransactions();
@@ -690,7 +711,7 @@ function FaturamentoClientePage({ hidden }: { hidden: boolean }) {
         <KpiCard label="Clientes c/ Saldo +" value={posCount.toString()} color="var(--accent)" icon={Users} />
       </div>
       <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm data-table">
           <thead>
             <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
               {["Cliente", "Receitas", "Despesas", "Saldo"].map((h) => (
@@ -717,7 +738,7 @@ function FaturamentoClientePage({ hidden }: { hidden: boolean }) {
   );
 }
 
-// ─── Inadimplência ────────────────────────────────────────────
+// —————— Inadimplência ————————————————————————————————————————————————————————————————————————————————————————
 
 function InadimplenciaPage({ hidden }: { hidden: boolean }) {
   const { data: transactions = [] } = useTransactions();
@@ -745,7 +766,7 @@ function InadimplenciaPage({ hidden }: { hidden: boolean }) {
   if (overdue.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ background: "#10b98122" }}>
+        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ background: "color-mix(in srgb, #10b981 12%, transparent)" }}>
           <AlertCircle className="w-6 h-6" style={{ color: "#10b981" }} />
         </div>
         <p className="text-base font-semibold mb-1" style={{ color: "var(--fg)" }}>Nenhum pagamento em atraso</p>
@@ -762,7 +783,7 @@ function InadimplenciaPage({ hidden }: { hidden: boolean }) {
         <KpiCard label="Mais Antigo" value={oldest} color="var(--fg-muted)" icon={TrendingDown} />
       </div>
       <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm data-table">
           <thead>
             <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
               {["Cliente", "Descrição", "Vencimento", "Dias em atraso", "Valor"].map((h) => (
@@ -783,7 +804,7 @@ function InadimplenciaPage({ hidden }: { hidden: boolean }) {
                     {dueDate ? format(dueDate, "dd/MM/yyyy", { locale: ptBR }) : "—"}
                   </td>
                   <td className="px-4 py-2.5">
-                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold" style={{ background: "#ef444422", color: "#ef4444" }}>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold" style={{ background: "color-mix(in srgb, #ef4444 12%, transparent)", color: "#ef4444" }}>
                       {dias}d
                     </span>
                   </td>
@@ -798,7 +819,7 @@ function InadimplenciaPage({ hidden }: { hidden: boolean }) {
   );
 }
 
-// ─── Fluxo de Caixa Projetado ─────────────────────────────────
+// —————— Fluxo de Caixa Projetado ——————————————————————————————————————————————————————————————————
 
 function FluxoProjetadoPage({ hidden }: { hidden: boolean }) {
   const { data: transactions = [] } = useTransactions();
@@ -862,7 +883,7 @@ function FluxoProjetadoPage({ hidden }: { hidden: boolean }) {
         </ResponsiveContainer>
       </div>
       <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm data-table">
           <thead>
             <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
               {["Mês", "Tipo", "Receitas", "Despesas", "Saldo"].map((h) => (
@@ -875,7 +896,7 @@ function FluxoProjetadoPage({ hidden }: { hidden: boolean }) {
               <tr key={r.month} style={{ background: i % 2 === 0 ? "var(--bg)" : "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
                 <td className="px-4 py-2.5 font-medium" style={{ color: "var(--fg)" }}>{r.month}</td>
                 <td className="px-4 py-2.5">
-                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: r.isPast ? "#10b98122" : "#6366f122", color: r.isPast ? "#10b981" : "#6366f1" }}>
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: r.isPast ? "color-mix(in srgb, #10b981 12%, transparent)" : "color-mix(in srgb, #6366f1 12%, transparent)", color: r.isPast ? "#10b981" : "#6366f1" }}>
                     {r.isPast ? "Realizado" : "Projetado"}
                   </span>
                 </td>
@@ -891,7 +912,7 @@ function FluxoProjetadoPage({ hidden }: { hidden: boolean }) {
   );
 }
 
-// ─── Performance / Saúde das Vagas ───────────────────────────
+// —————— Performance / Saúde das Vagas ——————————————————————————————————————————————————————
 
 type VagaHealth = "Saudável" | "Atenção" | "Em Risco" | "Crítico";
 const HEALTH_COLOR: Record<VagaHealth, string> = {
@@ -949,7 +970,7 @@ function PerformanceVagasPage() {
           </ResponsiveContainer>
         </div>
         <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-          <table className="w-full text-sm">
+          <table className="w-full text-sm data-table">
             <thead>
               <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
                 {["Vaga", "Cliente", "Recrutador", "Prazo", "Saúde"].map((h) => (
@@ -977,7 +998,303 @@ function PerformanceVagasPage() {
   );
 }
 
-// ─── Shared components ────────────────────────────────────────
+// —————— Tempo Médio de Fechamento ————————————————————————————————————————————————————————————————
+
+function TempoFechamentoPage({ hidden: _hidden }: { hidden: boolean }) {
+  const { data: jobs = [] } = useJobs();
+  const { data: profiles = [] } = useProfiles();
+
+  const closedJobs = jobs.filter((j) => j.status === "closed");
+
+  const byRecruiter = useMemo(() => {
+    return profiles
+      .map((p) => {
+        const recruiterJobs = closedJobs.filter((j) => j.recruiter_id === p.id);
+        const totalDays = recruiterJobs.reduce((sum, j) => {
+          const start = new Date(j.created_at).getTime();
+          const end = new Date(j.updated_at).getTime();
+          return sum + Math.max(0, (end - start) / 86400000);
+        }, 0);
+        const avg = recruiterJobs.length > 0 ? totalDays / recruiterJobs.length : 0;
+        return { name: p.name, count: recruiterJobs.length, avgDays: avg };
+      })
+      .filter((r) => r.count > 0)
+      .sort((a, b) => a.avgDays - b.avgDays);
+  }, [closedJobs, profiles]);
+
+  const globalAvg = byRecruiter.length > 0
+    ? byRecruiter.reduce((s, r) => s + r.avgDays * r.count, 0) / byRecruiter.reduce((s, r) => s + r.count, 0)
+    : 0;
+
+  const fastest = byRecruiter[0];
+  const slowest = byRecruiter[byRecruiter.length - 1];
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-3 gap-4">
+        <KpiCard label="Vagas Fechadas" value={closedJobs.length.toString()} color="var(--accent)" icon={Briefcase} />
+        <KpiCard label="Média Geral" value={`${globalAvg.toFixed(0)} dias`} color="#6366f1" icon={TrendingUp} />
+        <KpiCard label="Mais Rápido" value={fastest ? `${fastest.name.split(" ")[0]} (${fastest.avgDays.toFixed(0)}d)` : "—"} color="#10b981" icon={TrendingUp} />
+      </div>
+
+      <div className="rounded-xl p-6" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--fg)" }}>Dias Médios por Recrutador</h3>
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={byRecruiter} layout="vertical" barCategoryGap="30%">
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+            <XAxis type="number" tick={{ fontSize: 11, fill: "var(--fg-muted)" }} axisLine={false} tickLine={false} unit=" d" />
+            <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: "var(--fg-muted)" }} axisLine={false} tickLine={false} width={100} />
+            <Tooltip formatter={(v: number) => [`${v.toFixed(0)} dias`, "Média"]} />
+            <Bar dataKey="avgDays" name="Média de dias" fill="#6366f1" radius={[0, 4, 4, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+        <table className="w-full text-sm data-table">
+          <thead>
+            <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
+              {["Recrutador", "Vagas Fechadas", "Tempo Médio", "vs Média"].map((h) => (
+                <th key={h} className="px-4 py-3 text-left text-xs font-medium" style={{ color: "var(--fg-muted)" }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {byRecruiter.map((r, i) => {
+              const diff = r.avgDays - globalAvg;
+              return (
+                <tr key={r.name} style={{ background: i % 2 === 0 ? "var(--bg)" : "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
+                  <td className="px-4 py-2.5 font-medium" style={{ color: "var(--fg)" }}>{r.name}</td>
+                  <td className="px-4 py-2.5 text-center" style={{ color: "var(--fg)" }}>{r.count}</td>
+                  <td className="px-4 py-2.5 font-semibold" style={{ color: "#6366f1" }}>{r.avgDays.toFixed(0)} dias</td>
+                  <td className="px-4 py-2.5">
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: diff <= 0 ? "color-mix(in srgb, #10b981 12%, transparent)" : "color-mix(in srgb, #ef4444 12%, transparent)", color: diff <= 0 ? "#10b981" : "#ef4444" }}>
+                      {diff > 0 ? "+" : ""}{diff.toFixed(0)}d
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+            {byRecruiter.length === 0 && (
+              <tr><td colSpan={4} className="px-4 py-10 text-center text-sm" style={{ color: "var(--fg-muted)" }}>Nenhuma vaga fechada ainda</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {closedJobs.length > 0 && (
+        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+          <table className="w-full text-sm data-table">
+            <thead>
+              <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
+                {["Vaga", "Recrutador", "Abertura", "Duração"].map((h) => (
+                  <th key={h} className="px-4 py-3 text-left text-xs font-medium" style={{ color: "var(--fg-muted)" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {closedJobs
+                .map((j) => ({ job: j, days: Math.max(0, (new Date(j.updated_at).getTime() - new Date(j.created_at).getTime()) / 86400000) }))
+                .sort((a, b) => a.days - b.days)
+                .slice(0, 20)
+                .map(({ job: j, days }, i) => (
+                  <tr key={j.id} style={{ background: i % 2 === 0 ? "var(--bg)" : "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
+                    <td className="px-4 py-2.5 font-medium truncate max-w-[200px]" style={{ color: "var(--fg)" }}>{j.title}</td>
+                    <td className="px-4 py-2.5 text-xs" style={{ color: "var(--fg-muted)" }}>{j.recruiter?.name ?? "—"}</td>
+                    <td className="px-4 py-2.5 text-xs" style={{ color: "var(--fg-muted)" }}>{format(new Date(j.created_at), "dd/MM/yy", { locale: ptBR })}</td>
+                    <td className="px-4 py-2.5">
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: days <= globalAvg ? "color-mix(in srgb, #10b981 12%, transparent)" : "color-mix(in srgb, #f59e0b 12%, transparent)", color: days <= globalAvg ? "#10b981" : "#f59e0b" }}>
+                        {days.toFixed(0)} dias
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// —————— Conversão Comercial ————————————————————————————————————————————————————————————————————————————
+
+function ConversaoComercialPage({ hidden }: { hidden: boolean }) {
+  const { data: opps = [] } = useCrmOpportunities();
+  const { data: stages = [] } = useCrmStages();
+
+  const finalStages = stages.filter((s) => s.is_final);
+  const wonStages = finalStages.filter((s) => s.outcome === "won");
+  const lostStages = finalStages.filter((s) => s.outcome === "lost");
+
+  const closedOpps = opps.filter((o) => finalStages.some((s) => s.id === o.stage_id));
+  const wonOpps = opps.filter((o) => wonStages.some((s) => s.id === o.stage_id));
+  const lostOpps = opps.filter((o) => lostStages.some((s) => s.id === o.stage_id));
+  const openOpps = opps.filter((o) => !finalStages.some((s) => s.id === o.stage_id));
+
+  const conversionRate = closedOpps.length > 0 ? (wonOpps.length / closedOpps.length) * 100 : 0;
+  const wonValue = wonOpps.reduce((s, o) => s + (o.value ?? 0), 0);
+  const lostValue = lostOpps.reduce((s, o) => s + (o.value ?? 0), 0);
+
+  const pieData = [
+    { name: "Ganhas", value: wonOpps.length, color: "#10b981" },
+    { name: "Perdidas", value: lostOpps.length, color: "#ef4444" },
+    { name: "Em aberto", value: openOpps.length, color: "#6366f1" },
+  ].filter((d) => d.value > 0);
+
+  const byStage = stages.map((s) => ({
+    name: s.name,
+    count: opps.filter((o) => o.stage_id === s.id).length,
+    color: s.color,
+    isFinal: s.is_final,
+    outcome: s.outcome,
+  }));
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-4 gap-4">
+        <KpiCard label="Taxa de Conversão" value={`${conversionRate.toFixed(1)}%`} color={conversionRate >= 50 ? "#10b981" : conversionRate >= 25 ? "#f59e0b" : "#ef4444"} icon={TrendingUp} />
+        <KpiCard label="Oportunidades Ganhas" value={wonOpps.length.toString()} color="#10b981" icon={TrendingUp} />
+        <KpiCard label="Oportunidades Perdidas" value={lostOpps.length.toString()} color="#ef4444" icon={TrendingDown} />
+        <KpiCard label="Receita Ganha" value={fmtBRL(wonValue, hidden)} color="#10b981" icon={DollarSign} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-6">
+        <div className="rounded-xl p-6" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--fg)" }}>Distribuição de Oportunidades</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie data={pieData} cx="50%" cy="50%" outerRadius={85} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} fontSize={11}>
+                {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+          <table className="w-full text-sm data-table">
+            <thead>
+              <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
+                {["Etapa", "Qtd", "Tipo"].map((h) => (
+                  <th key={h} className="px-4 py-3 text-left text-xs font-medium" style={{ color: "var(--fg-muted)" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {byStage.map((s, i) => (
+                <tr key={s.name} style={{ background: i % 2 === 0 ? "var(--bg)" : "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
+                  <td className="px-4 py-2.5 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: s.color }} />
+                    <span style={{ color: "var(--fg)" }}>{s.name}</span>
+                  </td>
+                  <td className="px-4 py-2.5 font-semibold" style={{ color: "var(--fg)" }}>{s.count}</td>
+                  <td className="px-4 py-2.5">
+                    {s.isFinal ? (
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: s.outcome === "won" ? "color-mix(in srgb, #10b981 12%, transparent)" : "color-mix(in srgb, #ef4444 12%, transparent)", color: s.outcome === "won" ? "#10b981" : "#ef4444" }}>
+                        {s.outcome === "won" ? "Ganhou" : "Perdeu"}
+                      </span>
+                    ) : (
+                      <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "var(--border)", color: "var(--fg-muted)" }}>Ativa</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {lostValue > 0 && (
+        <div className="rounded-xl p-4 flex items-center gap-3" style={{ background: "#ef444412", border: "1px solid #ef444430" }}>
+          <AlertCircle className="w-4 h-4 shrink-0" style={{ color: "#ef4444" }} />
+          <p className="text-sm" style={{ color: "var(--fg)" }}>
+            Valor de oportunidades perdidas: <strong style={{ color: "#ef4444" }}>{fmtBRL(lostValue, hidden)}</strong>
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// —————— Faturamento por Recrutador ——————————————————————————————————————————————————————————————
+
+function FaturamentoRecrutadorPage({ hidden }: { hidden: boolean }) {
+  const { data: jobs = [] } = useJobs();
+  const { data: profiles = [] } = useProfiles();
+
+  const rows = useMemo(() => {
+    return profiles.map((p) => {
+      const recruiterJobs = jobs.filter((j) => j.recruiter_id === p.id);
+      const closedJobs = recruiterJobs.filter((j) => j.status === "closed");
+      const openJobs = recruiterJobs.filter((j) => !["closed", "cancelled"].includes(j.status));
+      const feeRealizado = closedJobs.reduce((s, j) => s + (j.fee_value ?? 0), 0);
+      const feePotencial = openJobs.reduce((s, j) => s + (j.fee_value ?? 0), 0);
+      return { profile: p, closedJobs: closedJobs.length, openJobs: openJobs.length, feeRealizado, feePotencial };
+    }).sort((a, b) => b.feeRealizado - a.feeRealizado);
+  }, [jobs, profiles]);
+
+  const totalRealizado = rows.reduce((s, r) => s + r.feeRealizado, 0);
+  const totalPotencial = rows.reduce((s, r) => s + r.feePotencial, 0);
+  const topRecruiter = rows[0];
+
+  const chartData = rows.filter((r) => r.feeRealizado > 0 || r.feePotencial > 0).map((r) => ({
+    name: r.profile.name.split(" ")[0],
+    Realizado: r.feeRealizado,
+    Potencial: r.feePotencial,
+  }));
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-3 gap-4">
+        <KpiCard label="Fee Realizado Total" value={fmtBRL(totalRealizado, hidden)} color="#10b981" icon={DollarSign} />
+        <KpiCard label="Fee Potencial" value={fmtBRL(totalPotencial, hidden)} color="#6366f1" icon={TrendingUp} />
+        <KpiCard label="Maior Fee" value={topRecruiter?.feeRealizado ? topRecruiter.profile.name.split(" ")[0] : "—"} color="#f59e0b" icon={Users} />
+      </div>
+
+      {chartData.length > 0 && (
+        <div className="rounded-xl p-6" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", filter: hidden ? "blur(8px)" : undefined }}>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={chartData} barCategoryGap="35%" barGap={4}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "var(--fg-muted)" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: "var(--fg-muted)" }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
+              <Tooltip formatter={(v: number) => fmtBRL(v, hidden)} />
+              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 12, color: "var(--fg-muted)" }} />
+              <Bar dataKey="Realizado" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Potencial" fill="#6366f1" radius={[4, 4, 0, 0]} opacity={0.5} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+        <table className="w-full text-sm data-table">
+          <thead>
+            <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
+              {["Recrutador", "Vagas Fechadas", "Fee Realizado", "Vagas em Aberto", "Fee Potencial"].map((h) => (
+                <th key={h} className="px-4 py-3 text-left text-xs font-medium" style={{ color: "var(--fg-muted)" }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={r.profile.id} style={{ background: i % 2 === 0 ? "var(--bg)" : "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
+                <td className="px-4 py-2.5 font-medium" style={{ color: "var(--fg)" }}>{r.profile.name}</td>
+                <td className="px-4 py-2.5 text-center" style={{ color: "var(--fg)" }}>{r.closedJobs}</td>
+                <td className="px-4 py-2.5 font-semibold" style={{ color: "#10b981" }}>{fmtBRL(r.feeRealizado, hidden)}</td>
+                <td className="px-4 py-2.5 text-center" style={{ color: "var(--fg-muted)" }}>{r.openJobs}</td>
+                <td className="px-4 py-2.5" style={{ color: "#6366f1" }}>{fmtBRL(r.feePotencial, hidden)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// —————— Shared components ————————————————————————————————————————————————————————————————————————————————
 
 function KpiCard({
   label,
@@ -1007,3 +1324,4 @@ function KpiCard({
     </div>
   );
 }
+

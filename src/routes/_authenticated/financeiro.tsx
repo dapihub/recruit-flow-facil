@@ -92,14 +92,14 @@ function FinanceiroPage() {
 
       {/* Tabs */}
       <div
-        className="flex gap-0 px-6 shrink-0"
+        className="flex gap-0 px-6 shrink-0 overflow-x-auto whitespace-nowrap"
         style={{ borderBottom: "1px solid var(--border)" }}
       >
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
+            className="px-4 py-2.5 text-sm font-medium transition-colors -mb-px hover:text-[var(--fg)]"
             style={
               activeTab === tab
                 ? {
@@ -137,7 +137,7 @@ function FinanceiroPage() {
   );
 }
 
-// ─── Tab: Operações ───────────────────────────────────────────
+//  Tab: Operações 
 
 function exportTxCSV(rows: Transaction[]) {
   const header = ["Data", "Descrição", "Tipo", "Categoria", "Cliente", "Valor (R$)", "Status"];
@@ -171,14 +171,14 @@ function OperacoesActions() {
     <>
       <button
         onClick={() => setDespesaOpen(true)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 hover:opacity-80"
         style={{ border: "1px solid #ef4444", color: "#ef4444", background: "transparent" }}
       >
         <Plus className="w-4 h-4" /> Despesa
       </button>
       <button
         onClick={() => setReceitaOpen(true)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 hover:opacity-80"
         style={{ background: "#10b981", color: "#fff" }}
       >
         <Plus className="w-4 h-4" /> Receita
@@ -199,6 +199,29 @@ function OperacoesActions() {
   );
 }
 
+type PeriodFilter = "month" | "prev-month" | "q3" | "year" | "all";
+
+function applyPeriod(txs: Transaction[], period: PeriodFilter): Transaction[] {
+  const now = new Date();
+  if (period === "all") return txs;
+  return txs.filter((t) => {
+    const d = new Date(t.date);
+    if (period === "month") return isSameMonth(d, now);
+    if (period === "prev-month") return isSameMonth(d, subMonths(now, 1));
+    if (period === "q3") return d >= startOfMonth(subMonths(now, 2));
+    if (period === "year") return d.getFullYear() === now.getFullYear();
+    return true;
+  });
+}
+
+const PERIOD_LABELS: { v: PeriodFilter; l: string }[] = [
+  { v: "month", l: "Este mês" },
+  { v: "prev-month", l: "Mês anterior" },
+  { v: "q3", l: "Últimos 3m" },
+  { v: "year", l: "Este ano" },
+  { v: "all", l: "Todos" },
+];
+
 function OperacoesTab({
   transactions,
   loading,
@@ -208,49 +231,75 @@ function OperacoesTab({
   loading: boolean;
   hidden: boolean;
 }) {
-  const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">(
-    "all"
-  );
+  const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("month");
   const [editTx, setEditTx] = useState<Transaction | null>(null);
   const deleteTx = useDeleteTransaction();
 
-  const filtered = transactions.filter((t) =>
-    typeFilter === "all" ? true : t.type === typeFilter
-  );
+  const filtered = useMemo(() => {
+    const byType = transactions.filter((t) =>
+      typeFilter === "all" ? true : t.type === typeFilter
+    );
+    return applyPeriod(byType, periodFilter);
+  }, [transactions, typeFilter, periodFilter]);
+
+  const filteredIncome = filtered.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+  const filteredExpense = filtered.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
 
   if (loading) return <TableSkeleton />;
 
   return (
     <>
-      {/* Filter */}
-      <div className="flex items-center gap-2 mb-4">
-        {(
-          [
-            ["all", "Todos"],
-            ["income", "Receitas"],
-            ["expense", "Despesas"],
-          ] as const
-        ).map(([v, l]) => (
-          <button
-            key={v}
-            onClick={() => setTypeFilter(v)}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-            style={
-              typeFilter === v
-                ? { background: "var(--accent)", color: "#fff" }
-                : {
-                    background: "var(--bg-card)",
-                    border: "1px solid var(--border)",
-                    color: "var(--fg-muted)",
-                  }
-            }
-          >
-            {l}
-          </button>
-        ))}
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        {/* Period */}
+        <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+          {PERIOD_LABELS.map(({ v, l }) => (
+            <button
+              key={v}
+              onClick={() => setPeriodFilter(v)}
+              className="px-3 py-1.5 text-xs font-medium transition-colors hover:text-[var(--fg)]"
+              style={
+                periodFilter === v
+                  ? { background: "var(--accent)", color: "#fff" }
+                  : { background: "var(--bg-card)", color: "var(--fg-muted)" }
+              }
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {/* Type */}
+        <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+          {([["all", "Todos"], ["income", "Receitas"], ["expense", "Despesas"]] as const).map(([v, l]) => (
+            <button
+              key={v}
+              onClick={() => setTypeFilter(v)}
+              className="px-3 py-1.5 text-xs font-medium transition-colors"
+              style={
+                typeFilter === v
+                  ? { background: v === "income" ? "#10b981" : v === "expense" ? "#ef4444" : "var(--accent)", color: "#fff" }
+                  : { background: "var(--bg-card)", color: "var(--fg-muted)" }
+              }
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {/* Summary */}
+        {filtered.length > 0 && (
+          <div className="flex items-center gap-3 ml-1 text-xs" style={{ color: "var(--fg-muted)" }}>
+            <span>+<strong style={{ color: "#10b981" }}> {fmtBRL(filteredIncome, hidden)}</strong></span>
+            <span><strong style={{ color: "#ef4444" }}> {fmtBRL(filteredExpense, hidden)}</strong></span>
+            <span>{filtered.length} registros</span>
+          </div>
+        )}
+
         <button
           onClick={() => exportTxCSV(filtered)}
-          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 hover:text-[var(--fg)] hover:bg-[var(--border)]"
           style={{ border: "1px solid var(--border)", color: "var(--fg-muted)", background: "var(--bg-card)" }}
           title="Exportar CSV"
         >
@@ -269,7 +318,7 @@ function OperacoesTab({
           className="rounded-xl overflow-hidden"
           style={{ border: "1px solid var(--border)" }}
         >
-          <table className="w-full text-sm">
+          <table className="w-full text-sm data-table">
             <thead>
               <tr
                 style={{
@@ -337,14 +386,14 @@ function OperacoesTab({
                         {tx.category.name}
                       </span>
                     ) : (
-                      "—"
+                      ""
                     )}
                   </td>
                   <td
                     className="px-4 py-3 text-xs"
                     style={{ color: "var(--fg-muted)" }}
                   >
-                    {tx.client?.name ?? "—"}
+                    {tx.client?.name ?? ""}
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={tx.status} />
@@ -398,7 +447,7 @@ function OperacoesTab({
   );
 }
 
-// ─── Tab: Folha ───────────────────────────────────────────────
+//  Tab: Folha 
 
 function FolhaActions() {
   const [open, setOpen] = useState(false);
@@ -493,7 +542,7 @@ function FolhaTab({
           className="rounded-xl overflow-hidden"
           style={{ border: "1px solid var(--border)" }}
         >
-          <table className="w-full text-sm">
+          <table className="w-full text-sm data-table">
             <thead>
               <tr
                 style={{
@@ -555,15 +604,15 @@ function FolhaTab({
                     className="px-4 py-3 text-xs"
                     style={{ color: "var(--fg-muted)" }}
                   >
-                    {entry.payment_date ? fmtDate(entry.payment_date) : "—"}
+                    {entry.payment_date ? fmtDate(entry.payment_date) : ""}
                   </td>
                   <td className="px-4 py-3">
                     <span
                       className="text-xs px-2 py-0.5 rounded-full font-medium"
                       style={
                         entry.status === "paid"
-                          ? { background: "#10b98122", color: "#10b981" }
-                          : { background: "#f59e0b22", color: "#f59e0b" }
+                          ? { background: "color-mix(in srgb, #10b981 12%, transparent)", color: "#10b981" }
+                          : { background: "color-mix(in srgb, #f59e0b 12%, transparent)", color: "#f59e0b" }
                       }
                     >
                       {entry.status === "paid" ? "Pago" : "Pendente"}
@@ -609,7 +658,7 @@ function FolhaTab({
   );
 }
 
-// ─── Tab: Custos Previstos ────────────────────────────────────
+//  Tab: Custos Previstos 
 
 function CustosPrevistosTab({
   transactions,
@@ -655,7 +704,7 @@ function CustosPrevistosTab({
           className="rounded-xl overflow-hidden"
           style={{ border: "1px solid var(--border)" }}
         >
-          <table className="w-full text-sm">
+          <table className="w-full text-sm data-table">
             <thead>
               <tr
                 style={{
@@ -689,7 +738,7 @@ function CustosPrevistosTab({
                     className="px-4 py-3 text-xs whitespace-nowrap"
                     style={{ color: "var(--fg-muted)" }}
                   >
-                    {tx.due_date ? fmtDate(tx.due_date) : "—"}
+                    {tx.due_date ? fmtDate(tx.due_date) : ""}
                   </td>
                   <td className="px-4 py-3 font-medium" style={{ color: "var(--fg)" }}>
                     {tx.description}
@@ -698,7 +747,7 @@ function CustosPrevistosTab({
                     className="px-4 py-3 text-xs"
                     style={{ color: "var(--fg-muted)" }}
                   >
-                    {tx.category?.name ?? "—"}
+                    {tx.category?.name ?? ""}
                   </td>
                   <td
                     className="px-4 py-3 font-semibold"
@@ -746,7 +795,7 @@ function CustosPrevistosTab({
   );
 }
 
-// ─── Tab: Análise Gráfica ─────────────────────────────────────
+//  Tab: Análise Gráfica 
 
 function AnaliseTab({
   transactions,
@@ -818,7 +867,7 @@ function AnaliseTab({
   return (
     <div className="space-y-6">
       {/* Summary KPIs */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: "Receitas (6m)", value: totalReceitas, color: "#10b981", icon: TrendingUp },
           { label: "Despesas (6m)", value: totalDespesas, color: "#ef4444", icon: TrendingDown },
@@ -856,7 +905,7 @@ function AnaliseTab({
         }}
       >
         <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--fg)" }}>
-          Receitas vs Despesas — últimos 6 meses
+          Receitas vs Despesas — Últimos 6 meses
         </h3>
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={chartData} barGap={4} barCategoryGap="30%">
@@ -896,17 +945,17 @@ function AnaliseTab({
   );
 }
 
-// ─── Helpers ──────────────────────────────────────────────────
+//  Helpers 
 
 function StatusBadge({ status }: { status: Transaction["status"] }) {
   const styles: Record<
     string,
     { bg: string; color: string; label: string }
   > = {
-    paid: { bg: "#10b98122", color: "#10b981", label: "Pago" },
-    pending: { bg: "#f59e0b22", color: "#f59e0b", label: "Pendente" },
-    overdue: { bg: "#ef444422", color: "#ef4444", label: "Vencido" },
-    cancelled: { bg: "#6b728022", color: "#6b7280", label: "Cancelado" },
+    paid: { bg: "color-mix(in srgb, #10b981 12%, transparent)", color: "#10b981", label: "Pago" },
+    pending: { bg: "color-mix(in srgb, #f59e0b 12%, transparent)", color: "#f59e0b", label: "Pendente" },
+    overdue: { bg: "color-mix(in srgb, #ef4444 12%, transparent)", color: "#ef4444", label: "Vencido" },
+    cancelled: { bg: "color-mix(in srgb, #6b7280 12%, transparent)", color: "#6b7280", label: "Cancelado" },
   };
   const s = styles[status] ?? styles.pending;
   return (
@@ -953,3 +1002,4 @@ function TableSkeleton() {
     </div>
   );
 }
+

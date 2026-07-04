@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Plus,
   Pencil,
@@ -12,6 +12,9 @@ import {
   ChevronUp,
   Clock,
   Building2,
+  Search,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { format, isAfter, isBefore, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -22,6 +25,7 @@ import { ReuniaoForm } from "@/components/reunioes/ReuniaoForm";
 import {
   useMeetings,
   useDeleteMeeting,
+  useUpdateMeeting,
   MEETING_TYPE_LABELS,
   MEETING_STATUS_LABELS,
   MEETING_STATUS_COLORS,
@@ -45,12 +49,15 @@ type Tab = (typeof TABS)[number];
 
 function ReunioesPage() {
   const [activeTab, setActiveTab] = useState<Tab>("Próximas");
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<MeetingType | "">("");
   const [formOpen, setFormOpen] = useState(false);
   const [editMeeting, setEditMeeting] = useState<Meeting | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: meetings = [], isLoading } = useMeetings();
   const deleteMeeting = useDeleteMeeting();
+  const updateMeeting = useUpdateMeeting();
 
   const now = new Date();
 
@@ -77,7 +84,17 @@ function ReunioesPage() {
     Todas: meetings,
   };
 
-  const filtered = tabData[activeTab];
+  const filtered = useMemo(() => {
+    return tabData[activeTab].filter((m) => {
+      const matchSearch =
+        !search ||
+        m.title.toLowerCase().includes(search.toLowerCase()) ||
+        (m.client?.name ?? "").toLowerCase().includes(search.toLowerCase());
+      const matchType = !typeFilter || m.type === typeFilter;
+      return matchSearch && matchType;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meetings, activeTab, search, typeFilter]);
 
   function openEdit(m: Meeting) {
     setEditMeeting(m);
@@ -118,7 +135,7 @@ function ReunioesPage() {
         <KpiItem
           label="Próximas 7 dias"
           value={next7.length.toString()}
-          accent
+          accent={next7.length > 0}
         />
         <KpiItem
           label="Realizadas"
@@ -147,7 +164,7 @@ function ReunioesPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
+            className="px-4 py-2.5 text-sm font-medium transition-colors -mb-px hover:text-[var(--fg)]"
             style={
               activeTab === tab
                 ? {
@@ -168,6 +185,31 @@ function ReunioesPage() {
             )}
           </button>
         ))}
+      </div>
+
+      {/* Search + type filter */}
+      <div className="flex items-center gap-3 px-6 py-3 shrink-0">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "var(--fg-muted)" }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar reunião ou cliente..."
+            className="w-full pl-9 pr-3 py-1.5 rounded-lg text-sm focus:outline-none"
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--fg)" }}
+          />
+        </div>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value as MeetingType | "")}
+          className="px-3 py-1.5 rounded-lg text-sm focus:outline-none w-44 shrink-0"
+          style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--fg)" }}
+        >
+          <option value="">Todos os tipos</option>
+          {(Object.entries(MEETING_TYPE_LABELS) as [MeetingType, string][]).map(([k, v]) => (
+            <option key={k} value={k}>{v}</option>
+          ))}
+        </select>
       </div>
 
       {/* Content */}
@@ -227,7 +269,7 @@ function ReunioesPage() {
                     <div
                       className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                       style={{
-                        background: "var(--accent)22",
+                        background: "color-mix(in srgb, var(--accent) 12%, transparent)",
                         color: "var(--accent)",
                       }}
                     >
@@ -310,12 +352,28 @@ function ReunioesPage() {
                           style={{ color: "var(--fg-muted)" }}
                           title={isExpanded ? "Ocultar ata" : "Ver ata"}
                         >
-                          {isExpanded ? (
-                            <ChevronUp className="w-4 h-4" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4" />
-                          )}
+                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </button>
+                      )}
+                      {meeting.status === "scheduled" && (
+                        <>
+                          <button
+                            onClick={() => updateMeeting.mutate({ id: meeting.id, title: meeting.title, type: meeting.type, scheduled_at: meeting.scheduled_at, status: "completed" })}
+                            className="p-1.5 rounded-lg hover:opacity-80"
+                            style={{ color: "#10b981" }}
+                            title="Marcar como Realizada"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => updateMeeting.mutate({ id: meeting.id, title: meeting.title, type: meeting.type, scheduled_at: meeting.scheduled_at, status: "cancelled" })}
+                            className="p-1.5 rounded-lg hover:opacity-80"
+                            style={{ color: "#f59e0b" }}
+                            title="Cancelar"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                          </button>
+                        </>
                       )}
                       <button
                         onClick={() => openEdit(meeting)}
@@ -442,3 +500,4 @@ function MeetingsSkeleton() {
     </div>
   );
 }
+

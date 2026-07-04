@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -12,6 +12,8 @@ import {
   Circle,
   Briefcase,
   CalendarDays,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import {
   format,
@@ -32,7 +34,7 @@ import {
 import { ptBR } from "date-fns/locale";
 import { Header } from "@/components/layout/Header";
 import { ReuniaoForm } from "@/components/reunioes/ReuniaoForm";
-import { useMeetings, type MeetingType } from "@/hooks/useMeetings";
+import { useMeetings, useDeleteMeeting, type MeetingType, type Meeting } from "@/hooks/useMeetings";
 import { useTasks } from "@/hooks/useTasks";
 import { useJobs } from "@/hooks/useJobs";
 
@@ -55,9 +57,11 @@ function AgendaPage() {
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [formOpen, setFormOpen] = useState(false);
+  const [editMeeting, setEditMeeting] = useState<Meeting | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("mes");
 
   const { data: meetings = [] } = useMeetings();
+  const deleteMeeting = useDeleteMeeting();
   const { data: tasks = [] } = useTasks();
   const { data: jobs = [] } = useJobs();
 
@@ -101,7 +105,7 @@ function AgendaPage() {
 
   const cells = useMemo(
     () =>
-      Array.from({ length: 42 }, (_, i) => {
+      Array.from({ length: Math.ceil((offset + daysInMonth) / 7) * 7 }, (_, i) => {
         const day = i - offset + 1;
         return day >= 1 && day <= daysInMonth ? day : null;
       }),
@@ -134,13 +138,30 @@ function AgendaPage() {
   const totalEventsSelected =
     selectedDayMeetings.length + selectedDayTasks.length + selectedDayJobs.length;
 
-  // ── Legend counts ─────────────────────────────────────────────
-  const monthMeetings = meetings.filter((m) =>
-    isSameMonth(new Date(m.scheduled_at), currentMonth)
-  ).length;
-  const monthTasks = tasks.filter(
-    (t) => t.due_date && isSameMonth(new Date(t.due_date), currentMonth)
-  ).length;
+  // ── Legend counts (context-aware) ────────────────────────────
+  const legendMeetings = useMemo(() => {
+    if (viewMode === "semana") {
+      const ws = startOfWeek(selectedDate, { weekStartsOn: 0 });
+      const we = addDays(ws, 6);
+      return meetings.filter((m) => { const d = new Date(m.scheduled_at); return d >= ws && d <= we; }).length;
+    }
+    if (viewMode === "dia") {
+      return meetings.filter((m) => isSameDay(new Date(m.scheduled_at), selectedDate)).length;
+    }
+    return meetings.filter((m) => isSameMonth(new Date(m.scheduled_at), currentMonth)).length;
+  }, [meetings, viewMode, selectedDate, currentMonth]);
+
+  const legendTasks = useMemo(() => {
+    if (viewMode === "semana") {
+      const ws = startOfWeek(selectedDate, { weekStartsOn: 0 });
+      const we = addDays(ws, 6);
+      return tasks.filter((t) => { const d = t.due_date ? new Date(t.due_date) : null; return d && d >= ws && d <= we; }).length;
+    }
+    if (viewMode === "dia") {
+      return tasks.filter((t) => t.due_date && isSameDay(new Date(t.due_date), selectedDate)).length;
+    }
+    return tasks.filter((t) => t.due_date && isSameMonth(new Date(t.due_date), currentMonth)).length;
+  }, [tasks, viewMode, selectedDate, currentMonth]);
 
   // ── Subtitle ──────────────────────────────────────────────────
   const subtitle = useMemo(() => {
@@ -219,7 +240,7 @@ function AgendaPage() {
             </div>
 
             <button
-              onClick={() => setFormOpen(true)}
+              onClick={() => { setEditMeeting(null); setFormOpen(true); }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium"
               style={{ background: "var(--accent)", color: "#fff" }}
             >
@@ -234,8 +255,8 @@ function AgendaPage() {
         className="flex items-center gap-4 px-6 py-2 text-xs"
         style={{ borderBottom: "1px solid var(--border)" }}
       >
-        <Legend color="#6366f1" label={`${monthMeetings} reunião${monthMeetings !== 1 ? "ões" : ""}`} />
-        <Legend color="#f59e0b" label={`${monthTasks} tarefa${monthTasks !== 1 ? "s" : ""}`} />
+        <Legend color="#6366f1" label={`${legendMeetings} ${legendMeetings !== 1 ? "reuniões" : "reunião"}`} />
+        <Legend color="#f59e0b" label={`${legendTasks} tarefa${legendTasks !== 1 ? "s" : ""}`} />
       </div>
 
       {/* Main layout */}
@@ -300,7 +321,7 @@ function AgendaPage() {
                   Nenhum evento neste dia
                 </p>
                 <button
-                  onClick={() => setFormOpen(true)}
+                  onClick={() => { setEditMeeting(null); setFormOpen(true); }}
                   className="mt-3 text-xs font-medium hover:underline"
                   style={{ color: "var(--accent)" }}
                 >
@@ -320,11 +341,11 @@ function AgendaPage() {
                   <div className="flex items-start gap-2">
                     <div
                       className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                      style={{ background: "#6366f122", color: "#6366f1" }}
+                      style={{ background: "color-mix(in srgb, #6366f1 12%, transparent)", color: "#6366f1" }}
                     >
                       <Icon className="w-3.5 h-3.5" />
                     </div>
-                    <div className="min-w-0">
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium leading-snug" style={{ color: "var(--fg)" }}>
                         {m.title}
                       </p>
@@ -337,6 +358,24 @@ function AgendaPage() {
                           {m.client.name}
                         </p>
                       )}
+                    </div>
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <button
+                        onClick={() => { setEditMeeting(m); setFormOpen(true); }}
+                        className="p-1 rounded-lg hover:opacity-80"
+                        style={{ color: "var(--fg-muted)" }}
+                        title="Editar"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => { if (!confirm(`Remover "${m.title}"?`)) return; deleteMeeting.mutate(m.id); }}
+                        className="p-1 rounded-lg hover:opacity-80"
+                        style={{ color: "#ef4444" }}
+                        title="Remover"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -386,7 +425,7 @@ function AgendaPage() {
                 <div className="flex items-start gap-2">
                   <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                    style={{ background: "#ef444422", color: "#ef4444" }}
+                    style={{ background: "color-mix(in srgb, #ef4444 12%, transparent)", color: "#ef4444" }}
                   >
                     <Briefcase className="w-3.5 h-3.5" />
                   </div>
@@ -410,7 +449,7 @@ function AgendaPage() {
 
           <div className="p-3 shrink-0" style={{ borderTop: "1px solid var(--border)" }}>
             <button
-              onClick={() => setFormOpen(true)}
+              onClick={() => { setEditMeeting(null); setFormOpen(true); }}
               className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium hover:opacity-80"
               style={{ border: "1px dashed var(--border)", color: "var(--fg-muted)" }}
             >
@@ -421,9 +460,11 @@ function AgendaPage() {
       </div>
 
       <ReuniaoForm
+        key={editMeeting?.id ?? "new"}
         open={formOpen}
-        onClose={() => setFormOpen(false)}
-        defaultScheduledAt={(() => {
+        onClose={() => { setFormOpen(false); setEditMeeting(null); }}
+        defaultValues={editMeeting ?? undefined}
+        defaultScheduledAt={editMeeting ? undefined : (() => {
           const d = new Date(selectedDate);
           d.setHours(9, 0, 0, 0);
           return d.toISOString();
@@ -447,15 +488,27 @@ interface MonthViewProps {
 function MonthView({ cells, currentMonth, selectedDate, getEventsForDate, onSelectDate, typeIcons }: MonthViewProps) {
   return (
     <div className="p-4">
-      <div className="grid grid-cols-7 mb-1">
-        {WEEK_DAYS.map((d) => (
-          <div key={d} className="text-center text-xs font-medium py-2" style={{ color: "var(--fg-muted)" }}>
+      <div className="grid grid-cols-7 mb-0" style={{ borderBottom: "1px solid var(--border)" }}>
+        {WEEK_DAYS.map((d, i) => (
+          <div
+            key={d}
+            className="text-center text-xs font-medium py-2"
+            style={{
+              color: i === 0 || i === 6 ? "var(--fg-muted)" : "var(--fg-muted)",
+              background: i === 0 || i === 6
+                ? "color-mix(in srgb, var(--fg) 4%, var(--bg-card))"
+                : "var(--bg-card)",
+              opacity: i === 0 || i === 6 ? 0.7 : 1,
+            }}
+          >
             {d}
           </div>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-px" style={{ background: "var(--border)" }}>
         {cells.map((day, i) => {
+          const col = i % 7;
+          const isWeekend = col === 0 || col === 6;
           if (!day) {
             return <div key={`empty-${i}`} className="min-h-[80px]" style={{ background: "var(--bg)" }} />;
           }
@@ -469,7 +522,11 @@ function MonthView({ cells, currentMonth, selectedDate, getEventsForDate, onSele
               onClick={() => onSelectDate(date)}
               className="min-h-[80px] p-2 text-left transition-colors hover:brightness-95"
               style={{
-                background: isSelected ? "var(--accent)11" : "var(--bg-card)",
+                background: isSelected
+                  ? "color-mix(in srgb, var(--accent) 12%, var(--bg-card))"
+                  : isWeekend
+                  ? "color-mix(in srgb, var(--fg) 4%, var(--bg-card))"
+                  : "var(--bg-card)",
                 outline: isSelected ? `2px solid var(--accent)` : undefined,
                 outlineOffset: "-2px",
               }}
@@ -484,20 +541,20 @@ function MonthView({ cells, currentMonth, selectedDate, getEventsForDate, onSele
                 {dm.slice(0, 2).map((m) => {
                   const Icon = typeIcons[m.type as MeetingType];
                   return (
-                    <div key={m.id} className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight truncate" style={{ background: "#6366f122", color: "#6366f1" }}>
+                    <div key={m.id} className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight truncate" style={{ background: "color-mix(in srgb, #6366f1 12%, transparent)", color: "#6366f1" }}>
                       <Icon className="w-2.5 h-2.5 shrink-0" />
                       <span className="truncate">{m.title}</span>
                     </div>
                   );
                 })}
                 {dt.slice(0, 1).map((t) => (
-                  <div key={t.id} className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight truncate" style={{ background: "#f59e0b22", color: "#f59e0b" }}>
+                  <div key={t.id} className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight truncate" style={{ background: "color-mix(in srgb, #f59e0b 12%, transparent)", color: "#f59e0b" }}>
                     <CheckCircle2 className="w-2.5 h-2.5 shrink-0" />
                     <span className="truncate">{t.title}</span>
                   </div>
                 ))}
                 {dj.slice(0, 1).map((j) => (
-                  <div key={j.id} className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight truncate" style={{ background: "#ef444422", color: "#ef4444" }}>
+                  <div key={j.id} className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight truncate" style={{ background: "color-mix(in srgb, #ef4444 12%, transparent)", color: "#ef4444" }}>
                     <Briefcase className="w-2.5 h-2.5 shrink-0" />
                     <span className="truncate">{j.title}</span>
                   </div>
@@ -518,6 +575,10 @@ function MonthView({ cells, currentMonth, selectedDate, getEventsForDate, onSele
 
 // ─── Week View ────────────────────────────────────────────────
 
+const GRID_START = 7;   // 7h
+const GRID_END   = 22;  // 22h exclusive
+const HOUR_PX    = 56;  // px per hour
+
 interface WeekViewProps {
   selectedDate: Date;
   meetings: any[];
@@ -528,30 +589,51 @@ interface WeekViewProps {
 }
 
 function WeekView({ selectedDate, meetings, tasks, jobs, onSelectDate, typeIcons }: WeekViewProps) {
-  const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 });
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const weekStart  = startOfWeek(selectedDate, { weekStartsOn: 0 });
+  const weekDays   = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const hours      = Array.from({ length: GRID_END - GRID_START }, (_, i) => GRID_START + i);
+  const totalH     = (GRID_END - GRID_START) * HOUR_PX;
+
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const nowTop = (now.getHours() + now.getMinutes() / 60 - GRID_START) * HOUR_PX;
+  const showNowLine = nowTop >= 0 && nowTop <= totalH;
+
+  const hasAllDay = weekDays.some((day) =>
+    tasks.some((t) => t.due_date && isSameDay(new Date(t.due_date), day)) ||
+    jobs.some((j)  => j.deadline  && isSameDay(new Date(j.deadline),  day))
+  );
+
+  function evTop(scheduledAt: string) {
+    const d = new Date(scheduledAt);
+    return (d.getHours() + d.getMinutes() / 60 - GRID_START) * HOUR_PX;
+  }
+  function evH(durationMin?: number | null) {
+    return Math.max(((durationMin ?? 60) / 60) * HOUR_PX, 24);
+  }
+
+  const extraH = hasAllDay ? 32 : 0;
 
   return (
-    <div className="p-4">
-      {/* Header row */}
-      <div className="grid grid-cols-7 mb-1 gap-px">
+    <div className="flex flex-col" style={{ height: `calc(100vh - ${210 + extraH}px)` }}>
+      {/* Day headers */}
+      <div className="flex shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
+        <div className="w-12 shrink-0" />
         {weekDays.map((day) => {
-          const isTodayDate = isToday(day);
-          const isSelected = isSameDay(day, selectedDate);
+          const isT = isToday(day);
+          const isS = isSameDay(day, selectedDate);
           return (
-            <button
-              key={day.toISOString()}
-              onClick={() => onSelectDate(day)}
-              className="text-center py-2 rounded-lg transition-colors hover:brightness-95"
-              style={isSelected ? { background: "var(--accent)11" } : undefined}
+            <button key={day.toISOString()} onClick={() => onSelectDate(day)}
+              className="flex-1 text-center py-2 transition-colors hover:brightness-95"
+              style={isS ? { background: "var(--accent)11" } : undefined}
             >
-              <p className="text-xs font-medium" style={{ color: "var(--fg-muted)" }}>
-                {WEEK_DAYS[day.getDay()]}
-              </p>
-              <span
-                className="inline-flex w-7 h-7 items-center justify-center rounded-full text-sm font-semibold mt-0.5"
-                style={isTodayDate ? { background: "var(--accent)", color: "#fff" } : isSelected ? { background: "var(--accent)22", color: "var(--accent)" } : { color: "var(--fg)" }}
-              >
+              <p className="text-[11px] font-medium" style={{ color: "var(--fg-muted)" }}>{WEEK_DAYS[day.getDay()]}</p>
+              <span className="inline-flex w-7 h-7 items-center justify-center rounded-full text-sm font-semibold mt-0.5"
+                style={isT ? { background: "var(--accent)", color: "#fff" } : isS ? { background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" } : { color: "var(--fg)" }}>
                 {format(day, "d")}
               </span>
             </button>
@@ -559,54 +641,116 @@ function WeekView({ selectedDate, meetings, tasks, jobs, onSelectDate, typeIcons
         })}
       </div>
 
-      {/* Event grid */}
-      <div className="grid grid-cols-7 gap-px" style={{ background: "var(--border)" }}>
-        {weekDays.map((day) => {
-          const dm = meetings.filter((m) => isSameDay(new Date(m.scheduled_at), day));
-          const dt = tasks.filter((t) => t.due_date && isSameDay(new Date(t.due_date), day));
-          const dj = jobs.filter((j) => j.deadline && isSameDay(new Date(j.deadline), day));
-          const isSelected = isSameDay(day, selectedDate);
-
-          return (
-            <div
-              key={day.toISOString()}
-              onClick={() => onSelectDate(day)}
-              className="min-h-[120px] p-2 cursor-pointer transition-colors hover:brightness-95"
-              style={{
-                background: isSelected ? "var(--accent)08" : "var(--bg-card)",
-                outline: isSelected ? `2px solid var(--accent)` : undefined,
-                outlineOffset: "-2px",
-              }}
-            >
-              <div className="space-y-1">
-                {dm.map((m) => {
-                  const Icon = typeIcons[m.type as MeetingType];
-                  return (
-                    <div key={m.id} className="flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] truncate" style={{ background: "#6366f122", color: "#6366f1" }}>
-                      <Icon className="w-3 h-3 shrink-0" />
-                      <span className="truncate">{m.title}</span>
-                    </div>
-                  );
-                })}
+      {/* All-day strip: tasks + deadlines */}
+      {hasAllDay && (
+        <div className="flex shrink-0" style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-card)" }}>
+          <div className="w-12 shrink-0 flex items-center justify-end pr-1.5">
+            <span className="text-[9px]" style={{ color: "var(--fg-muted)" }}>dia</span>
+          </div>
+          {weekDays.map((day) => {
+            const dt = tasks.filter((t) => t.due_date && isSameDay(new Date(t.due_date), day));
+            const dj = jobs.filter((j)  => j.deadline  && isSameDay(new Date(j.deadline),  day));
+            return (
+              <div key={day.toISOString()} className="flex-1 p-0.5 space-y-0.5 min-h-[24px]"
+                style={{ borderLeft: "1px solid var(--border)" }}>
                 {dt.map((t) => (
-                  <div key={t.id} className="flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] truncate" style={{ background: "#f59e0b22", color: "#f59e0b" }}>
-                    <CheckCircle2 className="w-3 h-3 shrink-0" />
+                  <div key={t.id} className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] truncate"
+                    style={{ background: "color-mix(in srgb, #f59e0b 12%, transparent)", color: "#f59e0b" }}>
+                    <CheckCircle2 className="w-2.5 h-2.5 shrink-0" />
                     <span className="truncate">{t.title}</span>
                   </div>
                 ))}
                 {dj.map((j) => (
-                  <div key={j.id} className="flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] truncate" style={{ background: "#10b98122", color: "#10b981" }}>
-                    <Briefcase className="w-3 h-3 shrink-0" />
+                  <div key={j.id} className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] truncate"
+                    style={{ background: "color-mix(in srgb, #ef4444 12%, transparent)", color: "#ef4444" }}>
+                    <Briefcase className="w-2.5 h-2.5 shrink-0" />
                     <span className="truncate">{j.title}</span>
                   </div>
                 ))}
-                {dm.length === 0 && dt.length === 0 && dj.length === 0 && (
-                  <p className="text-[10px] text-center pt-4" style={{ color: "var(--fg-muted)", opacity: 0.4 }}>—</p>
-                )}
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+      )}
+
+      {/* Scrollable time grid */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="flex" style={{ height: totalH, minWidth: 560 }}>
+          {/* Hour gutter */}
+          <div className="w-12 shrink-0 relative" style={{ borderRight: "1px solid var(--border)" }}>
+            {hours.map((h) => (
+              <div key={h} className="absolute right-1.5 select-none text-[10px]"
+                style={{ top: (h - GRID_START) * HOUR_PX - 7, color: "var(--fg-muted)" }}>
+                {String(h).padStart(2, "0")}h
+              </div>
+            ))}
+          </div>
+
+          {/* Day columns */}
+          {weekDays.map((day) => {
+            const dm = meetings.filter((m) => isSameDay(new Date(m.scheduled_at), day));
+            const isS = isSameDay(day, selectedDate);
+            return (
+              <div key={day.toISOString()} className="flex-1 relative cursor-pointer"
+                style={{ borderLeft: "1px solid var(--border)", background: isS ? "color-mix(in srgb, var(--accent) 4%, transparent)" : undefined }}
+                onClick={() => onSelectDate(day)}
+              >
+                {/* Hour lines */}
+                {hours.map((h) => (
+                  <div key={h} className="absolute left-0 right-0 pointer-events-none"
+                    style={{ top: (h - GRID_START) * HOUR_PX, borderTop: "1px solid var(--border)", opacity: 0.3 }} />
+                ))}
+                {/* Half-hour lines (subtle) */}
+                {hours.map((h) => (
+                  <div key={`half-${h}`} className="absolute left-0 right-0 pointer-events-none"
+                    style={{ top: (h - GRID_START) * HOUR_PX + HOUR_PX / 2, borderTop: "1px dashed var(--border)", opacity: 0.12 }} />
+                ))}
+
+                {/* Current-time line */}
+                {showNowLine && isSameDay(day, now) && (
+                  <div className="absolute left-0 right-0 pointer-events-none z-10" style={{ top: nowTop }}>
+                    <div className="relative flex items-center">
+                      <div className="w-2 h-2 rounded-full shrink-0 -ml-1" style={{ background: "#ef4444" }} />
+                      <div className="flex-1 h-[1.5px]" style={{ background: "#ef4444" }} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Meeting chips */}
+                {dm.map((m) => {
+                  const Icon = typeIcons[m.type as MeetingType];
+                  const top  = evTop(m.scheduled_at);
+                  const h    = evH(m.duration_min);
+                  if (top < 0 || top > totalH) return null;
+                  const tall = h >= 40;
+                  return (
+                    <div key={m.id}
+                      className="absolute left-0.5 right-0.5 rounded-md px-1.5 overflow-hidden"
+                      style={{ top, height: h, background: "#6366f11a", border: "1px solid #6366f144", zIndex: 1, paddingTop: 3 }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center gap-1 leading-none">
+                        <Icon className="w-2.5 h-2.5 shrink-0" style={{ color: "#6366f1" }} />
+                        <span className="text-[10px] font-bold" style={{ color: "#6366f1" }}>
+                          {format(new Date(m.scheduled_at), "HH:mm")}
+                        </span>
+                        {!tall && (
+                          <span className="text-[10px] truncate" style={{ color: "#6366f1" }}> {m.title}</span>
+                        )}
+                      </div>
+                      {tall && (
+                        <p className="text-[10px] truncate mt-0.5" style={{ color: "#6366f1" }}>{m.title}</p>
+                      )}
+                      {tall && m.client && (
+                        <p className="text-[9px] truncate mt-0.5" style={{ color: "#6366f199" }}>{m.client.name}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -662,7 +806,7 @@ function DayView({ selectedDate, meetings, tasks, jobs, typeIcons, onNewMeeting 
               <div className="flex items-start gap-3">
                 <div
                   className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: "#6366f122", color: "#6366f1" }}
+                  style={{ background: "color-mix(in srgb, #6366f1 12%, transparent)", color: "#6366f1" }}
                 >
                   <Icon className="w-4 h-4" />
                 </div>
@@ -676,7 +820,7 @@ function DayView({ selectedDate, meetings, tasks, jobs, typeIcons, onNewMeeting 
                 </div>
                 <span
                   className="text-xs px-2 py-0.5 rounded-full font-medium"
-                  style={{ background: "#6366f122", color: "#6366f1" }}
+                  style={{ background: "color-mix(in srgb, #6366f1 12%, transparent)", color: "#6366f1" }}
                 >
                   Reunião
                 </span>
@@ -692,7 +836,7 @@ function DayView({ selectedDate, meetings, tasks, jobs, typeIcons, onNewMeeting 
           style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
         >
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#f59e0b22", color: "#f59e0b" }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "color-mix(in srgb, #f59e0b 12%, transparent)", color: "#f59e0b" }}>
               {t.status === "done" ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
             </div>
             <div className="flex-1 min-w-0">
@@ -704,7 +848,7 @@ function DayView({ selectedDate, meetings, tasks, jobs, typeIcons, onNewMeeting 
               </p>
               {t.job && <p className="text-xs mt-0.5" style={{ color: "var(--fg-muted)" }}>{t.job.title}</p>}
             </div>
-            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#f59e0b22", color: "#f59e0b" }}>
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "color-mix(in srgb, #f59e0b 12%, transparent)", color: "#f59e0b" }}>
               Tarefa
             </span>
           </div>
@@ -718,14 +862,14 @@ function DayView({ selectedDate, meetings, tasks, jobs, typeIcons, onNewMeeting 
           style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
         >
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#ef444422", color: "#ef4444" }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "color-mix(in srgb, #ef4444 12%, transparent)", color: "#ef4444" }}>
               <Briefcase className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold" style={{ color: "var(--fg)" }}>{j.title}</p>
               {j.client && <p className="text-xs mt-0.5" style={{ color: "var(--fg-muted)" }}>{j.client.name}</p>}
             </div>
-            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#ef444422", color: "#ef4444" }}>
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "color-mix(in srgb, #ef4444 12%, transparent)", color: "#ef4444" }}>
               Prazo vaga
             </span>
           </div>

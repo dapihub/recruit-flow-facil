@@ -4,16 +4,18 @@ interface KpiItemProps {
   label: string;
   value: string;
   accent?: boolean;
+  danger?: boolean;
 }
 
-export function KpiItem({ label, value, accent }: KpiItemProps) {
+export function KpiItem({ label, value, accent, danger }: KpiItemProps) {
+  const valueColor = accent ? "#6366f1" : danger ? "#ef4444" : "var(--fg)";
   return (
-    <div className="flex flex-col gap-0.5 px-4 py-2.5">
-      <p className="text-xs" style={{ color: "var(--fg-muted)" }}>{label}</p>
-      <p
-        className={cn("text-lg font-bold", accent && "text-indigo-500")}
-        style={accent ? undefined : { color: "var(--fg)" }}
-      >
+    <div
+      className="flex flex-col gap-0.5 px-5 py-3 border-r last:border-r-0"
+      style={{ borderColor: "var(--border)" }}
+    >
+      <p className="text-[11px]" style={{ color: "var(--fg-muted)" }}>{label}</p>
+      <p className="text-base font-bold tabular-nums" style={{ color: valueColor }}>
         {value}
       </p>
     </div>
@@ -23,7 +25,7 @@ export function KpiItem({ label, value, accent }: KpiItemProps) {
 export function PageKpis({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="flex items-center flex-wrap gap-x-2 gap-y-1 px-6 py-1 shrink-0"
+      className="flex items-stretch flex-wrap shrink-0"
       style={{
         background: "var(--bg-card)",
         borderBottom: "1px solid var(--border)",

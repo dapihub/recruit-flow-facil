@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Search, TrendingUp, Calendar, User, LayoutList, Kanban, Pencil, Trash2, BarChart2, Lightbulb, DollarSign, Trophy, XCircle } from "lucide-react";
+import { Plus, Search, TrendingUp, Calendar, User, LayoutList, Kanban, Pencil, Trash2, BarChart2, Lightbulb, DollarSign, Trophy, XCircle, Building2, FileInput, Globe } from "lucide-react";
 import { format, subMonths, startOfMonth, isSameMonth, subDays, getYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/crm")({
 function CrmPage() {
   const { hidden } = useHideValues();
   const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState<"kanban" | "table" | "insights">("kanban");
+  const [viewMode, setViewMode] = useState<"kanban" | "table" | "funil-cliente" | "formularios" | "insights">("kanban");
   const [formOpen, setFormOpen] = useState(false);
   const [editOpp, setEditOpp] = useState<CrmOpportunity | null>(null);
   const [defaultStageId, setDefaultStageId] = useState<string | undefined>();
@@ -54,6 +54,9 @@ function CrmPage() {
   const overdue = openOpps.filter(
     (o) => o.expected_close && new Date(o.expected_close) < now
   );
+  const stagnant = openOpps.filter(
+    (o) => new Date(o.updated_at) <= subDays(now, 7)
+  ).length;
 
   function openCreate(stageId?: string) {
     setEditOpp(null);
@@ -143,6 +146,30 @@ function CrmPage() {
               >
                 <Lightbulb className="w-3.5 h-3.5" /> Insights
               </button>
+              <button
+                onClick={() => setViewMode("funil-cliente")}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors"
+                style={
+                  viewMode === "funil-cliente"
+                    ? { background: "var(--accent)", color: "#fff" }
+                    : { background: "var(--bg-card)", color: "var(--fg-muted)" }
+                }
+                title="Funil do Cliente"
+              >
+                <Building2 className="w-3.5 h-3.5" /> Por Cliente
+              </button>
+              <button
+                onClick={() => setViewMode("formularios")}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors"
+                style={
+                  viewMode === "formularios"
+                    ? { background: "var(--accent)", color: "#fff" }
+                    : { background: "var(--bg-card)", color: "var(--fg-muted)" }
+                }
+                title="Formulários"
+              >
+                <FileInput className="w-3.5 h-3.5" /> Formulários
+              </button>
             </div>
             <button
               onClick={() => openCreate()}
@@ -157,14 +184,14 @@ function CrmPage() {
 
       {/* Pipeline metrics strip */}
       <div
-        className="grid grid-cols-4 gap-3 px-6 py-3 shrink-0"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3 px-6 py-3 shrink-0"
         style={{ borderBottom: "1px solid var(--border)" }}
       >
         {[
           { label: "Forecast Total", value: fmtBRL(forecast, hidden), color: "var(--accent)" },
           { label: "Ações vencidas", value: overdue.length.toString(), color: overdue.length > 0 ? "#ef4444" : "var(--fg)" },
-          { label: "Sem follow-up", value: "0", color: "var(--fg-muted)" }, // TODO: conectar ao backend
-          { label: "Estagnados 7d+", value: "0", color: "var(--fg-muted)" }, // TODO: conectar ao backend
+          { label: "Estagnados 7d+", value: stagnant.toString(), color: stagnant > 0 ? "#f59e0b" : "var(--fg)" },
+          { label: "Ganhos", value: won.length.toString(), color: won.length > 0 ? "#10b981" : "var(--fg)" },
         ].map((m) => (
           <div
             key={m.label}
@@ -199,16 +226,23 @@ function CrmPage() {
       </div>
 
       {/* Content */}
-      {viewMode === "kanban" ? (
+      {viewMode === "kanban" && (
         <div className="flex-1 px-6 pb-6 overflow-x-auto">
           {isLoading ? (
             <KanbanSkeleton count={stages.length || 4} />
           ) : stages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <TrendingUp className="w-10 h-10 mb-4 opacity-20" style={{ color: "var(--fg-muted)" }} />
-              <p className="text-sm" style={{ color: "var(--fg-muted)" }}>
-                Nenhuma etapa configurada. Contate o administrador.
+              <p className="text-sm mb-3" style={{ color: "var(--fg-muted)" }}>
+                Nenhuma etapa configurada para o pipeline.
               </p>
+              <Link
+                to="/configuracoes"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
+                style={{ background: "var(--accent)", color: "#fff" }}
+              >
+                Configurar etapas →
+              </Link>
             </div>
           ) : (
             <div className="flex gap-4 min-w-max pb-4" style={{ minHeight: 400 }}>
@@ -239,7 +273,8 @@ function CrmPage() {
             </div>
           )}
         </div>
-      ) : (
+      )}
+      {viewMode === "table" && (
         <div className="flex-1 px-6 pb-6 overflow-x-auto">
           {isLoading ? (
             <TableSkeleton />
@@ -348,6 +383,18 @@ function CrmPage() {
         </div>
       )}
 
+      {viewMode === "funil-cliente" && (
+        <div className="flex-1 px-6 pb-6 overflow-x-auto">
+          <FunilClienteView opportunities={opportunities} stages={stages} hidden={hidden} />
+        </div>
+      )}
+
+      {viewMode === "formularios" && (
+        <div className="flex-1 px-6 pb-6">
+          <FormulariosView />
+        </div>
+      )}
+
       <OportunidadeForm
         key={editOpp?.id ?? `new-${defaultStageId}`}
         open={formOpen}
@@ -359,7 +406,240 @@ function CrmPage() {
   );
 }
 
-// ─── Insights View ───────────────────────────────────────────
+// —————— Funil do Cliente ——————————————————————————————————————————————————————————————————————————————————
+
+function FunilClienteView({
+  opportunities,
+  stages,
+  hidden,
+}: {
+  opportunities: CrmOpportunity[];
+  stages: CrmStage[];
+  hidden: boolean;
+}) {
+  const clientMap = useMemo(() => {
+    const map = new Map<string, { name: string; opps: CrmOpportunity[] }>();
+    for (const opp of opportunities) {
+      const key = opp.client?.id ?? "__none";
+      const name = opp.client?.name ?? "Sem cliente";
+      if (!map.has(key)) map.set(key, { name, opps: [] });
+      map.get(key)!.opps.push(opp);
+    }
+    return [...map.entries()].sort((a, b) => b[1].opps.length - a[1].opps.length);
+  }, [opportunities]);
+
+  if (clientMap.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <Building2 className="w-10 h-10 mb-4 opacity-20" style={{ color: "var(--fg-muted)" }} />
+        <p className="text-sm" style={{ color: "var(--fg-muted)" }}>Nenhuma oportunidade com cliente vinculado</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 pt-4">
+      {clientMap.map(([clientId, { name, opps }]) => {
+        const totalValue = opps.reduce((s, o) => s + (o.value ?? 0), 0);
+        return (
+          <div key={clientId} className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+            <div
+              className="flex items-center justify-between px-4 py-3"
+              style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}
+            >
+              <div className="flex items-center gap-2">
+                <Building2 className="w-4 h-4" style={{ color: "var(--accent)" }} />
+                <span className="text-sm font-semibold" style={{ color: "var(--fg)" }}>{name}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--border)", color: "var(--fg-muted)" }}>
+                  {opps.length} oportunidade{opps.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+              <span className="text-sm font-semibold" style={{ color: "var(--accent)" }}>
+                {fmtBRL(totalValue, hidden)}
+              </span>
+            </div>
+            <table className="w-full min-w-[700px]">
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                  {["Título", "Etapa", "Responsável", "Valor", "Prob.", "Previsto", "Próxima ação", ""].map((h) => (
+                    <th key={h} className="text-left py-2 px-3 text-xs font-medium" style={{ color: "var(--fg-muted)" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {opps.map((opp, i) => {
+                  const stage = stages.find((s) => s.id === opp.stage_id);
+                  const isOverdue = opp.expected_close && new Date(opp.expected_close) < new Date();
+                  return (
+                    <tr
+                      key={opp.id}
+                      style={{
+                        background: i % 2 === 0 ? "var(--bg)" : "var(--bg-card)",
+                        borderBottom: i < opps.length - 1 ? "1px solid var(--border)" : undefined,
+                      }}
+                    >
+                      <td className="py-2.5 px-3 text-sm font-medium" style={{ color: "var(--fg)" }}>{opp.title}</td>
+                      <td className="py-2.5 px-3">
+                        {stage ? (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: stage.color + "22", color: stage.color }}>
+                            {stage.name}
+                          </span>
+                        ) : "—"}
+                      </td>
+                      <td className="py-2.5 px-3 text-sm" style={{ color: "var(--fg-muted)" }}>{opp.assignee?.name ?? "—"}</td>
+                      <td className="py-2.5 px-3 text-sm font-medium" style={{ color: "var(--fg)" }}>
+                        {opp.value != null ? fmtBRL(opp.value, hidden) : "—"}
+                      </td>
+                      <td className="py-2.5 px-3 text-sm" style={{ color: "var(--fg-muted)" }}>{opp.probability}%</td>
+                      <td className="py-2.5 px-3 text-sm" style={{ color: isOverdue ? "#ef4444" : "var(--fg-muted)" }}>
+                        {opp.expected_close ? format(new Date(opp.expected_close), "dd/MM/yyyy", { locale: ptBR }) : "—"}
+                      </td>
+                      <td className="py-2.5 px-3 text-sm" style={{ color: "var(--fg-muted)" }}>—</td>
+                      <td className="py-2.5 px-3" />
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// —————— Formulários de Captura ——————————————————————————————————————————————————————————————————————
+
+type CaptureForm = {
+  id: string;
+  name: string;
+  slug: string;
+  leads: number;
+  active: boolean;
+  created_at: string;
+};
+
+function FormulariosView() {
+  const [forms, setForms] = useState<CaptureForm[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("themis:crm-forms") ?? "[]");
+    } catch {
+      return [];
+    }
+  });
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState("");
+
+  function saveAll(updated: CaptureForm[]) {
+    setForms(updated);
+    localStorage.setItem("themis:crm-forms", JSON.stringify(updated));
+  }
+
+  function addForm() {
+    if (!name.trim()) return;
+    const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    saveAll([
+      ...forms,
+      { id: crypto.randomUUID(), name: name.trim(), slug, leads: 0, active: true, created_at: new Date().toISOString() },
+    ]);
+    setAdding(false);
+    setName("");
+  }
+
+  return (
+    <div className="pt-4 space-y-4 max-w-3xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold" style={{ color: "var(--fg)" }}>Formulários de Captura</p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--fg-muted)" }}>Crie formulários para capturar leads diretamente no CRM</p>
+        </div>
+        <button
+          onClick={() => setAdding(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium"
+          style={{ background: "var(--accent)", color: "#fff" }}
+        >
+          <Plus className="w-3.5 h-3.5" /> Novo Formulário
+        </button>
+      </div>
+
+      {adding && (
+        <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+          <p className="text-sm font-semibold" style={{ color: "var(--fg)" }}>Novo formulário</p>
+          <div>
+            <label className="text-xs font-medium block mb-1" style={{ color: "var(--fg-muted)" }}>Nome do formulário</label>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--fg)" }}
+              placeholder="Ex: Contato do Site"
+              onKeyDown={(e) => e.key === "Enter" && addForm()}
+            />
+          </div>
+          <div className="flex gap-2">
+            <button onClick={addForm} className="px-4 py-1.5 rounded-lg text-sm font-medium" style={{ background: "var(--accent)", color: "#fff" }}>Criar</button>
+            <button onClick={() => setAdding(false)} className="px-4 py-1.5 rounded-lg text-sm font-medium" style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--fg)" }}>Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {forms.length === 0 && !adding ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <FileInput className="w-10 h-10 mb-4 opacity-20" style={{ color: "var(--fg-muted)" }} />
+          <p className="text-sm mb-1" style={{ color: "var(--fg-muted)" }}>Nenhum formulário criado</p>
+          <p className="text-xs" style={{ color: "var(--fg-muted)" }}>Crie formulários de captura para alimentar seu pipeline</p>
+        </div>
+      ) : (
+        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+          {forms.map((form, i) => (
+            <div
+              key={form.id}
+              className="flex items-center gap-4 px-4 py-3"
+              style={{
+                background: i % 2 === 0 ? "var(--bg)" : "var(--bg-card)",
+                borderBottom: i < forms.length - 1 ? "1px solid var(--border)" : undefined,
+              }}
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>{form.name}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <Globe className="w-3 h-3" style={{ color: "var(--fg-muted)" }} />
+                  <span className="text-xs font-mono" style={{ color: "var(--fg-muted)" }}>
+                    /formularios/{form.slug}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <p className="text-lg font-bold" style={{ color: "var(--fg)" }}>{form.leads}</p>
+                  <p className="text-[10px]" style={{ color: "var(--fg-muted)" }}>leads</p>
+                </div>
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full font-medium"
+                  style={{
+                    background: form.active ? "color-mix(in srgb, #10b981 12%, transparent)" : "color-mix(in srgb, #6b7280 12%, transparent)",
+                    color: form.active ? "#10b981" : "#6b7280",
+                  }}
+                >
+                  {form.active ? "Ativo" : "Inativo"}
+                </span>
+                <button
+                  onClick={() => saveAll(forms.filter((f) => f.id !== form.id))}
+                  className="p-1 hover:opacity-80"
+                  style={{ color: "#ef4444" }}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// —————— Insights View ——————————————————————————————————————————————————————————————————————————————————————
 
 interface InsightsViewProps {
   opportunities: CrmOpportunity[];
@@ -370,8 +650,8 @@ interface InsightsViewProps {
 type InsightsPeriod = "30d" | "90d" | "1y" | "all";
 
 const PERIOD_LABELS: Record<InsightsPeriod, string> = {
-  "30d": "Últimos 30 dias",
-  "90d": "Últimos 90 dias",
+  "30d": "—altimos 30 dias",
+  "90d": "—altimos 90 dias",
   "1y": "Este ano",
   "all": "Tudo",
 };
@@ -493,7 +773,7 @@ function InsightsView({ opportunities, stages, hidden }: InsightsViewProps) {
           <div className="px-4 py-3" style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
             <p className="text-sm font-semibold" style={{ color: "var(--fg)" }}>Funil por etapa</p>
           </div>
-          <table className="w-full text-sm">
+          <table className="w-full text-sm data-table">
             <thead>
               <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
                 {["Etapa", "Qtd", "Valor total"].map((h) => (
@@ -527,7 +807,7 @@ function InsightsView({ opportunities, stages, hidden }: InsightsViewProps) {
           <div className="px-4 py-3" style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
             <p className="text-sm font-semibold" style={{ color: "var(--fg)" }}>Por responsável</p>
           </div>
-          <table className="w-full text-sm">
+          <table className="w-full text-sm data-table">
             <thead>
               <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
                 {["Responsável", "Total", "Ganhas", "Valor"].map((h) => (
@@ -576,7 +856,7 @@ function InsightsView({ opportunities, stages, hidden }: InsightsViewProps) {
   );
 }
 
-// ─── Kanban Column ────────────────────────────────────────────
+// —————— Kanban Column ————————————————————————————————————————————————————————————————————————————————————————
 
 interface KanbanColumnProps {
   stage: CrmStage;
@@ -673,7 +953,7 @@ function KanbanColumn({
   );
 }
 
-// ─── Opp Card ────────────────────────────────────────────────
+// —————— Opp Card ————————————————————————————————————————————————————————————————————————————————————————————————
 
 interface OppCardProps {
   opp: CrmOpportunity;
@@ -698,7 +978,7 @@ function OppCard({ opp, hidden, isDragging, onClick, onDelete, onDragStart, onDr
       }}
       onDragEnd={onDragEnd}
       onClick={onClick}
-      className="rounded-xl p-3 cursor-pointer select-none transition-all hover:shadow-md"
+      className="rounded-xl p-3 cursor-grab select-none transition-all duration-150 hover:shadow-lg hover:-translate-y-0.5 group"
       style={{
         background: "var(--bg)",
         border: "1px solid var(--border)",
@@ -716,7 +996,7 @@ function OppCard({ opp, hidden, isDragging, onClick, onDelete, onDragStart, onDr
       )}
 
       {opp.value !== null && (
-        <p className="text-sm font-semibold mb-2" style={{ color: "var(--accent)" }}>
+        <p className="text-base font-bold mb-2 tabular-nums" style={{ color: "var(--accent)" }}>
           {fmtBRL(opp.value, hidden)}
         </p>
       )}
@@ -752,7 +1032,7 @@ function OppCard({ opp, hidden, isDragging, onClick, onDelete, onDragStart, onDr
             className="w-5 h-5 flex items-center justify-center rounded hover:opacity-100 text-red-400 hover:text-red-500 transition-opacity opacity-0 group-hover:opacity-100"
             title="Remover"
           >
-            ×
+            —
           </button>
         </div>
       </div>
@@ -760,7 +1040,7 @@ function OppCard({ opp, hidden, isDragging, onClick, onDelete, onDragStart, onDr
   );
 }
 
-// ─── Skeletons ────────────────────────────────────────────────
+// —————— Skeletons ————————————————————————————————————————————————————————————————————————————————————————————————
 
 function KanbanSkeleton({ count }: { count: number }) {
   return (
@@ -791,3 +1071,4 @@ function TableSkeleton() {
     </div>
   );
 }
+

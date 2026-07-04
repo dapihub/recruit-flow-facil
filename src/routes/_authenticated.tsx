@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -10,6 +10,7 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     if (loading) return;
@@ -41,7 +42,9 @@ function AuthenticatedLayout() {
     <div className="flex min-h-screen" style={{ background: "var(--bg)" }}>
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col">
-        <Outlet />
+        <div key={pathname} className="animate-fade-in flex-1 flex flex-col">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

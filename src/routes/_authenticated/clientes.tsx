@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState, useEffect, useMemo } from "react";
 import {
   Building2,
   Plus,
@@ -21,7 +21,9 @@ import { ClienteForm } from "@/components/clientes/ClienteForm";
 import { useClients, useDeleteClient, type Client } from "@/hooks/useClients";
 import { useClientRatings, useUpsertRating } from "@/hooks/useRanking";
 import { useJobs, type JobWithJoins } from "@/hooks/useJobs";
+import { useTransactions } from "@/hooks/useFinanceiro";
 import { fmtBRL } from "@/lib/utils";
+import { useHideValues } from "@/hooks/useHideValues";
 
 export const Route = createFileRoute("/_authenticated/clientes")({
   component: ClientesPage,
@@ -64,13 +66,13 @@ const JOB_STATUS_LABELS: Record<string, string> = {
 };
 
 const JOB_STATUS_COLORS: Record<string, { bg: string; color: string }> = {
-  open: { bg: "#6366f122", color: "#6366f1" },
-  screening: { bg: "#f59e0b22", color: "#f59e0b" },
-  interviewing: { bg: "#3b82f622", color: "#3b82f6" },
-  proposal: { bg: "#8b5cf622", color: "#8b5cf6" },
-  closed: { bg: "#10b98122", color: "#10b981" },
-  cancelled: { bg: "#ef444422", color: "#ef4444" },
-  paused: { bg: "#6b728022", color: "#6b7280" },
+  open: { bg: "color-mix(in srgb, #6366f1 12%, transparent)", color: "#6366f1" },
+  screening: { bg: "color-mix(in srgb, #f59e0b 12%, transparent)", color: "#f59e0b" },
+  interviewing: { bg: "color-mix(in srgb, #3b82f6 12%, transparent)", color: "#3b82f6" },
+  proposal: { bg: "color-mix(in srgb, #8b5cf6 12%, transparent)", color: "#8b5cf6" },
+  closed: { bg: "color-mix(in srgb, #10b981 12%, transparent)", color: "#10b981" },
+  cancelled: { bg: "color-mix(in srgb, #ef4444 12%, transparent)", color: "#ef4444" },
+  paused: { bg: "color-mix(in srgb, #6b7280 12%, transparent)", color: "#6b7280" },
 };
 
 function ClientDrawer({
@@ -84,8 +86,19 @@ function ClientDrawer({
   onEdit: (c: Client) => void;
   jobs: JobWithJoins[];
 }) {
+  const { hidden } = useHideValues();
   const { data: ratings = [] } = useClientRatings();
   const upsertRating = useUpsertRating();
+  const { data: transactions = [] } = useTransactions();
+
+  const clientRevenue = useMemo(() => {
+    if (!client) return { income: 0, expense: 0 };
+    const clientTx = transactions.filter((t) => t.client_id === client.id && t.status === "paid");
+    return {
+      income: clientTx.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0),
+      expense: clientTx.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0),
+    };
+  }, [transactions, client]);
 
   const existing = client ? ratings.find((r) => r.client_id === client.id) : undefined;
 
@@ -155,7 +168,7 @@ function ClientDrawer({
       <div
         className="fixed top-0 right-0 h-full z-50 flex flex-col overflow-hidden transition-transform duration-300"
         style={{
-          width: "480px",
+          width: "min(480px, 100vw)",
           background: "var(--bg-card)",
           borderLeft: "1px solid var(--border)",
           transform: open ? "translateX(0)" : "translateX(100%)",
@@ -171,7 +184,7 @@ function ClientDrawer({
               <div className="flex items-center gap-3">
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold shrink-0"
-                  style={{ background: "var(--accent)22", color: "var(--accent)" }}
+                  style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}
                 >
                   {client.name.charAt(0).toUpperCase()}
                 </div>
@@ -184,8 +197,8 @@ function ClientDrawer({
                       className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium"
                       style={
                         client.is_active
-                          ? { background: "#10b98122", color: "#10b981" }
-                          : { background: "#6b728022", color: "#6b7280" }
+                          ? { background: "color-mix(in srgb, #10b981 12%, transparent)", color: "#10b981" }
+                          : { background: "color-mix(in srgb, #6b7280 12%, transparent)", color: "#6b7280" }
                       }
                     >
                       {client.is_active ? "Ativo" : "Inativo"}
@@ -199,7 +212,7 @@ function ClientDrawer({
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => { onEdit(client); onClose(); }}
-                  className="p-1.5 rounded-lg hover:opacity-80"
+                  className="p-1.5 rounded-lg transition-all duration-150 hover:bg-[var(--border)] hover:scale-105"
                   style={{ color: "var(--fg-muted)" }}
                   title="Editar"
                 >
@@ -207,7 +220,7 @@ function ClientDrawer({
                 </button>
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-lg hover:opacity-80"
+                  className="p-1.5 rounded-lg transition-all duration-150 hover:bg-[var(--border)] hover:scale-105"
                   style={{ color: "var(--fg-muted)" }}
                   title="Fechar"
                 >
@@ -240,8 +253,8 @@ function ClientDrawer({
                       label: "Cliente desde",
                       value: format(new Date(client.created_at), "MM/yyyy"),
                     },
-                  ].map(({ icon, label, value }) => (
-                    <div key={label} className="rounded-lg p-3" style={{ background: "var(--bg)", border: "1px solid var(--border)" }}>
+                  ].map(({ icon, label, value }, idx, arr) => (
+                    <div key={label} className={`rounded-lg p-3${idx === arr.length - 1 && arr.length % 2 !== 0 ? " col-span-2" : ""}`} style={{ background: "var(--bg)", border: "1px solid var(--border)" }}>
                       <p className="text-[10px] uppercase tracking-wide mb-1" style={{ color: "var(--fg-muted)" }}>
                         {label}
                       </p>
@@ -299,9 +312,34 @@ function ClientDrawer({
                   className="mt-4 w-full py-2 rounded-lg text-sm font-medium transition-opacity disabled:opacity-60"
                   style={{ background: "var(--accent)", color: "#fff" }}
                 >
-                  {upsertRating.isPending ? "Salvando…" : "Salvar Avaliação"}
+                  {upsertRating.isPending ? "Salvando⬦" : "Salvar Avaliação"}
                 </button>
               </section>
+
+              {/* Faturamento */}
+              {(clientRevenue.income > 0 || clientRevenue.expense > 0) && (
+                <section>
+                  <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--fg-muted)" }}>
+                    Faturamento (pago)
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="rounded-lg p-3 text-center" style={{ background: "var(--bg)", border: "1px solid var(--border)" }}>
+                      <p className="text-[10px] uppercase tracking-wide mb-1" style={{ color: "var(--fg-muted)" }}>Receitas</p>
+                      <p className="text-sm font-bold" style={{ color: "#10b981" }}>{fmtBRL(clientRevenue.income, hidden)}</p>
+                    </div>
+                    <div className="rounded-lg p-3 text-center" style={{ background: "var(--bg)", border: "1px solid var(--border)" }}>
+                      <p className="text-[10px] uppercase tracking-wide mb-1" style={{ color: "var(--fg-muted)" }}>Despesas</p>
+                      <p className="text-sm font-bold" style={{ color: "#ef4444" }}>{fmtBRL(clientRevenue.expense, hidden)}</p>
+                    </div>
+                    <div className="rounded-lg p-3 text-center" style={{ background: "var(--bg)", border: "1px solid var(--border)" }}>
+                      <p className="text-[10px] uppercase tracking-wide mb-1" style={{ color: "var(--fg-muted)" }}>Saldo</p>
+                      <p className="text-sm font-bold" style={{ color: clientRevenue.income - clientRevenue.expense >= 0 ? "#10b981" : "#ef4444" }}>
+                        {fmtBRL(clientRevenue.income - clientRevenue.expense, hidden)}
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              )}
 
               {/* Vagas vinculadas */}
               <section>
@@ -326,7 +364,7 @@ function ClientDrawer({
                 ) : (
                   <div className="space-y-2">
                     {visibleJobs.map((job) => {
-                      const statusStyle = JOB_STATUS_COLORS[job.status] ?? { bg: "#6b728022", color: "#6b7280" };
+                      const statusStyle = JOB_STATUS_COLORS[job.status] ?? { bg: "color-mix(in srgb, #6b7280 12%, transparent)", color: "#6b7280" };
                       return (
                         <div
                           key={job.id}
@@ -339,7 +377,7 @@ function ClientDrawer({
                           <div className="flex items-center gap-2 shrink-0">
                             {job.fee_value ? (
                               <span className="text-xs" style={{ color: "var(--fg-muted)" }}>
-                                {fmtBRL(job.fee_value, false)}
+                                {fmtBRL(job.fee_value, hidden)}
                               </span>
                             ) : null}
                             <span
@@ -353,13 +391,13 @@ function ClientDrawer({
                       );
                     })}
                     {hasMore && (
-                      <a
-                        href="/vagas"
+                      <Link
+                        to="/vagas"
                         className="block text-center text-xs py-1.5 rounded-lg transition-colors hover:underline"
                         style={{ color: "var(--accent)" }}
                       >
-                        Ver todas as {clientJobs.length} vagas →
-                      </a>
+                        Ver todas as {clientJobs.length} vagas — 
+                      </Link>
                     )}
                   </div>
                 )}
@@ -374,6 +412,7 @@ function ClientDrawer({
 
 function ClientesPage() {
   const [search, setSearch] = useState("");
+  const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("all");
   const [formOpen, setFormOpen] = useState(false);
   const [editClient, setEditClient] = useState<Client | null>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -382,12 +421,15 @@ function ClientesPage() {
   const { data: jobs = [] } = useJobs();
   const deleteClient = useDeleteClient();
 
-  const filtered = clients.filter(
-    (c) =>
+  const filtered = clients.filter((c) => {
+    if (activeFilter === "active" && !c.is_active) return false;
+    if (activeFilter === "inactive" && c.is_active) return false;
+    return (
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       (c.cnpj ?? "").includes(search) ||
       (c.email ?? "").toLowerCase().includes(search.toLowerCase())
-  );
+    );
+  });
 
   const active = clients.filter((c) => c.is_active && !c.deleted_at);
   const thisMonth = clients.filter((c) => {
@@ -434,11 +476,11 @@ function ClientesPage() {
 
       <PageKpis>
         <KpiItem label="Total" value={clients.length.toString()} />
-        <KpiItem label="Ativos" value={active.length.toString()} accent />
+        <KpiItem label="Ativos" value={active.length.toString()} accent={active.length > 0} />
         <KpiItem label="Novos este Mês" value={thisMonth.length.toString()} />
       </PageKpis>
 
-      <div className="px-6 pb-4 flex items-center gap-3">
+      <div className="px-6 py-4 flex flex-wrap items-center gap-3">
         <div className="relative max-w-sm flex-1">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
@@ -449,13 +491,27 @@ function ClientesPage() {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nome, CNPJ, email..."
             className="w-full pl-9 pr-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-            style={{
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              color: "var(--fg)",
-            }}
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--fg)" }}
           />
         </div>
+
+        <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+          {([["all", "Todos"], ["active", "Ativos"], ["inactive", "Inativos"]] as const).map(([v, l]) => (
+            <button
+              key={v}
+              onClick={() => setActiveFilter(v)}
+              className="px-3 py-1.5 text-xs font-medium transition-colors"
+              style={
+                activeFilter === v
+                  ? { background: "var(--accent)", color: "#fff" }
+                  : { background: "var(--bg-card)", color: "var(--fg-muted)" }
+              }
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+
         {filtered.length > 0 && (
           <button
             onClick={() => exportClientesCSV(filtered)}
@@ -468,7 +524,7 @@ function ClientesPage() {
         )}
       </div>
 
-      <div className="flex-1 px-6 pb-6">
+      <div className="flex-1 px-6 pb-6 flex flex-col">
         {isLoading ? (
           <TableSkeleton />
         ) : filtered.length === 0 ? (
@@ -497,7 +553,7 @@ function ClientesPage() {
             className="rounded-xl overflow-hidden"
             style={{ border: "1px solid var(--border)" }}
           >
-            <table className="w-full text-sm">
+            <table className="w-full text-sm data-table">
               <thead>
                 <tr
                   style={{
@@ -529,7 +585,7 @@ function ClientesPage() {
                         <div
                           className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
                           style={{
-                            background: "var(--accent)22",
+                            background: "color-mix(in srgb, var(--accent) 12%, transparent)",
                             color: "var(--accent)",
                           }}
                         >
@@ -581,8 +637,8 @@ function ClientesPage() {
                         className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
                         style={
                           client.is_active
-                            ? { background: "#10b98122", color: "#10b981" }
-                            : { background: "#6b728022", color: "#6b7280" }
+                            ? { background: "color-mix(in srgb, #10b981 12%, transparent)", color: "#10b981" }
+                            : { background: "color-mix(in srgb, #6b7280 12%, transparent)", color: "#6b7280" }
                         }
                       >
                         {client.is_active ? "Ativo" : "Inativo"}
@@ -681,3 +737,4 @@ function TableSkeleton() {
     </div>
   );
 }
+

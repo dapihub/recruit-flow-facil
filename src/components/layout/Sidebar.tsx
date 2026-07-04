@@ -26,6 +26,7 @@ type NavItem = {
   to: string;
   label: string;
   icon: React.FC<{ className?: string }>;
+  badge?: string;
 };
 
 type NavGroup = {
@@ -116,7 +117,7 @@ export function Sidebar() {
   };
 
   const favoriteItems = ALL_ITEMS.filter((i) => favorites.includes(i.to));
-  const displayName = profile?.name || user?.email?.split("@")[0] || "Usuário";
+  const displayName = profile?.name || (user?.user_metadata?.name as string | undefined) || user?.email?.split("@")[0] || "Usuário";
 
   return (
     <aside
@@ -132,12 +133,12 @@ export function Sidebar() {
         className="flex items-center h-[var(--header-h)] shrink-0 px-3 gap-2"
         style={{ borderBottom: "1px solid var(--sidebar-border)" }}
       >
-        <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0" style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
           T
         </div>
         {!collapsed && (
           <>
-            <span className="text-white font-semibold text-sm tracking-tight flex-1">Themis</span>
+            <span className="text-white font-bold text-[15px] tracking-tight flex-1">Themis</span>
             <button
               onClick={() => setCollapsed(true)}
               title="Recolher menu"
@@ -146,13 +147,6 @@ export function Sidebar() {
               <PanelLeft className="w-4 h-4" />
             </button>
           </>
-        )}
-        {collapsed && (
-          <button
-            onClick={() => setCollapsed(false)}
-            title="Expandir menu"
-            className="absolute left-0 right-0 flex justify-center"
-          />
         )}
       </div>
 
@@ -195,7 +189,7 @@ export function Sidebar() {
             {!collapsed && (
               <button
                 onClick={() => toggleGroup(group.id)}
-                className="w-full flex items-center justify-between px-2 py-1 text-[10px] font-semibold uppercase tracking-widest transition-colors hover:opacity-80"
+                className="w-full flex items-center justify-between px-2 py-1 text-[10px] font-semibold uppercase tracking-widest transition-colors hover:text-white"
                 style={{ color: "var(--sidebar-group-label)" }}
               >
                 {group.label}
@@ -240,15 +234,23 @@ export function Sidebar() {
       >
         {collapsed ? (
           <div className="flex justify-center">
-            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-semibold">
-              {initials(displayName)}
-            </div>
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt={displayName} className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold" style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
+                {initials(displayName)}
+              </div>
+            )}
           </div>
         ) : (
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg group">
-            <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-semibold shrink-0">
-              {initials(displayName)}
-            </div>
+          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg group hover:bg-[var(--sidebar-hover-bg)] transition-colors cursor-default">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt={displayName} className="w-7 h-7 rounded-full object-cover shrink-0" />
+            ) : (
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0" style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
+                {initials(displayName)}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-white truncate">{displayName}</p>
               <p className="text-[10px] truncate" style={{ color: "var(--sidebar-group-label)" }}>
@@ -258,7 +260,7 @@ export function Sidebar() {
             <button
               onClick={signOut}
               title="Sair"
-              className="p-1 rounded opacity-0 group-hover:opacity-100 transition-all text-[color:var(--sidebar-group-label)] hover:text-white"
+              className="p-1 rounded opacity-0 group-hover:opacity-100 transition-all text-[color:var(--sidebar-group-label)] hover:text-[var(--destructive)] hover:bg-[rgba(239,68,68,0.1)]"
             >
               <LogOut className="w-3.5 h-3.5" />
             </button>
@@ -290,11 +292,11 @@ function NavItem({
         to={item.to}
         title={collapsed ? item.label : undefined}
         className={cn(
-          "flex items-center gap-2.5 rounded-md text-sm transition-colors py-2",
+          "flex items-center gap-2.5 rounded-md text-sm transition-all duration-150 py-2",
           collapsed ? "justify-center px-0" : "px-2",
           active
             ? "font-medium"
-            : "hover:bg-[var(--sidebar-hover-bg)]"
+            : "hover:bg-[var(--sidebar-hover-bg)] hover:translate-x-0.5"
         )}
         style={
           active
@@ -311,10 +313,22 @@ function NavItem({
           className={cn(
             "shrink-0 transition-colors",
             collapsed ? "w-5 h-5" : "w-4 h-4",
-            active ? "text-indigo-400" : ""
+            active ? "text-[color:var(--sidebar-active-border)]" : "opacity-75"
           )}
         />
-        {!collapsed && <span className="truncate">{item.label}</span>}
+        {!collapsed && (
+          <>
+            <span className="truncate flex-1">{item.label}</span>
+            {item.badge && (
+              <span
+                className="ml-1 text-[9px] px-1.5 py-0.5 rounded-full shrink-0 font-medium"
+                style={{ background: "var(--sidebar-hover-bg)", color: "var(--sidebar-group-label)" }}
+              >
+                {item.badge}
+              </span>
+            )}
+          </>
+        )}
       </Link>
 
       {!collapsed && (
@@ -324,11 +338,11 @@ function NavItem({
           className={cn(
             "absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 rounded transition-all",
             favorited
-              ? "opacity-100 text-amber-400"
-              : "opacity-0 group-hover/nav:opacity-100 text-[color:var(--sidebar-group-label)] hover:text-amber-400"
+              ? "opacity-100 text-amber-400 hover:scale-110"
+              : "opacity-0 group-hover/nav:opacity-100 text-[color:var(--sidebar-group-label)] hover:text-amber-400 hover:scale-110"
           )}
         >
-          <Star className="w-3 h-3" fill={favorited ? "currentColor" : "none"} />
+          <Star className="w-3 h-3 transition-transform duration-150" fill={favorited ? "currentColor" : "none"} />
         </button>
       )}
     </div>
