@@ -15,9 +15,6 @@ function AuthenticatedLayout() {
   useEffect(() => {
     if (loading) return;
     if (!user) { navigate({ to: "/login", replace: true }); return; }
-    if (profile !== null && !profile.company_id) {
-      navigate({ to: "/onboarding", replace: true });
-    }
   }, [user, profile, loading, navigate]);
 
   if (loading) {
@@ -36,7 +33,7 @@ function AuthenticatedLayout() {
     );
   }
 
-  if (!user || (profile !== null && !profile.company_id)) return null;
+  if (!user) return null;
 
   return (
     <div className="flex min-h-screen" style={{ background: "var(--bg)" }}>
