@@ -18,9 +18,11 @@ import {
   ChevronRight,
   PanelLeft,
   LogOut,
+  X,
 } from "lucide-react";
 import { cn, initials } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
+import { useMobileMenu } from "@/hooks/useMobileMenu";
 
 type NavItem = {
   to: string;
