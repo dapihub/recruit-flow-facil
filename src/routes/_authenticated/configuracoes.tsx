@@ -106,7 +106,7 @@ function ConfiguracoesPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Left nav */}
         <aside
-          className="hidden md:block w-56 shrink-0 p-4 space-y-6 overflow-y-auto"
+          className="hidden md:block w-64 shrink-0 p-4 space-y-6 overflow-y-auto"
           style={{ borderRight: "1px solid var(--border)" }}
         >
           {NAV.map((group) => (

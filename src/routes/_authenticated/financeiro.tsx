@@ -171,17 +171,17 @@ function OperacoesActions() {
     <>
       <button
         onClick={() => setDespesaOpen(true)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 hover:opacity-80"
-        style={{ border: "1px solid #ef4444", color: "#ef4444", background: "transparent" }}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 hover:bg-[var(--border)]"
+        style={{ color: "var(--fg-muted)", background: "transparent" }}
       >
         <Plus className="w-4 h-4" /> Despesa
       </button>
       <button
         onClick={() => setReceitaOpen(true)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 hover:opacity-80"
-        style={{ background: "#10b981", color: "#fff" }}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 hover:opacity-90 shadow-sm"
+        style={{ background: "var(--accent)", color: "var(--accent-fg)" }}
       >
-        <Plus className="w-4 h-4" /> Receita
+        <Plus className="w-4 h-4" /> Nova receita
       </button>
       <TransacaoForm
         key="new-expense"
