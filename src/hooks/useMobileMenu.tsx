@@ -31,5 +31,10 @@ export function useMobileMenu() {
     () => open,
     () => false,
   );
-  return { open: isOpen, ...mobileMenu };
+  return {
+    open: isOpen,
+    openMenu: mobileMenu.open,
+    closeMenu: mobileMenu.close,
+    toggleMenu: mobileMenu.toggle,
+  };
 }
