@@ -135,7 +135,7 @@ function DashboardPage() {
           style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, color-mix(in srgb, var(--accent) 18%, var(--bg-card)) 100%)", border: "1px solid color-mix(in srgb, var(--accent) 30%, var(--border))" }}
         >
           <div>
-            <p className="text-base font-semibold" style={{ color: "var(--fg)" }}>
+            <p className="font-display text-2xl" style={{ color: "var(--fg)" }}>
               Olá, {firstName}!
             </p>
             <p className="text-sm mt-0.5" style={{ color: "var(--fg-muted)" }}>
@@ -537,7 +537,7 @@ function KpiCard({ label, value, subtitle, icon, trend }: {
   icon: React.ReactNode;
   trend: "up" | "down" | "neutral";
 }) {
-  const trendColor = trend === "up" ? "#10b981" : trend === "down" ? "#ef4444" : "#6366f1";
+  const trendColor = trend === "up" ? "#10b981" : trend === "down" ? "#ef4444" : "var(--accent-2)";
   return (
     <div
       className="rounded-xl p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"

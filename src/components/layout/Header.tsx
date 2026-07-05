@@ -97,7 +97,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
 
       {/* Title */}
       <div className="flex-1 min-w-0">
-        <h1 className="text-lg font-bold truncate" style={{ color: "var(--fg)" }}>
+        <h1 className="font-display text-2xl truncate" style={{ color: "var(--fg)" }}>
           {title}
         </h1>
         {subtitle && (
