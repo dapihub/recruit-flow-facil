@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Sun, Moon, Eye, EyeOff, Bell, Search, Megaphone, CheckCircle2 } from "lucide-react";
+import { Sun, Moon, Eye, EyeOff, Bell, Search, Megaphone, CheckCircle2, Menu } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTheme } from "@/hooks/useTheme";
 import { useHideValues } from "@/hooks/useHideValues";
+import { useMobileMenu } from "@/hooks/useMobileMenu";
 import { cn } from "@/lib/utils";
 import { GlobalSearch } from "./GlobalSearch";
 
@@ -45,6 +46,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
   const [novidadesOpen, setNovidadesOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(getUnreadCount);
   const [searchOpen, setSearchOpen] = useState(false);
+  const { openMenu } = useMobileMenu();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -83,6 +85,16 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
         borderBottom: "1px solid var(--border)",
       }}
     >
+      {/* Hambúrguer mobile */}
+      <button
+        onClick={openMenu}
+        aria-label="Abrir menu"
+        className="md:hidden p-2 -ml-2 rounded-lg transition-colors hover:bg-[var(--border)]"
+        style={{ color: "var(--fg)" }}
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
       {/* Title */}
       <div className="flex-1 min-w-0">
         <h1 className="text-lg font-bold truncate" style={{ color: "var(--fg)" }}>
@@ -164,7 +176,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
           >
             <Megaphone className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none animate-bounce">
+              <span className="absolute top-1 right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none animate-pulse">
                 {unreadCount}
               </span>
             )}

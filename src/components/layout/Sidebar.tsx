@@ -18,9 +18,11 @@ import {
   ChevronRight,
   PanelLeft,
   LogOut,
+  X,
 } from "lucide-react";
 import { cn, initials } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
+import { useMobileMenu } from "@/hooks/useMobileMenu";
 
 type NavItem = {
   to: string;
@@ -118,37 +120,65 @@ export function Sidebar() {
 
   const favoriteItems = ALL_ITEMS.filter((i) => favorites.includes(i.to));
   const displayName = profile?.name || (user?.user_metadata?.name as string | undefined) || user?.email?.split("@")[0] || "Usuário";
+  const { open: mobileOpen, closeMenu } = useMobileMenu();
+
+  // Fecha o drawer mobile ao trocar de rota
+  useEffect(() => {
+    closeMenu();
+  }, [path, closeMenu]);
 
   return (
-    <aside
-      className="flex flex-col h-screen sticky top-0 shrink-0 overflow-hidden transition-[width] duration-200"
-      style={{
-        width: collapsed ? "var(--sidebar-width-collapsed)" : "var(--sidebar-width)",
-        background: "var(--sidebar-bg)",
-        borderRight: "1px solid var(--sidebar-border)",
-      }}
-    >
-      {/* ── Logo + toggle ── */}
-      <div
-        className="flex items-center h-[var(--header-h)] shrink-0 px-3 gap-2"
-        style={{ borderBottom: "1px solid var(--sidebar-border)" }}
-      >
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0" style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
-          T
-        </div>
-        {!collapsed && (
-          <>
-            <span className="text-white font-bold text-[15px] tracking-tight flex-1">Themis</span>
-            <button
-              onClick={() => setCollapsed(true)}
-              title="Recolher menu"
-              className="p-1 rounded text-[color:var(--sidebar-group-label)] hover:text-white transition-colors"
-            >
-              <PanelLeft className="w-4 h-4" />
-            </button>
-          </>
+    <>
+      {/* Overlay mobile */}
+      {mobileOpen && (
+        <div
+          onClick={closeMenu}
+          className="fixed inset-0 z-40 bg-black/50 md:hidden animate-fade-in"
+        />
+      )}
+
+      <aside
+        className={cn(
+          "flex flex-col h-screen shrink-0 overflow-hidden transition-[width,transform] duration-200",
+          "md:sticky md:top-0 md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50",
+          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}
-      </div>
+        style={{
+          width: collapsed ? "var(--sidebar-width-collapsed)" : "var(--sidebar-width)",
+          background: "var(--sidebar-bg)",
+          borderRight: "1px solid var(--sidebar-border)",
+        }}
+      >
+        {/* ── Logo + toggle ── */}
+        <div
+          className="flex items-center h-[var(--header-h)] shrink-0 px-3 gap-2"
+          style={{ borderBottom: "1px solid var(--sidebar-border)" }}
+        >
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0" style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
+            T
+          </div>
+          {!collapsed && (
+            <>
+              <span className="text-white font-bold text-[15px] tracking-tight flex-1">Themis</span>
+              {/* Botão fechar mobile */}
+              <button
+                onClick={closeMenu}
+                title="Fechar menu"
+                className="md:hidden p-1 rounded text-[color:var(--sidebar-group-label)] hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setCollapsed(true)}
+                title="Recolher menu"
+                className="hidden md:block p-1 rounded text-[color:var(--sidebar-group-label)] hover:text-white transition-colors"
+              >
+                <PanelLeft className="w-4 h-4" />
+              </button>
+            </>
+          )}
+        </div>
 
       {/* ── Expand button (collapsed state) ── */}
       {collapsed && (
@@ -267,7 +297,8 @@ export function Sidebar() {
           </div>
         )}
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
 
