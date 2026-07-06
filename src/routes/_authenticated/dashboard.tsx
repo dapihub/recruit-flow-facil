@@ -144,7 +144,7 @@ function DashboardPage() {
           </div>
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white"
-            style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
+            style={{ background: "linear-gradient(135deg, #4f46e5 0%, #1e1e5a 100%)" }}
           >
             {firstName.charAt(0).toUpperCase()}
           </div>
