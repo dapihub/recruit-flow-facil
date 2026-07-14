@@ -119,3 +119,81 @@ h1, h2, h3, h4, h5, h6, .font-display {
 .animate-slide-in-right {
   animation: slide-in-right 0.2s ease-out both;
 }
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+/* ─── Surface / card utilities ─── */
+.surface {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.surface-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elegant);
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+}
+.surface-glow {
+  background: var(--bg-card);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.surface-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: radial-gradient(600px circle at var(--x, 50%) var(--y, 0%), color-mix(in srgb, var(--accent) 18%, transparent), transparent 40%);
+  pointer-events: none;
+  opacity: .55;
+}
+
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 600; letter-spacing: .02em;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* ─── Bento grid ─── */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+.bento > .b-3 { grid-column: span 12 / span 12; }
+.bento > .b-4 { grid-column: span 12 / span 12; }
+.bento > .b-6 { grid-column: span 12 / span 12; }
+.bento > .b-8 { grid-column: span 12 / span 12; }
+.bento > .b-9 { grid-column: span 12 / span 12; }
+.bento > .b-12 { grid-column: span 12 / span 12; }
+@media (min-width: 768px) {
+  .bento > .b-3 { grid-column: span 6 / span 6; }
+  .bento > .b-4 { grid-column: span 6 / span 6; }
+  .bento > .b-6 { grid-column: span 6 / span 6; }
+  .bento > .b-8 { grid-column: span 12 / span 12; }
+  .bento > .b-9 { grid-column: span 12 / span 12; }
+}
+@media (min-width: 1024px) {
+  .bento > .b-3 { grid-column: span 3 / span 3; }
+  .bento > .b-4 { grid-column: span 4 / span 4; }
+  .bento > .b-6 { grid-column: span 6 / span 6; }
+  .bento > .b-8 { grid-column: span 8 / span 8; }
+  .bento > .b-9 { grid-column: span 9 / span 9; }
+}
