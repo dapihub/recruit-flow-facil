@@ -40,6 +40,7 @@ function AuthenticatedLayout() {
     <div className="flex min-h-screen" style={{ background: "var(--bg)" }}>
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col">
+        <TrialBanner />
         <div key={pathname} className="animate-fade-in flex-1 flex flex-col">
           <Outlet />
         </div>
