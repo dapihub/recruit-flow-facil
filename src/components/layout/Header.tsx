@@ -260,6 +260,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
         </button>
       </div>
     </header>
+    <Breadcrumbs />
     <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
