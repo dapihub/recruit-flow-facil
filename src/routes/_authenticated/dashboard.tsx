@@ -257,19 +257,25 @@ function DashboardPage() {
           </div>
 
           {/* Vagas fechadas */}
-          <div className="b-3 surface surface-hover p-5 flex items-center gap-4">
-
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}>
-              <Clock className="w-5 h-5" />
+          <div className="b-8 surface surface-hover p-5 flex items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}>
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="section-title">Fechadas no mês</span>
+                <p className="font-display text-3xl mt-0.5" style={{ color: "var(--fg)" }}>{closedThisMonth.length}</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--fg-muted)" }}>vagas concluídas</p>
+              </div>
             </div>
-            <div>
-              <span className="section-title">Fechadas no mês</span>
-              <p className="font-display text-2xl mt-0.5" style={{ color: "var(--fg)" }}>{closedThisMonth.length}</p>
-            </div>
+            <Link to="/vagas" className="text-xs font-medium hover:underline" style={{ color: "var(--accent)" }}>
+              Ver vagas →
+            </Link>
           </div>
 
           {/* Atalhos rápidos */}
-          <div className="b-9 surface p-5">
+          <div className="b-12 surface p-5">
+
             <div className="flex items-center justify-between mb-3">
               <span className="section-title">Atalhos rápidos</span>
               <span className="text-[10px]" style={{ color: "var(--fg-muted)" }}>Ações frequentes</span>
