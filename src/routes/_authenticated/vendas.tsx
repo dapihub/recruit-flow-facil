@@ -33,13 +33,24 @@ function VendasPage() {
   return (
     <>
       <Header title="Vendas" subtitle="Orçamentos e pedidos de venda"
-        actions={
+        actions={<>
+          <button onClick={() => exportCSV("vendas", orders, [
+            { header: "Número", get: (o) => o.number },
+            { header: "Cliente", get: (o) => o.client?.name ?? "" },
+            { header: "Data", get: (o) => o.order_date },
+            { header: "Status", get: (o) => STATUS_LABELS[o.status] },
+            { header: "Desconto", get: (o) => o.discount },
+            { header: "Total", get: (o) => o.total },
+          ])} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border"
+            style={{ background: "var(--bg-card)", borderColor: "var(--border)", color: "var(--fg-muted)" }}>
+            <Download className="w-3.5 h-3.5" /> CSV
+          </button>
           <button onClick={() => { setEditing(null); setFormOpen(true); }}
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium"
             style={{ background: "var(--accent)", color: "#fff" }}>
             <Plus className="w-4 h-4" /> Novo Pedido
           </button>
-        } />
+        </>} />
       <PageKpis>
         <KpiItem label="Pedidos" value={String(kpis.total)} />
         <KpiItem label="Faturados" value={String(kpis.invoiced)} accent />
