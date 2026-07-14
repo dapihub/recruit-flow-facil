@@ -7,6 +7,7 @@ import { useHideValues } from "@/hooks/useHideValues";
 import { useMobileMenu } from "@/hooks/useMobileMenu";
 import { cn } from "@/lib/utils";
 import { GlobalSearch } from "./GlobalSearch";
+import { useNotifications, useMarkAllRead } from "@/hooks/useNotifications";
 
 interface HeaderProps {
   title: string;
@@ -47,6 +48,9 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
   const [unreadCount, setUnreadCount] = useState(getUnreadCount);
   const [searchOpen, setSearchOpen] = useState(false);
   const { openMenu } = useMobileMenu();
+  const { data: notifications = [] } = useNotifications();
+  const markNotifsRead = useMarkAllRead();
+  const unreadNotifs = notifications.filter((n) => !n.read_at).length;
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -138,10 +142,15 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
           <button
             onClick={openNotif}
             title="Notificações"
-            className="p-2 rounded-lg transition-all duration-150 hover:bg-[var(--border)] hover:scale-105"
+            className="relative p-2 rounded-lg transition-all duration-150 hover:bg-[var(--border)] hover:scale-105"
             style={{ color: "var(--fg-muted)" }}
           >
             <Bell className="w-4 h-4" />
+            {unreadNotifs > 0 && (
+              <span className="absolute top-1 right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                {unreadNotifs}
+              </span>
+            )}
           </button>
 
           {notifOpen && (
@@ -151,16 +160,35 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
                 className="absolute right-0 top-full mt-2 w-80 rounded-xl shadow-xl z-50 overflow-hidden"
                 style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
               >
-                <div className="px-4 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
+                <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid var(--border)" }}>
                   <p className="text-sm font-semibold" style={{ color: "var(--fg)" }}>Notificações</p>
+                  {unreadNotifs > 0 && (
+                    <button onClick={() => markNotifsRead.mutate()} className="text-xs hover:underline" style={{ color: "var(--accent)" }}>
+                      Marcar todas
+                    </button>
+                  )}
                 </div>
-                <div className="p-8 text-center flex flex-col items-center gap-2">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "#10b98118" }}>
-                    <CheckCircle2 className="w-6 h-6" style={{ color: "#10b981" }} />
+                {notifications.length === 0 ? (
+                  <div className="p-8 text-center flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "#10b98118" }}>
+                      <CheckCircle2 className="w-6 h-6" style={{ color: "#10b981" }} />
+                    </div>
+                    <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>Tudo em dia</p>
+                    <p className="text-xs" style={{ color: "var(--fg-muted)" }}>Nenhuma notificação no momento</p>
                   </div>
-                  <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>Tudo em dia</p>
-                  <p className="text-xs" style={{ color: "var(--fg-muted)" }}>Nenhuma notificação no momento</p>
-                </div>
+                ) : (
+                  <div className="max-h-80 overflow-y-auto divide-y" style={{ borderColor: "var(--border)" }}>
+                    {notifications.map((n) => (
+                      <div key={n.id} className="px-4 py-3" style={{ background: n.read_at ? "transparent" : "color-mix(in srgb, var(--accent) 6%, transparent)" }}>
+                        <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>{n.title}</p>
+                        {n.message && <p className="text-xs mt-0.5" style={{ color: "var(--fg-muted)" }}>{n.message}</p>}
+                        <p className="text-[10px] mt-1" style={{ color: "var(--fg-muted)" }}>
+                          {format(new Date(n.created_at), "dd/MM HH:mm", { locale: ptBR })}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </>
           )}

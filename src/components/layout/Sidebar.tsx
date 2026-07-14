@@ -19,6 +19,11 @@ import {
   PanelLeft,
   LogOut,
   X,
+  Package,
+  Truck,
+  ShoppingCart,
+  ShoppingBag,
+  UserCircle,
 } from "lucide-react";
 import { cn, initials } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -61,7 +66,24 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/crm", label: "CRM", icon: TrendingUp },
       { to: "/clientes", label: "Clientes", icon: Building2 },
       { to: "/contatos", label: "Contatos", icon: Users },
+      { to: "/vendas", label: "Vendas", icon: ShoppingBag },
       { to: "/ranking", label: "Ranking", icon: Star },
+    ],
+  },
+  {
+    id: "supply",
+    label: "SUPRIMENTOS",
+    items: [
+      { to: "/produtos", label: "Produtos & Estoque", icon: Package },
+      { to: "/fornecedores", label: "Fornecedores", icon: Truck },
+      { to: "/compras", label: "Compras", icon: ShoppingCart },
+    ],
+  },
+  {
+    id: "hr",
+    label: "PESSOAS",
+    items: [
+      { to: "/rh", label: "RH", icon: UserCircle },
     ],
   },
   {
@@ -73,6 +95,7 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ];
+
 
 const STANDALONE: NavItem = { to: "/configuracoes", label: "Configurações", icon: Settings };
 
