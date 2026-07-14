@@ -7,6 +7,7 @@ import { useHideValues } from "@/hooks/useHideValues";
 import { useMobileMenu } from "@/hooks/useMobileMenu";
 import { cn } from "@/lib/utils";
 import { GlobalSearch } from "./GlobalSearch";
+import { useNotifications, useMarkAllRead } from "@/hooks/useNotifications";
 
 interface HeaderProps {
   title: string;
