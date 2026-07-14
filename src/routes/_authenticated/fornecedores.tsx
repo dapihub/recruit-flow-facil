@@ -22,13 +22,23 @@ function FornecedoresPage() {
   return (
     <>
       <Header title="Fornecedores" subtitle="Cadastro e gestão de fornecedores"
-        actions={
+        actions={<>
+          <button onClick={() => exportCSV("fornecedores", filtered, [
+            { header: "Nome", get: (s) => s.name },
+            { header: "Documento", get: (s) => s.document ?? "" },
+            { header: "Contato", get: (s) => s.contact_name ?? "" },
+            { header: "E-mail", get: (s) => s.email ?? "" },
+            { header: "Telefone", get: (s) => s.phone ?? "" },
+          ])} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border"
+            style={{ background: "var(--bg-card)", borderColor: "var(--border)", color: "var(--fg-muted)" }}>
+            <Download className="w-3.5 h-3.5" /> CSV
+          </button>
           <button onClick={() => { setEditing(null); setFormOpen(true); }}
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium"
             style={{ background: "var(--accent)", color: "#fff" }}>
             <Plus className="w-4 h-4" /> Novo Fornecedor
           </button>
-        } />
+        </>} />
       <PageKpis>
         <KpiItem label="Total" value={String(items.length)} />
         <KpiItem label="Ativos" value={String(items.filter(s => s.is_active).length)} accent />
