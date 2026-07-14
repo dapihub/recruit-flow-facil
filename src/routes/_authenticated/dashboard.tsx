@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import {
   TrendingUp, TrendingDown, Briefcase, CheckSquare,
   Calendar, DollarSign, Clock, ArrowRight, Plus, Target,
-  Users,
+  Users, Package, ShoppingBag, ShoppingCart,
 } from "lucide-react";
 import { format, subMonths, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -20,6 +20,8 @@ import { useTasks } from "@/hooks/useTasks";
 import { useMeetings } from "@/hooks/useMeetings";
 import { useCrmOpportunities, useCrmStages } from "@/hooks/useCrm";
 import { useTransactions } from "@/hooks/useFinanceiro";
+import { useProducts } from "@/hooks/useProducts";
+import { usePurchaseOrders, useSalesOrders } from "@/hooks/useOrders";
 import { JobStatusBadge } from "@/components/ui/Badges";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -43,6 +45,20 @@ function DashboardPage() {
   const { data: opportunities = [], isLoading: crmLoading } = useCrmOpportunities();
   const { data: stages = [] } = useCrmStages();
   const { data: transactions = [] } = useTransactions();
+
+  const { data: products = [] } = useProducts({ includeInactive: false });
+  const { data: purchaseOrders = [] } = usePurchaseOrders();
+  const { data: salesOrders = [] } = useSalesOrders();
+
+  const lowStockProducts = products.filter((p) => p.current_stock <= p.min_stock).slice(0, 5);
+  const openPurchases = purchaseOrders.filter((o) => o.status === "draft" || o.status === "sent");
+  const openSales = salesOrders.filter((o) => o.status === "draft" || o.status === "confirmed");
+  const salesThisMonthValue = salesOrders
+    .filter((o) => {
+      const d = new Date(o.order_date);
+      return o.status !== "cancelled" && d.getMonth() === new Date().getMonth() && d.getFullYear() === new Date().getFullYear();
+    })
+    .reduce((s, o) => s + o.total, 0);
 
   const openJobs = allJobs.filter((j) =>
     ["open", "screening", "interviewing", "proposal"].includes(j.status)
@@ -498,6 +514,8 @@ function DashboardPage() {
                   { label: "Nova tarefa", to: "/tarefas",    icon: CheckSquare,  color: "#f59e0b" },
                   { label: "Nova receita",to: "/financeiro", icon: DollarSign,   color: "#10b981" },
                   { label: "Novo cliente",to: "/clientes",   icon: Users,        color: "#3b82f6" },
+                  { label: "Novo produto",to: "/produtos",   icon: Package,      color: "#8b5cf6" },
+                  { label: "Nova venda",  to: "/vendas",     icon: ShoppingBag,  color: "#06b6d4" },
                 ].map((a) => (
                   <Link
                     key={a.to}
@@ -523,6 +541,77 @@ function DashboardPage() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* ─── ERP: Suprimentos & Vendas ─── */}
+        <div>
+          <p className="font-display text-lg mb-3" style={{ color: "var(--fg)" }}>
+            Operação ERP
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <KpiCard label="Produtos ativos" value={String(products.length)} subtitle={`${lowStockProducts.length} abaixo do mínimo`} icon={<Package className="w-4 h-4" />} trend={lowStockProducts.length > 0 ? "down" : "neutral"} />
+            <KpiCard label="Pedidos de compra" value={String(openPurchases.length)} subtitle="Em aberto" icon={<ShoppingCart className="w-4 h-4" />} trend="neutral" />
+            <KpiCard label="Pedidos de venda" value={String(openSales.length)} subtitle="Em aberto" icon={<ShoppingBag className="w-4 h-4" />} trend="up" />
+            <KpiCard label="Vendas do mês" value={fmtBRL(salesThisMonthValue, hidden)} subtitle="Não canceladas" icon={<TrendingUp className="w-4 h-4" />} trend="up" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+            <Widget title="Estoque Crítico" count={lowStockProducts.length} icon={<Package className="w-4 h-4" />} linkTo="/produtos">
+              {lowStockProducts.length === 0 ? (
+                <EmptyWidget message="Nenhum produto abaixo do mínimo" action="Ver produtos" linkTo="/produtos" />
+              ) : (
+                <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+                  {lowStockProducts.map((p) => (
+                    <li key={p.id} className="flex items-center justify-between py-2">
+                      <div className="min-w-0 flex-1 pr-2">
+                        <p className="text-sm font-medium truncate" style={{ color: "var(--fg)" }}>{p.name}</p>
+                        <p className="text-[10px] font-mono" style={{ color: "var(--fg-muted)" }}>{p.sku}</p>
+                      </div>
+                      <span className="text-xs font-semibold shrink-0" style={{ color: "#ef4444" }}>
+                        {p.current_stock} / {p.min_stock} {p.unit}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Widget>
+
+            <Widget title="Compras em Aberto" count={openPurchases.length} icon={<ShoppingCart className="w-4 h-4" />} linkTo="/compras">
+              {openPurchases.length === 0 ? (
+                <EmptyWidget message="Nenhum pedido em aberto" action="Novo pedido" linkTo="/compras" />
+              ) : (
+                <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+                  {openPurchases.slice(0, 5).map((o) => (
+                    <li key={o.id} className="flex items-center justify-between py-2">
+                      <div className="min-w-0 flex-1 pr-2">
+                        <p className="text-xs font-mono" style={{ color: "var(--fg-muted)" }}>{o.number}</p>
+                        <p className="text-sm truncate" style={{ color: "var(--fg)" }}>{o.supplier?.name ?? "—"}</p>
+                      </div>
+                      <span className="text-xs font-semibold shrink-0" style={{ color: "var(--fg)" }}>{fmtBRL(o.total, hidden)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Widget>
+
+            <Widget title="Vendas em Aberto" count={openSales.length} icon={<ShoppingBag className="w-4 h-4" />} linkTo="/vendas">
+              {openSales.length === 0 ? (
+                <EmptyWidget message="Nenhum pedido em aberto" action="Novo pedido" linkTo="/vendas" />
+              ) : (
+                <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+                  {openSales.slice(0, 5).map((o) => (
+                    <li key={o.id} className="flex items-center justify-between py-2">
+                      <div className="min-w-0 flex-1 pr-2">
+                        <p className="text-xs font-mono" style={{ color: "var(--fg-muted)" }}>{o.number}</p>
+                        <p className="text-sm truncate" style={{ color: "var(--fg)" }}>{o.client?.name ?? "—"}</p>
+                      </div>
+                      <span className="text-xs font-semibold shrink-0" style={{ color: "var(--fg)" }}>{fmtBRL(o.total, hidden)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Widget>
           </div>
         </div>
       </div>
