@@ -14,16 +14,21 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedVendasRouteImport } from './routes/_authenticated/vendas'
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
 import { Route as AuthenticatedSeedRouteImport } from './routes/_authenticated/seed'
+import { Route as AuthenticatedRhRouteImport } from './routes/_authenticated/rh'
 import { Route as AuthenticatedReunioesRouteImport } from './routes/_authenticated/reunioes'
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
 import { Route as AuthenticatedRankingRouteImport } from './routes/_authenticated/ranking'
+import { Route as AuthenticatedProdutosRouteImport } from './routes/_authenticated/produtos'
+import { Route as AuthenticatedFornecedoresRouteImport } from './routes/_authenticated/fornecedores'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
 import { Route as AuthenticatedContatosRouteImport } from './routes/_authenticated/contatos'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedComprasRouteImport } from './routes/_authenticated/compras'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
@@ -54,6 +59,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedVendasRoute = AuthenticatedVendasRouteImport.update({
+  id: '/vendas',
+  path: '/vendas',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedTarefasRoute = AuthenticatedTarefasRouteImport.update({
   id: '/tarefas',
   path: '/tarefas',
@@ -62,6 +72,11 @@ const AuthenticatedTarefasRoute = AuthenticatedTarefasRouteImport.update({
 const AuthenticatedSeedRoute = AuthenticatedSeedRouteImport.update({
   id: '/seed',
   path: '/seed',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedRhRoute = AuthenticatedRhRouteImport.update({
+  id: '/rh',
+  path: '/rh',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedReunioesRoute = AuthenticatedReunioesRouteImport.update({
@@ -79,6 +94,17 @@ const AuthenticatedRankingRoute = AuthenticatedRankingRouteImport.update({
   path: '/ranking',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedProdutosRoute = AuthenticatedProdutosRouteImport.update({
+  id: '/produtos',
+  path: '/produtos',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedFornecedoresRoute =
+  AuthenticatedFornecedoresRouteImport.update({
+    id: '/fornecedores',
+    path: '/fornecedores',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   id: '/financeiro',
   path: '/financeiro',
@@ -105,6 +131,11 @@ const AuthenticatedConfiguracoesRoute =
     path: '/configuracoes',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedComprasRoute = AuthenticatedComprasRouteImport.update({
+  id: '/compras',
+  path: '/compras',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
   id: '/clientes',
   path: '/clientes',
@@ -140,16 +171,21 @@ export interface FileRoutesByFullPath {
   '/agenda': typeof AuthenticatedAgendaRoute
   '/chat': typeof AuthenticatedChatRoute
   '/clientes': typeof AuthenticatedClientesRoute
+  '/compras': typeof AuthenticatedComprasRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/contatos': typeof AuthenticatedContatosRoute
   '/crm': typeof AuthenticatedCrmRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/fornecedores': typeof AuthenticatedFornecedoresRoute
+  '/produtos': typeof AuthenticatedProdutosRoute
   '/ranking': typeof AuthenticatedRankingRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/reunioes': typeof AuthenticatedReunioesRoute
+  '/rh': typeof AuthenticatedRhRoute
   '/seed': typeof AuthenticatedSeedRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
+  '/vendas': typeof AuthenticatedVendasRoute
   '/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
   '/vagas/': typeof AuthenticatedVagasIndexRoute
 }
@@ -161,16 +197,21 @@ export interface FileRoutesByTo {
   '/agenda': typeof AuthenticatedAgendaRoute
   '/chat': typeof AuthenticatedChatRoute
   '/clientes': typeof AuthenticatedClientesRoute
+  '/compras': typeof AuthenticatedComprasRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/contatos': typeof AuthenticatedContatosRoute
   '/crm': typeof AuthenticatedCrmRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/fornecedores': typeof AuthenticatedFornecedoresRoute
+  '/produtos': typeof AuthenticatedProdutosRoute
   '/ranking': typeof AuthenticatedRankingRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/reunioes': typeof AuthenticatedReunioesRoute
+  '/rh': typeof AuthenticatedRhRoute
   '/seed': typeof AuthenticatedSeedRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
+  '/vendas': typeof AuthenticatedVendasRoute
   '/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
   '/vagas': typeof AuthenticatedVagasIndexRoute
 }
@@ -184,16 +225,21 @@ export interface FileRoutesById {
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
+  '/_authenticated/compras': typeof AuthenticatedComprasRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/contatos': typeof AuthenticatedContatosRoute
   '/_authenticated/crm': typeof AuthenticatedCrmRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/_authenticated/fornecedores': typeof AuthenticatedFornecedoresRoute
+  '/_authenticated/produtos': typeof AuthenticatedProdutosRoute
   '/_authenticated/ranking': typeof AuthenticatedRankingRoute
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/_authenticated/reunioes': typeof AuthenticatedReunioesRoute
+  '/_authenticated/rh': typeof AuthenticatedRhRoute
   '/_authenticated/seed': typeof AuthenticatedSeedRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
+  '/_authenticated/vendas': typeof AuthenticatedVendasRoute
   '/_authenticated/vagas/$vagaId': typeof AuthenticatedVagasVagaIdRoute
   '/_authenticated/vagas/': typeof AuthenticatedVagasIndexRoute
 }
@@ -207,16 +253,21 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/chat'
     | '/clientes'
+    | '/compras'
     | '/configuracoes'
     | '/contatos'
     | '/crm'
     | '/dashboard'
     | '/financeiro'
+    | '/fornecedores'
+    | '/produtos'
     | '/ranking'
     | '/relatorios'
     | '/reunioes'
+    | '/rh'
     | '/seed'
     | '/tarefas'
+    | '/vendas'
     | '/vagas/$vagaId'
     | '/vagas/'
   fileRoutesByTo: FileRoutesByTo
@@ -228,16 +279,21 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/chat'
     | '/clientes'
+    | '/compras'
     | '/configuracoes'
     | '/contatos'
     | '/crm'
     | '/dashboard'
     | '/financeiro'
+    | '/fornecedores'
+    | '/produtos'
     | '/ranking'
     | '/relatorios'
     | '/reunioes'
+    | '/rh'
     | '/seed'
     | '/tarefas'
+    | '/vendas'
     | '/vagas/$vagaId'
     | '/vagas'
   id:
@@ -250,16 +306,21 @@ export interface FileRouteTypes {
     | '/_authenticated/agenda'
     | '/_authenticated/chat'
     | '/_authenticated/clientes'
+    | '/_authenticated/compras'
     | '/_authenticated/configuracoes'
     | '/_authenticated/contatos'
     | '/_authenticated/crm'
     | '/_authenticated/dashboard'
     | '/_authenticated/financeiro'
+    | '/_authenticated/fornecedores'
+    | '/_authenticated/produtos'
     | '/_authenticated/ranking'
     | '/_authenticated/relatorios'
     | '/_authenticated/reunioes'
+    | '/_authenticated/rh'
     | '/_authenticated/seed'
     | '/_authenticated/tarefas'
+    | '/_authenticated/vendas'
     | '/_authenticated/vagas/$vagaId'
     | '/_authenticated/vagas/'
   fileRoutesById: FileRoutesById
@@ -309,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/vendas': {
+      id: '/_authenticated/vendas'
+      path: '/vendas'
+      fullPath: '/vendas'
+      preLoaderRoute: typeof AuthenticatedVendasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/tarefas': {
       id: '/_authenticated/tarefas'
       path: '/tarefas'
@@ -321,6 +389,13 @@ declare module '@tanstack/react-router' {
       path: '/seed'
       fullPath: '/seed'
       preLoaderRoute: typeof AuthenticatedSeedRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/rh': {
+      id: '/_authenticated/rh'
+      path: '/rh'
+      fullPath: '/rh'
+      preLoaderRoute: typeof AuthenticatedRhRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/reunioes': {
@@ -342,6 +417,20 @@ declare module '@tanstack/react-router' {
       path: '/ranking'
       fullPath: '/ranking'
       preLoaderRoute: typeof AuthenticatedRankingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/produtos': {
+      id: '/_authenticated/produtos'
+      path: '/produtos'
+      fullPath: '/produtos'
+      preLoaderRoute: typeof AuthenticatedProdutosRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/fornecedores': {
+      id: '/_authenticated/fornecedores'
+      path: '/fornecedores'
+      fullPath: '/fornecedores'
+      preLoaderRoute: typeof AuthenticatedFornecedoresRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/financeiro': {
@@ -377,6 +466,13 @@ declare module '@tanstack/react-router' {
       path: '/configuracoes'
       fullPath: '/configuracoes'
       preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/compras': {
+      id: '/_authenticated/compras'
+      path: '/compras'
+      fullPath: '/compras'
+      preLoaderRoute: typeof AuthenticatedComprasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/clientes': {
@@ -421,16 +517,21 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
+  AuthenticatedComprasRoute: typeof AuthenticatedComprasRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedContatosRoute: typeof AuthenticatedContatosRoute
   AuthenticatedCrmRoute: typeof AuthenticatedCrmRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
+  AuthenticatedFornecedoresRoute: typeof AuthenticatedFornecedoresRoute
+  AuthenticatedProdutosRoute: typeof AuthenticatedProdutosRoute
   AuthenticatedRankingRoute: typeof AuthenticatedRankingRoute
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedReunioesRoute: typeof AuthenticatedReunioesRoute
+  AuthenticatedRhRoute: typeof AuthenticatedRhRoute
   AuthenticatedSeedRoute: typeof AuthenticatedSeedRoute
   AuthenticatedTarefasRoute: typeof AuthenticatedTarefasRoute
+  AuthenticatedVendasRoute: typeof AuthenticatedVendasRoute
   AuthenticatedVagasVagaIdRoute: typeof AuthenticatedVagasVagaIdRoute
   AuthenticatedVagasIndexRoute: typeof AuthenticatedVagasIndexRoute
 }
@@ -439,16 +540,21 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
+  AuthenticatedComprasRoute: AuthenticatedComprasRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedContatosRoute: AuthenticatedContatosRoute,
   AuthenticatedCrmRoute: AuthenticatedCrmRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
+  AuthenticatedFornecedoresRoute: AuthenticatedFornecedoresRoute,
+  AuthenticatedProdutosRoute: AuthenticatedProdutosRoute,
   AuthenticatedRankingRoute: AuthenticatedRankingRoute,
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedReunioesRoute: AuthenticatedReunioesRoute,
+  AuthenticatedRhRoute: AuthenticatedRhRoute,
   AuthenticatedSeedRoute: AuthenticatedSeedRoute,
   AuthenticatedTarefasRoute: AuthenticatedTarefasRoute,
+  AuthenticatedVendasRoute: AuthenticatedVendasRoute,
   AuthenticatedVagasVagaIdRoute: AuthenticatedVagasVagaIdRoute,
   AuthenticatedVagasIndexRoute: AuthenticatedVagasIndexRoute,
 }
