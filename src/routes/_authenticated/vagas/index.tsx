@@ -238,6 +238,13 @@ function VagasPage() {
               </button>
             </div>
             <button
+              onClick={() => setReportOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+              style={{ border: "1px solid var(--border)", color: "var(--fg)" }}
+            >
+              <FileText className="w-4 h-4" /> Relatório
+            </button>
+            <button
               onClick={openCreate}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium"
               style={{ background: "var(--accent)", color: "#fff" }}
