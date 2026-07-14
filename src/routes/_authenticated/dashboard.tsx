@@ -488,15 +488,12 @@ function KpiCard({ label, value, subtitle, icon, trend }: {
 }) {
   const trendColor = trend === "up" ? "#10b981" : trend === "down" ? "#ef4444" : "var(--accent-2)";
   return (
-    <div
-      className="rounded-xl p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
-      style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
-    >
+    <div className="surface surface-hover p-4">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs" style={{ color: "var(--fg-muted)" }}>{label}</p>
-        <span style={{ color: trendColor }}>{icon}</span>
+        <span className="section-title">{label}</span>
+        <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `color-mix(in srgb, ${trendColor} 12%, transparent)`, color: trendColor }}>{icon}</span>
       </div>
-      <p className="text-xl font-bold" style={{ color: "var(--fg)" }}>{value}</p>
+      <p className="font-display text-2xl" style={{ color: "var(--fg)" }}>{value}</p>
       {subtitle && (
         <p className="text-[11px] mt-1" style={{ color: "var(--fg-muted)" }}>{subtitle}</p>
       )}
@@ -509,10 +506,7 @@ function Widget({ title, count, icon, linkTo, children }: {
   linkTo: string; children: React.ReactNode;
 }) {
   return (
-    <div
-      className="rounded-xl overflow-hidden"
-      style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
-    >
+    <div className="surface overflow-hidden h-full">
       <div
         className="flex items-center justify-between px-4 py-3"
         style={{ borderBottom: "1px solid var(--border)" }}
@@ -523,14 +517,14 @@ function Widget({ title, count, icon, linkTo, children }: {
           {count !== undefined && (
             <span
               className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-              style={{ background: "var(--bg)", color: "var(--fg-muted)" }}
+              style={{ background: "color-mix(in srgb, var(--accent) 10%, transparent)", color: "var(--accent)" }}
             >
               {count}
             </span>
           )}
         </div>
         <Link to={linkTo} className="flex items-center gap-1 text-xs hover:underline" style={{ color: "var(--accent)" }}>
-          Ver tudo <ArrowRight className="w-3 h-3" />
+          Ver <ArrowRight className="w-3 h-3" />
         </Link>
       </div>
       <div className="px-4 pb-2">{children}</div>
