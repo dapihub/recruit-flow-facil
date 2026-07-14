@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ShoppingBag, Plus, Pencil, Trash2 } from "lucide-react";
+import { ShoppingBag, Plus, Pencil, Trash2, Download } from "lucide-react";
+import { exportCSV } from "@/lib/csv";
 import { format } from "date-fns";
 import { Header } from "@/components/layout/Header";
 import { PageKpis, KpiItem } from "@/components/layout/PageKpis";
