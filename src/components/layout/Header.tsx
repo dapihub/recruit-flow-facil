@@ -48,6 +48,9 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
   const [unreadCount, setUnreadCount] = useState(getUnreadCount);
   const [searchOpen, setSearchOpen] = useState(false);
   const { openMenu } = useMobileMenu();
+  const { data: notifications = [] } = useNotifications();
+  const markAllRead = useMarkAllRead();
+  const unreadNotifs = notifications.filter((n) => !n.read_at).length;
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
