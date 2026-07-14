@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          company_id: string | null
+          created_at: string
+          entity: string
+          entity_id: string | null
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          company_id?: string | null
+          created_at?: string
+          entity: string
+          entity_id?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          company_id?: string | null
+          created_at?: string
+          entity?: string
+          entity_id?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidatos: {
         Row: {
           created_at: string
@@ -119,6 +160,61 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_ratings: {
+        Row: {
+          category: string | null
+          client_id: string
+          comment: string | null
+          company_id: string
+          created_at: string
+          id: string
+          rated_by: string | null
+          score: number
+        }
+        Insert: {
+          category?: string | null
+          client_id: string
+          comment?: string | null
+          company_id: string
+          created_at?: string
+          id?: string
+          rated_by?: string | null
+          score: number
+        }
+        Update: {
+          category?: string | null
+          client_id?: string
+          comment?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          rated_by?: string | null
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_ratings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_ratings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_ratings_rated_by_fkey"
+            columns: ["rated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -275,6 +371,215 @@ export type Database = {
         }
         Relationships: []
       }
+      contacts: {
+        Row: {
+          client_id: string | null
+          company_id: string
+          created_at: string
+          deleted_at: string | null
+          email: string | null
+          id: string
+          is_active: boolean
+          linkedin: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          role: string | null
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          company_id: string
+          created_at?: string
+          deleted_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          linkedin?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          company_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          linkedin?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_opportunities: {
+        Row: {
+          assignee_id: string | null
+          client_id: string | null
+          company_id: string
+          contact_id: string | null
+          created_at: string
+          deleted_at: string | null
+          expected_close: string | null
+          id: string
+          lead_email: string | null
+          lead_name: string | null
+          lost_reason: string | null
+          notes: string | null
+          probability: number
+          stage_id: string
+          title: string
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          assignee_id?: string | null
+          client_id?: string | null
+          company_id: string
+          contact_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          expected_close?: string | null
+          id?: string
+          lead_email?: string | null
+          lead_name?: string | null
+          lost_reason?: string | null
+          notes?: string | null
+          probability?: number
+          stage_id: string
+          title: string
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          assignee_id?: string | null
+          client_id?: string | null
+          company_id?: string
+          contact_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          expected_close?: string | null
+          id?: string
+          lead_email?: string | null
+          lead_name?: string | null
+          lost_reason?: string | null
+          notes?: string | null
+          probability?: number
+          stage_id?: string
+          title?: string
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_opportunities_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_opportunities_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_opportunities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_opportunities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_opportunities_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "crm_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_stages: {
+        Row: {
+          color: string
+          company_id: string
+          created_at: string
+          id: string
+          is_final: boolean
+          name: string
+          order: number
+          outcome: string | null
+          probability: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          company_id: string
+          created_at?: string
+          id?: string
+          is_final?: boolean
+          name: string
+          order?: number
+          outcome?: string | null
+          probability?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_final?: boolean
+          name?: string
+          order?: number
+          outcome?: string | null
+          probability?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_stages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custos: {
         Row: {
           categoria: Database["public"]["Enums"]["custo_categoria"]
@@ -414,6 +719,57 @@ export type Database = {
           },
         ]
       }
+      invites: {
+        Row: {
+          accepted_at: string | null
+          company_id: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          company_id: string
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          company_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invites_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invites_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           benefits: string | null
@@ -532,6 +888,161 @@ export type Database = {
           },
         ]
       }
+      meetings: {
+        Row: {
+          client_id: string | null
+          company_id: string
+          contact_id: string | null
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          ends_at: string | null
+          id: string
+          location: string | null
+          meeting_url: string | null
+          notes: string | null
+          organizer_id: string | null
+          participants: Json
+          starts_at: string
+          status: string
+          title: string
+          updated_at: string
+          vaga_id: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          company_id: string
+          contact_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          location?: string | null
+          meeting_url?: string | null
+          notes?: string | null
+          organizer_id?: string | null
+          participants?: Json
+          starts_at: string
+          status?: string
+          title: string
+          updated_at?: string
+          vaga_id?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          company_id?: string
+          contact_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          location?: string | null
+          meeting_url?: string | null
+          notes?: string | null
+          organizer_id?: string | null
+          participants?: Json
+          starts_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          vaga_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetings_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetings_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetings_vaga_id_fkey"
+            columns: ["vaga_id"]
+            isOneToOne: false
+            referencedRelation: "vagas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_entries: {
+        Row: {
+          amount: number
+          company_id: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          notes: string | null
+          payment_date: string | null
+          person_name: string
+          reference_month: string
+          role: string | null
+          status: string
+          type: Database["public"]["Enums"]["payroll_type"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          company_id: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          notes?: string | null
+          payment_date?: string | null
+          person_name: string
+          reference_month: string
+          role?: string | null
+          status?: string
+          type?: Database["public"]["Enums"]["payroll_type"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          company_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          notes?: string | null
+          payment_date?: string | null
+          person_name?: string
+          reference_month?: string
+          role?: string | null
+          status?: string
+          type?: Database["public"]["Enums"]["payroll_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_entries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -575,6 +1086,86 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          assignee_id: string | null
+          client_id: string | null
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          status: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at: string
+          vaga_id: string | null
+        }
+        Insert: {
+          assignee_id?: string | null
+          client_id?: string | null
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          status?: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at?: string
+          vaga_id?: string | null
+        }
+        Update: {
+          assignee_id?: string | null
+          client_id?: string | null
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          status?: Database["public"]["Enums"]["task_status"]
+          title?: string
+          updated_at?: string
+          vaga_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_vaga_id_fkey"
+            columns: ["vaga_id"]
+            isOneToOne: false
+            referencedRelation: "vagas"
             referencedColumns: ["id"]
           },
         ]
@@ -648,6 +1239,38 @@ export type Database = {
           },
           {
             foreignKeyName: "transactions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
@@ -729,8 +1352,16 @@ export type Database = {
       current_company_id: { Args: never; Returns: string }
       finalize_expired_garantias: { Args: never; Returns: undefined }
       generate_fatura_numero: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "recruiter" | "financial" | "viewer"
       candidato_status: "Triagem" | "Entrevista" | "Contratado" | "Reprovado"
       contract_type: "clt" | "pj" | "internship" | "temporary" | "freelance"
       custo_categoria:
@@ -755,6 +1386,7 @@ export type Database = {
         | "cancelled"
         | "paused"
       payment_status: "pending" | "paid" | "overdue" | "cancelled"
+      payroll_type: "salary" | "commission" | "bonus" | "other"
       person_type: "pf" | "pj"
       pipeline_etapa:
         | "Briefing"
@@ -773,6 +1405,8 @@ export type Database = {
         | "senior"
         | "specialist"
         | "lead"
+      task_priority: "low" | "medium" | "high" | "urgent"
+      task_status: "todo" | "doing" | "done" | "cancelled"
       transaction_type: "income" | "expense"
       user_role: "admin" | "recruiter" | "financial" | "viewer"
       vaga_status: "Aberta" | "Em processo" | "Fechada" | "Encerrada"
@@ -904,6 +1538,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "recruiter", "financial", "viewer"],
       candidato_status: ["Triagem", "Entrevista", "Contratado", "Reprovado"],
       contract_type: ["clt", "pj", "internship", "temporary", "freelance"],
       custo_categoria: [
@@ -930,6 +1565,7 @@ export const Constants = {
         "paused",
       ],
       payment_status: ["pending", "paid", "overdue", "cancelled"],
+      payroll_type: ["salary", "commission", "bonus", "other"],
       person_type: ["pf", "pj"],
       pipeline_etapa: [
         "Briefing",
@@ -950,6 +1586,8 @@ export const Constants = {
         "specialist",
         "lead",
       ],
+      task_priority: ["low", "medium", "high", "urgent"],
+      task_status: ["todo", "doing", "done", "cancelled"],
       transaction_type: ["income", "expense"],
       user_role: ["admin", "recruiter", "financial", "viewer"],
       vaga_status: ["Aberta", "Em processo", "Fechada", "Encerrada"],
