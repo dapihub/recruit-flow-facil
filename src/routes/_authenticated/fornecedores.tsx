@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Truck, Plus, Pencil, Trash2, Search, Mail, Phone } from "lucide-react";
+import { Truck, Plus, Pencil, Trash2, Search, Mail, Phone, Download } from "lucide-react";
+import { exportCSV } from "@/lib/csv";
 import { Header } from "@/components/layout/Header";
 import { PageKpis, KpiItem } from "@/components/layout/PageKpis";
 import { EmptyState } from "@/components/ui/EmptyState";
