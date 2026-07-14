@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   Briefcase, Plus, Pencil, Trash2, Search,
-  Download, LayoutList, Kanban, X,
+  Download, LayoutList, Kanban, X, FileText,
+  CheckCircle2, Clock, DollarSign,
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { Header } from "@/components/layout/Header";
@@ -10,6 +11,7 @@ import { PageKpis, KpiItem } from "@/components/layout/PageKpis";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { JobStatusBadge, PriorityBadge } from "@/components/ui/Badges";
 import { VagaForm } from "@/components/vagas/VagaForm";
+import { ReportModal } from "@/components/reports/ReportModal";
 import { useJobs, useDeleteJob, type JobWithJoins } from "@/hooks/useJobs";
 import { useHideValues } from "@/hooks/useHideValues";
 import { fmtBRL } from "@/lib/utils";
