@@ -7,6 +7,7 @@ import { useHideValues } from "@/hooks/useHideValues";
 import { useMobileMenu } from "@/hooks/useMobileMenu";
 import { cn } from "@/lib/utils";
 import { GlobalSearch } from "./GlobalSearch";
+import { Breadcrumbs } from "./Breadcrumbs";
 import { useNotifications, useMarkAllRead } from "@/hooks/useNotifications";
 
 interface HeaderProps {
@@ -259,6 +260,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
         </button>
       </div>
     </header>
+    <Breadcrumbs />
     <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );

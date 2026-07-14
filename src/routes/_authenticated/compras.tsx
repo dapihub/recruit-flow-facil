@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ShoppingCart, Plus, Pencil, Trash2 } from "lucide-react";
+import { ShoppingCart, Plus, Pencil, Trash2, Download } from "lucide-react";
+import { exportCSV } from "@/lib/csv";
 import { format } from "date-fns";
 import { Header } from "@/components/layout/Header";
 import { PageKpis, KpiItem } from "@/components/layout/PageKpis";
@@ -32,13 +33,24 @@ function ComprasPage() {
   return (
     <>
       <Header title="Compras" subtitle="Pedidos de compra e cotações"
-        actions={
+        actions={<>
+          <button onClick={() => exportCSV("compras", orders, [
+            { header: "Número", get: (o) => o.number },
+            { header: "Fornecedor", get: (o) => o.supplier?.name ?? "" },
+            { header: "Data", get: (o) => o.order_date },
+            { header: "Previsão", get: (o) => o.expected_date ?? "" },
+            { header: "Status", get: (o) => STATUS_LABELS[o.status] },
+            { header: "Total", get: (o) => o.total },
+          ])} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border"
+            style={{ background: "var(--bg-card)", borderColor: "var(--border)", color: "var(--fg-muted)" }}>
+            <Download className="w-3.5 h-3.5" /> CSV
+          </button>
           <button onClick={() => { setEditing(null); setFormOpen(true); }}
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium"
             style={{ background: "var(--accent)", color: "#fff" }}>
             <Plus className="w-4 h-4" /> Novo Pedido
           </button>
-        } />
+        </>} />
       <PageKpis>
         <KpiItem label="Pedidos" value={String(kpis.total)} />
         <KpiItem label="Em aberto" value={String(kpis.pending)} accent />
