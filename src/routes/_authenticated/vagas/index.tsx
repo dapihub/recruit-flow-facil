@@ -442,7 +442,85 @@ function VagasPage() {
         onClose={() => { setFormOpen(false); setEditJob(null); }}
         defaultValues={editJob ?? undefined}
       />
+
+      <ReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        title="Vagas em andamento"
+        subtitle="Vagas abertas, em triagem, entrevista ou proposta"
+        brand="Themis"
+        onExport={() => exportToCSV(allJobs.filter((j) => ["open", "screening", "interviewing", "proposal"].includes(j.status)))}
+        exportLabel="Excel"
+        footer="Relatório gerado pelo sistema Themis"
+        kpis={[
+          { label: "Total de vagas", value: String(total), icon: Briefcase, tone: "neutral" },
+          { label: "Abertas / triagem", value: String(open + allJobs.filter((j) => j.status === "screening").length), icon: Clock, tone: "teal" },
+          { label: "Fechadas", value: String(closed), icon: CheckCircle2, tone: "green" },
+          { label: "Fees totais", value: fmtBRL(totalFees, hidden), icon: DollarSign, tone: "orange" },
+        ]}
+        sections={[
+          {
+            title: "Lista de Vagas",
+            icon: Briefcase,
+            counter: {
+              label: "VAGAS ATIVAS",
+              value: String(allJobs.filter((j) => !["closed", "cancelled"].includes(j.status)).length),
+            },
+            children: (
+              <ReportJobsTable
+                jobs={allJobs.filter((j) => !["closed", "cancelled"].includes(j.status))}
+                hidden={hidden}
+              />
+            ),
+          },
+        ]}
+      />
     </div>
+  );
+}
+
+function ReportJobsTable({ jobs, hidden }: { jobs: JobWithJoins[]; hidden: boolean }) {
+  if (jobs.length === 0) {
+    return (
+      <p className="text-sm text-center py-6" style={{ color: "var(--fg-muted)" }}>
+        Nenhuma vaga ativa no momento.
+      </p>
+    );
+  }
+  return (
+    <table className="w-full text-sm">
+      <thead>
+        <tr style={{ borderBottom: "1px solid var(--border)" }}>
+          {["Vaga", "Cliente", "Status", "Prazo", "Fee", "Recrutador"].map((h, i) => (
+            <th
+              key={h}
+              className={`px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider ${i >= 3 ? "text-right" : "text-left"}`}
+              style={{ color: "var(--fg-muted)" }}
+            >
+              {h}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {jobs.map((j) => (
+          <tr key={j.id} style={{ borderBottom: "1px solid var(--border)" }}>
+            <td className="px-4 py-2.5" style={{ color: "var(--fg)" }}>{j.title}</td>
+            <td className="px-4 py-2.5" style={{ color: "var(--fg-muted)" }}>{j.client?.name ?? "—"}</td>
+            <td className="px-4 py-2.5"><JobStatusBadge status={j.status} /></td>
+            <td className="px-4 py-2.5 text-right tabular-nums" style={{ color: "var(--fg-muted)" }}>
+              {j.deadline ? format(new Date(j.deadline), "dd/MM/yyyy") : "—"}
+            </td>
+            <td className="px-4 py-2.5 text-right tabular-nums" style={{ color: "var(--fg)" }}>
+              {j.fee_value ? fmtBRL(j.fee_value, hidden) : "—"}
+            </td>
+            <td className="px-4 py-2.5 text-right" style={{ color: "var(--fg-muted)" }}>
+              {j.recruiter?.name ?? "—"}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
