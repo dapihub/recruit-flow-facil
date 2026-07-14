@@ -46,6 +46,20 @@ function DashboardPage() {
   const { data: stages = [] } = useCrmStages();
   const { data: transactions = [] } = useTransactions();
 
+  const { data: products = [] } = useProducts({ includeInactive: false });
+  const { data: purchaseOrders = [] } = usePurchaseOrders();
+  const { data: salesOrders = [] } = useSalesOrders();
+
+  const lowStockProducts = products.filter((p) => p.current_stock <= p.min_stock).slice(0, 5);
+  const openPurchases = purchaseOrders.filter((o) => o.status === "draft" || o.status === "sent");
+  const openSales = salesOrders.filter((o) => o.status === "draft" || o.status === "confirmed");
+  const salesThisMonthValue = salesOrders
+    .filter((o) => {
+      const d = new Date(o.order_date);
+      return o.status !== "cancelled" && d.getMonth() === new Date().getMonth() && d.getFullYear() === new Date().getFullYear();
+    })
+    .reduce((s, o) => s + o.total, 0);
+
   const openJobs = allJobs.filter((j) =>
     ["open", "screening", "interviewing", "proposal"].includes(j.status)
   );
