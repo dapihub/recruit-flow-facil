@@ -495,15 +495,22 @@ function KpiCard({ label, value, subtitle, icon, trend }: {
 }) {
   const trendColor = trend === "up" ? "#10b981" : trend === "down" ? "#ef4444" : "var(--accent-2)";
   return (
-    <div className="surface surface-hover p-4">
-      <div className="flex items-center justify-between mb-3">
-        <span className="section-title">{label}</span>
-        <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `color-mix(in srgb, ${trendColor} 12%, transparent)`, color: trendColor }}>{icon}</span>
+    <div className="surface surface-hover p-5">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--fg-muted)" }}>{label}</span>
+          {subtitle && (
+            <span className="text-[11px]" style={{ color: "var(--fg-muted)", opacity: .8 }}>{subtitle}</span>
+          )}
+        </div>
+        <span
+          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: `color-mix(in srgb, ${trendColor} 14%, transparent)`, color: trendColor }}
+        >
+          {icon}
+        </span>
       </div>
-      <p className="font-display text-2xl" style={{ color: "var(--fg)" }}>{value}</p>
-      {subtitle && (
-        <p className="text-[11px] mt-1" style={{ color: "var(--fg-muted)" }}>{subtitle}</p>
-      )}
+      <p className="font-display text-[28px] leading-none tracking-tight" style={{ color: trendColor }}>{value}</p>
     </div>
   );
 }
