@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Package, Plus, Pencil, Trash2, Search, ArrowUpDown, TrendingDown } from "lucide-react";
+import { Package, Plus, Pencil, Trash2, Search, ArrowUpDown, TrendingDown, Download } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { PageKpis, KpiItem } from "@/components/layout/PageKpis";
 import { EmptyState } from "@/components/ui/EmptyState";
