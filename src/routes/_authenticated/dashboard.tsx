@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import {
   TrendingUp, TrendingDown, Briefcase, CheckSquare,
   Calendar, DollarSign, Clock, ArrowRight, Plus, Target,
-  Users,
+  Users, Package, ShoppingBag, ShoppingCart,
 } from "lucide-react";
 import { format, subMonths, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -20,6 +20,8 @@ import { useTasks } from "@/hooks/useTasks";
 import { useMeetings } from "@/hooks/useMeetings";
 import { useCrmOpportunities, useCrmStages } from "@/hooks/useCrm";
 import { useTransactions } from "@/hooks/useFinanceiro";
+import { useProducts } from "@/hooks/useProducts";
+import { usePurchaseOrders, useSalesOrders } from "@/hooks/useOrders";
 import { JobStatusBadge } from "@/components/ui/Badges";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
