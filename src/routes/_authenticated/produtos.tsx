@@ -10,6 +10,7 @@ import {
   useCreateStockMovement, type Product,
 } from "@/hooks/useProducts";
 import { fmtBRL } from "@/lib/utils";
+import { exportCSV } from "@/lib/csv";
 import { useHideValues } from "@/hooks/useHideValues";
 
 export const Route = createFileRoute("/_authenticated/produtos")({ component: ProdutosPage });
