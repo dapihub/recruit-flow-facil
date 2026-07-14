@@ -38,11 +38,27 @@ function ProdutosPage() {
     <>
       <Header title="Produtos & Estoque" subtitle="Gerencie SKUs, saldos e movimentações"
         actions={
-          <button onClick={() => { setEditing(null); setFormOpen(true); }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium"
-            style={{ background: "var(--accent)", color: "#fff" }}>
-            <Plus className="w-4 h-4" /> Novo Produto
-          </button>
+          <>
+            <button onClick={() => exportCSV("produtos", filtered, [
+              { header: "SKU", get: (p) => p.sku },
+              { header: "Nome", get: (p) => p.name },
+              { header: "Categoria", get: (p) => p.category ?? "" },
+              { header: "Unidade", get: (p) => p.unit },
+              { header: "Saldo", get: (p) => p.current_stock },
+              { header: "Mínimo", get: (p) => p.min_stock },
+              { header: "Custo", get: (p) => p.cost_price },
+              { header: "Venda", get: (p) => p.sale_price },
+              { header: "Ativo", get: (p) => p.is_active ? "Sim" : "Não" },
+            ])} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border"
+              style={{ background: "var(--bg-card)", borderColor: "var(--border)", color: "var(--fg-muted)" }}>
+              <Download className="w-3.5 h-3.5" /> CSV
+            </button>
+            <button onClick={() => { setEditing(null); setFormOpen(true); }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium"
+              style={{ background: "var(--accent)", color: "#fff" }}>
+              <Plus className="w-4 h-4" /> Novo Produto
+            </button>
+          </>
         } />
       <PageKpis>
         <KpiItem label="Produtos ativos" value={String(kpis.total)} />
