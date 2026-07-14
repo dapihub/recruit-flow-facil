@@ -514,6 +514,8 @@ function DashboardPage() {
                   { label: "Nova tarefa", to: "/tarefas",    icon: CheckSquare,  color: "#f59e0b" },
                   { label: "Nova receita",to: "/financeiro", icon: DollarSign,   color: "#10b981" },
                   { label: "Novo cliente",to: "/clientes",   icon: Users,        color: "#3b82f6" },
+                  { label: "Novo produto",to: "/produtos",   icon: Package,      color: "#8b5cf6" },
+                  { label: "Nova venda",  to: "/vendas",     icon: ShoppingBag,  color: "#06b6d4" },
                 ].map((a) => (
                   <Link
                     key={a.to}
