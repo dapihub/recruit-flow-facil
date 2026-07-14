@@ -125,6 +125,7 @@ function VagasPage() {
   // Form state
   const [formOpen, setFormOpen] = useState(false);
   const [editJob, setEditJob] = useState<JobWithJoins | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   // Data — fetch without status filter (we handle it client-side for kanban)
   const { data: allJobs = [], isLoading } = useJobs({
