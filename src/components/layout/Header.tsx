@@ -49,7 +49,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const { openMenu } = useMobileMenu();
   const { data: notifications = [] } = useNotifications();
-  const markAllRead = useMarkAllRead();
+  const markNotifsRead = useMarkAllRead();
   const unreadNotifs = notifications.filter((n) => !n.read_at).length;
 
   useEffect(() => {
